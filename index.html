@@ -530,26 +530,214 @@
         }
 
         /* Responsive */
+        /* Mobile Responsive Styles */
         @media (max-width: 768px) {
+            /* Sidebar móvel - esconder por padrão */
             .sidebar {
-                width: 240px;
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+            }
+
+            /* Overlay para fechar sidebar */
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            /* Botão menu hambúrguer */
+            .mobile-menu-btn {
+                display: block;
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 998;
+                background: var(--red-primary);
+                border: none;
+                color: white;
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                font-size: 24px;
+                cursor: pointer;
+                box-shadow: var(--shadow-lg);
             }
 
             .main-content {
-                padding: 16px;
+                margin-left: 0;
+                padding: 80px 16px 16px 16px;
             }
 
             .auth-container {
-                padding: 32px 24px;
+                padding: 24px 20px;
+                margin: 20px;
+            }
+
+            .auth-logo img {
+                max-width: 120px;
+            }
+
+            .auth-title {
+                font-size: 24px;
             }
 
             .cards-grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
+
+            .card {
+                padding: 20px;
+            }
+
+            .card-value {
+                font-size: 28px;
+            }
+
+            /* Tabelas responsivas */
+            .stats-table {
+                font-size: 13px;
+                display: block;
+                overflow-x: auto;
+            }
+
+            /* Botões maiores para mobile */
+            .btn-primary {
+                padding: 16px 24px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            /* Inputs maiores para mobile */
+            .form-input, .form-select {
+                padding: 14px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+
+            /* Header da seção */
+            .content-section h2 {
+                font-size: 24px !important;
+            }
+
+            .content-section h3 {
+                font-size: 18px !important;
+            }
+
+            /* Chat messages */
+            .chat-message {
+                max-width: 90%;
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+
+            /* User profile */
+            .user-profile {
+                padding: 16px;
+            }
+
+            .user-name {
+                font-size: 15px;
+            }
+
+            .user-role {
+                font-size: 12px;
+            }
+
+            /* Navigation links */
+            .sidebar-link {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+
+            .nav-section-title {
+                font-size: 11px;
+            }
+
+            /* Notificações */
+            .notification {
+                left: 16px;
+                right: 16px;
+                width: auto;
+            }
+
+            /* File upload */
+            #fileInput {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 20px 16px;
+                margin: 10px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .card-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .card-value {
+                font-size: 24px;
+            }
+
+            .content-section h2 {
+                font-size: 20px !important;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+
+            .mobile-menu-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+        }
+
+        /* Esconder menu mobile no desktop */
+        .mobile-menu-btn {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+        ☰
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
     <!-- Auth Page -->
     <div class="auth-page" id="authPage">
         <div class="auth-container fade-in">
@@ -578,7 +766,7 @@
     <!-- Main App -->
     <div class="app-container hidden" id="mainApp">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <img src="https://i.imgur.com/20qFKr1.png" alt="Logo">
@@ -1090,7 +1278,23 @@
                 document.getElementById('mainApp').classList.add('hidden');
                 document.getElementById('authPage').classList.remove('hidden');
                 showNotification('Você saiu do sistema', 'success');
+                closeMobileMenu();
             }
+        }
+
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
         }
 
         // Navegação
@@ -1107,6 +1311,9 @@
             });
 
             document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            // Fechar menu mobile ao navegar
+            closeMobileMenu();
             
             // Carregar dados específicos da seção
             if (section === 'usuarios') {
