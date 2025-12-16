@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Upload Multi-Formato</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+
+        .login-section {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(56, 239, 125, 0.4);
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+
+        .upload-area:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border-color: #38ef7d;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .file-info h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .file-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .supported-formats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .format-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .token-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Teste de Upload Multi-Formato</h1>
+            <p>Sistema de Processamento Inteligente de Arquivos</p>
+        </div>
+
+        <!-- Login Section -->
+        <div class="card" id="loginCard">
+            <h2 style="margin-bottom: 20px; color: #667eea;">🔐 Login</h2>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="admin@example.com" value="admin@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="Admin123!" value="Admin123!">
+            </div>
+            <button class="btn btn-primary" onclick="login()">
+                Entrar
+            </button>
+            <div id="loginStatus" class="status"></div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="card hidden" id="uploadCard">
+            <div class="token-info">
+                <strong>✅ Autenticado!</strong> Token salvo. Você pode fazer upload agora.
+            </div>
+
+            <h2 style="margin-bottom: 20px; color: #667eea;">📤 Upload de Arquivo</h2>
+            
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <h3>Arraste um arquivo aqui ou clique para selecionar</h3>
+                <p style="margin-top: 10px; color: #666;">Suporte para múltiplos formatos</p>
+            </div>
+
+            <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+
+            <button class="btn btn-success hidden" id="uploadBtn" onclick="uploadFile()">
+                <span id="uploadBtnText">Enviar Arquivo</span>
+            </button>
+
+            <div id="uploadStatus" class="status"></div>
+            <div id="fileInfo" class="file-info hidden"></div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Formatos Suportados:</h3>
+            <div class="supported-formats">
+                <div class="format-badge">📄 TXT, MD</div>
+                <div class="format-badge">📕 PDF</div>
+                <div class="format-badge">📘 DOC, DOCX</div>
+                <div class="format-badge">📊 XLSX, CSV</div>
+                <div class="format-badge">🔧 JSON</div>
+                <div class="format-badge">📋 XML</div>
+                <div class="format-badge">⚙️ YAML</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // const API_URL = 'http://127.0.0.1:8000'; // Local
+        const API_URL = 'https://chat-ai-backend-lox5.onrender.com'; // Produção
+
+        let selectedFile = null;
+        let authToken = null;
+
+        // Login
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const status = document.getElementById('loginStatus');
+
+            status.className = 'status info';
+            status.style.display = 'block';
+            status.innerHTML = '<div class="spinner"></div> Autenticando...';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem('token', authToken);
+                    
+                    status.className = 'status success';
+                    status.innerHTML = '✅ Login realizado com sucesso!';
+
+                    setTimeout(() => {
+                        document.getElementById('loginCard').classList.add('hidden');
+                        document.getElementById('uploadCard').classList.remove('hidden');
+                    }, 1000);
+                } else {
+                    status.className = 'status error';
+                    status.innerHTML = `❌ Erro: ${data.detail || 'Credenciais inválidas'}`;
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = `❌ Erro de conexão: ${error.message}`;
+            }
+        }
+
+        // Drag & Drop
+        const uploadArea = document.getElementById('uploadArea');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                selectedFile = files[0];
+                displayFileInfo();
+            }
+        });
+
+        // File Select
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                displayFileInfo();
+            }
+        }
+
+        // Display File Info
+        function displayFileInfo() {
+            const fileInfo = document.getElementById('fileInfo');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            const fileExt = selectedFile.name.split('.').pop().toLowerCase();
+            const fileSize = (selectedFile.size / 1024).toFixed(2);
+            
+            fileInfo.innerHTML = `
+                <h3>📄 Arquivo Selecionado</h3>
+                <p><strong>Nome:</strong> ${selectedFile.name}</p>
+                <p><strong>Tipo:</strong> ${selectedFile.type || 'Desconhecido'}</p>
+                <p><strong>Extensão:</strong> .${fileExt}</p>
+                <p><strong>Tamanho:</strong> ${fileSize} KB</p>
+            `;
+            
+            fileInfo.classList.remove('hidden');
+            uploadBtn.classList.remove('hidden');
+        }
+
+        // Upload File
+        async function uploadFile() {
+            if (!selectedFile) {
+                alert('Selecione um arquivo primeiro!');
+                return;
+            }
+
+            if (!authToken) {
+                alert('Você precisa fazer login primeiro!');
+                return;
+            }
+
+            const status = document.getElementById('uploadStatus');
+            const uploadBtnText = document.getElementById('uploadBtnText');
+            
+            uploadBtnText.innerHTML = '<div class="spinner"></div> Enviando...';
+            status.className = 'status info';
+            status.style.display = 'block';
+            status.innerHTML = '⏳ Processando arquivo...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch(`${API_URL}/files/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    status.className = 'status success';
+                    status.innerHTML = `
+                        <h3>✅ Upload realizado com sucesso!</h3>
+                        <p><strong>Arquivo:</strong> ${data.file_name}</p>
+                        <p><strong>Tamanho:</strong> ${(data.size / 1024).toFixed(2)} KB</p>
+                        <p><strong>Checksum:</strong> ${data.checksum.substring(0, 16)}...</p>
+                        ${data.preview ? `<p><strong>Preview:</strong> ${data.preview.substring(0, 200)}...</p>` : ''}
+                        ${data.row_count ? `<p><strong>Linhas:</strong> ${data.row_count}</p>` : ''}
+                        ${data.column_count ? `<p><strong>Colunas:</strong> ${data.column_count}</p>` : ''}
+                    `;
+                } else {
+                    status.className = 'status error';
+                    status.innerHTML = `❌ Erro: ${data.detail || 'Falha no upload'}`;
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.innerHTML = `❌ Erro de conexão: ${error.message}`;
+            } finally {
+                uploadBtnText.textContent = 'Enviar Arquivo';
+            }
+        }
+
+        // Auto-login se já tiver token
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                authToken = token;
+                document.getElementById('loginCard').classList.add('hidden');
+                document.getElementById('uploadCard').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
