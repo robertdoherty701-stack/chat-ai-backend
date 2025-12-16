@@ -1252,7 +1252,7 @@
         // ========================================
         document.addEventListener('DOMContentLoaded', () => {
             initializeDefaultUsers();
-            if (authToken) {
+            if (authToken && currentUser) {
                 showMainApp();
                 initializeUsageTracking();
                 setupDragAndDrop();
@@ -1310,6 +1310,11 @@
         }
 
         function initializeUsageTracking() {
+            // Verifica se currentUser existe antes de registrar sessão
+            if (!currentUser || !currentUser.email) {
+                return;
+            }
+
             // Registrar início da sessão
             const sessions = JSON.parse(localStorage.getItem('userSessions') || '[]');
             sessions.push({
@@ -1326,8 +1331,11 @@
 
             // Mostrar seção de tempo de uso se for admin
             if (currentUser && currentUser.role === 'admin') {
-                document.getElementById('tempoUsoSection').classList.remove('hidden');
-                loadUsageStats();
+                const tempoSection = document.getElementById('tempoUsoSection');
+                if (tempoSection) {
+                    tempoSection.classList.remove('hidden');
+                    loadUsageStats();
+                }
             }
         }
 
