@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from auth import router as auth_router
 from upload import router as upload_router
 from indexing import router as indexing_router
+from file_processor import router as file_processor_router
 
 def create_app() -> FastAPI:
     """
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)       # /auth/...
     app.include_router(upload_router)     # /upload/...
     app.include_router(indexing_router)   # /index/...
+    app.include_router(file_processor_router)  # /files/...
 
     return app
 

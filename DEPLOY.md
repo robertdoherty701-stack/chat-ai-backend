@@ -4,7 +4,7 @@
 
 ### 1. Render.com (RECOMENDADO)
 
-#### Passo a Passo:
+#### Passo a Passo
 
 1. **Crie uma conta** em [render.com](https://render.com)
 
@@ -37,7 +37,7 @@
 
 ### 2. Railway.app
 
-#### Passo a Passo:
+#### Passo a Passo
 
 1. **Crie uma conta** em [railway.app](https://railway.app)
 
@@ -57,7 +57,7 @@
 
 ### 3. Fly.io
 
-#### Passo a Passo:
+#### Passo a Passo
 
 1. **Instale o Fly CLI:**
    ```bash

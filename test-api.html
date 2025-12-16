@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat AI - Teste API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .links a {
+            display: block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+            margin-bottom: 5px;
+        }
+        
+        .links a:hover {
+            background: #f5f5f5;
+        }
+        
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .response pre {
+            margin: 0;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Chat AI Backend</h1>
+        <p class="subtitle">Teste sua API online</p>
+        
+        <div id="status" class="status loading">
+            ⏳ Verificando conexão com a API...
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" value="admin@example.com" placeholder="admin@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Senha</label>
+            <input type="password" id="password" value="Admin123!" placeholder="Digite sua senha">
+        </div>
+        
+        <button id="loginBtn" onclick="testLogin()">🚀 Testar Login</button>
+        
+        <div id="response" class="response" style="display: none;"></div>
+        
+        <div class="links">
+            <h3 style="margin-bottom: 10px; color: #333;">📚 Links Úteis:</h3>
+            <a href="https://chat-ai-backend-lox5.onrender.com/docs" target="_blank">
+                📖 Documentação da API (Swagger)
+            </a>
+            <a href="https://github.com/robertdoherty701-stack/chat-ai-backend" target="_blank">
+                💻 Repositório GitHub
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chat-ai-backend-lox5.onrender.com';
+        
+        // Verificar se API está online
+        async function checkAPI() {
+            const statusDiv = document.getElementById('status');
+            try {
+                const response = await fetch(`${API_URL}/docs`);
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = '✅ API Online e Funcionando!';
+                } else {
+                    throw new Error('API não respondeu');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Erro ao conectar: ${error.message}`;
+            }
+        }
+        
+        // Testar login
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const responseDiv = document.getElementById('response');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Testando...';
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                
+                if (response.ok) {
+                    responseDiv.innerHTML = `
+                        <strong style="color: #155724;">✅ Login Bem-Sucedido!</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    responseDiv.innerHTML = `
+                        <strong style="color: #721c24;">❌ Erro no Login</strong>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseDiv.innerHTML = `
+                    <strong style="color: #721c24;">❌ Erro de Conexão</strong>
+                    <pre>${error.message}</pre>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Testar Login';
+            }
+        }
+        
+        // Verificar API ao carregar
+        checkAPI();
+        
+        // Permitir Enter para login
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') testLogin();
+        });
+    </script>
+</body>
+</html>

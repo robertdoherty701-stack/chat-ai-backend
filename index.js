@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // ==================== CONFIGURAÇÕES ====================
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.API_BASE_URL || 'https://chat-ai-backend-lox5.onrender.com';
 const API_TIMEOUT = parseInt(process.env.API_TIMEOUT || '30000');
 
 // ==================== CLIENTE HTTP ====================
