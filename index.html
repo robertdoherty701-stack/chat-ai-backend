@@ -2,9 +2,12 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Chat AI Pro - Sistema Premium de Gestão com IA</title>
     <meta name="theme-color" content="#DC2626">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -532,13 +535,17 @@
         /* Responsive */
         /* Mobile Responsive Styles */
         @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
             /* Sidebar móvel - esconder por padrão */
             .sidebar {
                 position: fixed;
-                left: -280px;
+                left: -300px;
                 top: 0;
                 height: 100vh;
-                width: 280px;
+                width: 300px;
                 z-index: 1000;
                 transition: left 0.3s ease;
             }
@@ -584,33 +591,48 @@
 
             .main-content {
                 margin-left: 0;
-                padding: 80px 16px 16px 16px;
+                padding: 80px 20px 20px 20px;
             }
 
             .auth-container {
-                padding: 24px 20px;
-                margin: 20px;
+                padding: 32px 24px;
+                margin: 16px;
+                max-width: 100%;
             }
 
             .auth-logo img {
-                max-width: 120px;
+                max-width: 140px;
             }
 
             .auth-title {
-                font-size: 24px;
+                font-size: 28px;
+                line-height: 1.2;
+            }
+
+            .auth-subtitle {
+                font-size: 16px;
             }
 
             .cards-grid {
                 grid-template-columns: 1fr;
-                gap: 16px;
+                gap: 20px;
             }
 
             .card {
-                padding: 20px;
+                padding: 24px;
+            }
+
+            .card-title {
+                font-size: 15px;
             }
 
             .card-value {
-                font-size: 28px;
+                font-size: 32px;
+                margin: 12px 0;
+            }
+
+            .card-label {
+                font-size: 14px;
             }
 
             /* Tabelas responsivas */
@@ -622,25 +644,39 @@
 
             /* Botões maiores para mobile */
             .btn-primary {
-                padding: 16px 24px;
-                font-size: 16px;
-                min-height: 48px;
+                padding: 18px 28px;
+                font-size: 17px;
+                min-height: 54px;
+                font-weight: 600;
             }
 
             /* Inputs maiores para mobile */
             .form-input, .form-select {
-                padding: 14px;
-                font-size: 16px;
-                min-height: 48px;
+                padding: 16px;
+                font-size: 17px;
+                min-height: 54px;
+            }
+
+            .form-label {
+                font-size: 15px;
+                margin-bottom: 10px;
             }
 
             /* Header da seção */
             .content-section h2 {
-                font-size: 24px !important;
+                font-size: 26px !important;
+                margin-bottom: 24px !important;
+                line-height: 1.3 !important;
             }
 
             .content-section h3 {
-                font-size: 18px !important;
+                font-size: 20px !important;
+                line-height: 1.4 !important;
+            }
+
+            .content-section p {
+                font-size: 16px;
+                line-height: 1.6;
             }
 
             /* Chat messages */
@@ -652,25 +688,39 @@
 
             /* User profile */
             .user-profile {
-                padding: 16px;
+                padding: 20px;
+            }
+
+            .user-avatar {
+                width: 48px;
+                height: 48px;
+                font-size: 18px;
             }
 
             .user-name {
-                font-size: 15px;
+                font-size: 17px;
             }
 
             .user-role {
-                font-size: 12px;
+                font-size: 14px;
             }
 
             /* Navigation links */
             .sidebar-link {
-                padding: 12px 16px;
-                font-size: 15px;
+                padding: 16px 20px;
+                font-size: 16px;
+                min-height: 52px;
+                display: flex;
+                align-items: center;
+            }
+
+            .sidebar-link-icon {
+                font-size: 22px;
             }
 
             .nav-section-title {
-                font-size: 11px;
+                font-size: 13px;
+                padding: 12px 20px 10px;
             }
 
             /* Notificações */
@@ -690,26 +740,26 @@
         /* Extra small devices */
         @media (max-width: 480px) {
             .auth-container {
-                padding: 20px 16px;
-                margin: 10px;
+                padding: 28px 20px;
+                margin: 12px;
             }
 
             .card {
-                padding: 16px;
+                padding: 20px;
             }
 
             .card-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
             }
 
             .card-value {
-                font-size: 24px;
+                font-size: 28px;
             }
 
             .content-section h2 {
-                font-size: 20px !important;
+                font-size: 24px !important;
             }
 
             .btn-primary {
@@ -717,9 +767,18 @@
             }
 
             .mobile-menu-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 22px;
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+
+            .stats-table {
+                font-size: 14px;
+            }
+
+            .stats-table th,
+            .stats-table td {
+                padding: 12px 8px;
             }
         }
 
