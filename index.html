@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema Premium de Chat com IA - Gest\u00e3o inteligente de clientes e relat\u00f3rios">
+    <meta name="keywords" content="chat, ia, gpt-4, gest\u00e3o, clientes, relat\u00f3rios">
+    <meta name="author" content="Chat AI Pro">
+    <title>Chat AI Pro - Sistema Premium de Gest\u00e3o com IA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/20qFKr1.png">
+    <meta name="theme-color" content="#DC2626">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-white: #FFFFFF;
+            --red-primary: #DC2626;
+            --red-hover: #B91C1C;
+            --text-dark: #1F2937;
+            --text-secondary: #6B7280;
+            --border: #E5E7EB;
+            --bg-light: #F9FAFB;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-white);
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-right: auto;
+        }
+
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--red-primary);
+        }
+
+        .header-search {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--red-primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            color: var(--red-primary);
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-light);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--red-primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border);
+            padding: 24px 0;
+            position: fixed;
+            left: 0;
+            top: 64px;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            padding: 0 24px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover {
+            background: var(--bg-light);
+        }
+
+        .sidebar-link.active {
+            background: var(--bg-light);
+            color: var(--red-primary);
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--red-primary);
+        }
+
+        .sidebar-icon {
+            font-size: 20px;
+            color: var(--red-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px;
+            background: var(--bg-white);
+        }
+
+        /* Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--red-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .card-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            height: calc(100vh - 250px);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .chat-options {
+            display: flex;
+            gap: 12px;
+        }
+
+        .option-select {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-dark);
+            background: var(--bg-white);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-select:hover {
+            border-color: var(--red-primary);
+        }
+
+        .option-select:focus {
+            outline: none;
+            border-color: var(--red-primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .message.user .message-avatar {
+            background: var(--red-primary);
+            color: white;
+        }
+
+        .message.ai .message-avatar {
+            background: var(--bg-light);
+            color: var(--red-primary);
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .message-text {
+            background: var(--bg-light);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .message.user .message-text {
+            background: rgba(220, 38, 38, 0.05);
+            border-color: rgba(220, 38, 38, 0.2);
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            resize: none;
+            max-height: 120px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--red-primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            padding: 12px 24px;
+            background: var(--red-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: var(--red-hover);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            padding: 12px 24px;
+            background: var(--bg-white);
+            color: var(--red-primary);
+            border: 1px solid var(--red-primary);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(220, 38, 38, 0.05);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--red-primary);
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            min-width: 300px;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left-color: #10B981;
+        }
+
+        .notification.error {
+            border-left-color: var(--red-primary);
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(220, 38, 38, 0.2);
+            border-top-color: var(--red-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Auth Page */
+        .auth-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: var(--bg-white);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .auth-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--red-primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px rgba(0,0,0,0.15);
+            max-width: 90%;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 48px;
+            text-align: center;
+            background: var(--bg-light);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: var(--red-primary);
+            background: rgba(220, 38, 38, 0.02);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--red-primary);
+            background: rgba(220, 38, 38, 0.05);
+        }
+
+        .file-item {
+            background: var(--bg-white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            box-shadow: var(--shadow);
+        }
+
+        .file-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--red-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .file-meta {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .file-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .file-btn.read {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--red-primary);
+        }
+
+        .file-btn.read:hover {
+            background: rgba(220, 38, 38, 0.2);
+        }
+
+        .file-btn.delete {
+            background: var(--bg-light);
+            color: var(--text-secondary);
+        }
+
+        .file-btn.delete:hover {
+            background: var(--border);
+        }
+
+        .usage-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .usage-table th,
+        .usage-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .usage-table th {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .usage-table td {
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .usage-table tr:hover {
+            background: var(--bg-light);
+        }
+
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-size: 13px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .chart-bar-bg {
+            flex: 1;
+            height: 24px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0 12px;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--red-primary), var(--red-hover));
+            transition: width 0.5s ease-out;
+        }
+
+        .chart-value {
+            width: 60px;
+            text-align: right;
+            font-size: 13px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header-search {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <!-- GPT API Key Modal -->
+    <div class="modal" id="gptKeyModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: var(--text-dark); margin: 0;">🔑 Configurar Chave GPT-4</h3>
+                <button onclick="closeGPTKeyModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary);">&times;</button>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                Para usar o GPT-4, insira sua chave API da OpenAI. Ela será armazenada localmente no seu navegador.
+            </p>
+            <div class="form-group">
+                <label class="form-label">Chave API OpenAI</label>
+                <input type="password" class="form-input" id="gptKeyInput" placeholder="sk-proj-...">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-secondary" onclick="closeGPTKeyModal()" style="flex: 1;">Cancelar</button>
+                <button class="btn-primary" onclick="saveGPTKey()" style="flex: 1;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Page -->
+    <div class="auth-page" id="authPage">
+        <!-- Login Form -->
+        <div class="auth-container" id="loginForm">
+            <div class="auth-logo">
+                <img src="https://i.imgur.com/20qFKr1.png" alt="Logo">
+            </div>
+            <h1 class="auth-title">Bem-vindo</h1>
+            <p class="auth-subtitle">Faça login para continuar</p>
+
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" value="nathiely@empresa.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" class="form-input" id="loginPassword" value="Nathiely@2025" required>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    Entrar
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--text-secondary); font-size: 14px;">
+                    Não tem uma conta? 
+                    <a href="#" onclick="showRegisterForm(event)" style="color: var(--red-primary); font-weight: 600; text-decoration: none;">Criar conta</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-container hidden" id="registerForm">
+            <div class="auth-logo">
+                <img src="https://i.imgur.com/20qFKr1.png" alt="Logo">
+            </div>
+            <h1 class="auth-title">Criar Conta</h1>
+            <p class="auth-subtitle">Preencha os dados para se registrar</p>
+
+            <form onsubmit="register(event)">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" class="form-input" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" class="form-input" id="registerPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmar Senha</label>
+                    <input type="password" class="form-input" id="registerPasswordConfirm" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Conta</label>
+                    <select class="form-input" id="registerRole" required>
+                        <option value="user">Usuário</option>
+                        <option value="vendedor">Vendedor</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    Criar Conta
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--text-secondary); font-size: 14px;">
+                    Já tem uma conta? 
+                    <a href="#" onclick="showLoginForm(event)" style="color: var(--red-primary); font-weight: 600; text-decoration: none;">Fazer login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="hidden" id="mainApp">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-container">
+                <img src="https://i.imgur.com/20qFKr1.png" alt="Logo" class="logo">
+                <span class="logo-text">Chat AI Pro</span>
+            </div>
+
+            <div class="header-search">
+                <input type="text" class="search-input" placeholder="Buscar...">
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-btn" onclick="openGPTKeyModal()" title="Configurar GPT-4">
+                    🔑
+                </button>
+                <button class="icon-btn" onclick="showNotification('Nenhuma notificação nova', 'info')">
+                    🔔
+                </button>
+                <div class="user-avatar" onclick="logout()">
+                    A
+                </div>
+            </div>
+        </header>
+
+        <!-- Layout -->
+        <div class="layout">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Menu</div>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link active" data-section="dashboard" onclick="navigateTo(event, 'dashboard')">
+                                <span class="sidebar-icon">🏠</span>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link" data-section="ia" onclick="navigateTo(event, 'ia')">
+                                <span class="sidebar-icon">🤖</span>
+                                IA Assistant
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link" data-section="arquivos" onclick="navigateTo(event, 'arquivos')">
+                                <span class="sidebar-icon">📁</span>
+                                Arquivos
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link" data-section="relatorios" onclick="navigateTo(event, 'relatorios')">
+                                <span class="sidebar-icon">📊</span>
+                                Relatórios
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Configurações</div>
+                    <ul class="sidebar-menu">
+                        <li class="sidebar-item" id="usersMenuItem" style="display: none;">
+                            <a href="#" class="sidebar-link" data-section="usuarios" onclick="navigateTo(event, 'usuarios')">
+                                <span class="sidebar-icon">👥</span>
+                                Usuários
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link" data-section="configuracoes" onclick="navigateTo(event, 'configuracoes')">
+                                <span class="sidebar-icon">⚙️</span>
+                                Configurações
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link" onclick="logout()">
+                                <span class="sidebar-icon">🚪</span>
+                                Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Section -->
+                <div class="content-section" id="dashboardSection">
+                    <!-- Cards -->
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">👥</div>
+                                <div class="card-title">Novos Clientes</div>
+                            </div>
+                            <div class="card-value">324</div>
+                            <div class="card-label">Últimos 30 dias</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📋</div>
+                                <div class="card-title">Não Cobertos</div>
+                            </div>
+                            <div class="card-value">42</div>
+                            <div class="card-label">Pendentes</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">💬</div>
+                                <div class="card-title">Conversas</div>
+                            </div>
+                            <div class="card-value">1,234</div>
+                            <div class="card-label">Total de mensagens</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">⭐</div>
+                                <div class="card-title">Satisfação</div>
+                            </div>
+                            <div class="card-value">98%</div>
+                            <div class="card-label">Taxa de aprovação</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IA Assistant Section -->
+                <div class="content-section hidden" id="iaSection">
+                    <!-- Chat Container -->
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <div class="chat-title">🤖 Assistente IA com GPT-4</div>
+                            <div class="chat-options">
+                                <select class="option-select" id="optionSelect" onchange="handleOptionChange()">
+                                    <option value="">Selecione uma opção...</option>
+                                    <option value="novos_clientes">Novos Clientes</option>
+                                    <option value="nao_cobertos">Não Cobertos</option>
+                                    <option value="analise_dados">Análise de Dados</option>
+                                    <option value="relatorio">Gerar Relatório</option>
+                                    <option value="suporte">Suporte Técnico</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="messages-area" id="messagesArea">
+                            <div class="message ai">
+                                <div class="message-avatar">🤖</div>
+                                <div class="message-content">
+                                    <div class="message-header">
+                                        <span class="message-sender">GPT-4 Assistant</span>
+                                        <span class="message-time">Agora</span>
+                                    </div>
+                                    <div class="message-text">
+                                        Olá! 👋 Sou seu assistente inteligente com GPT-4. Posso ajudar com:
+                                        <br><br>
+                                        • Análise de novos clientes<br>
+                                        • Gestão de não cobertos<br>
+                                        • Geração de relatórios<br>
+                                        • Suporte técnico<br>
+                                        • <strong>/graficos</strong> - Gerar gráficos de desempenho<br>
+                                        <br>
+                                        Selecione uma opção acima ou digite sua pergunta!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <div class="input-wrapper">
+                                <textarea class="chat-input" id="chatInput" placeholder="Digite sua mensagem ou /graficos para gerar gráficos..." rows="1" onkeydown="handleKeyPress(event)"></textarea>
+                                <button class="btn-primary" onclick="sendMessage()" id="sendBtn">
+                                    Enviar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arquivos Section -->
+                <div class="content-section hidden" id="arquivosSection">
+                    <h2 style="margin-bottom: 24px; color: var(--text-dark); font-size: 24px;">📁 Gerenciador de Arquivos</h2>
+                    
+                    <!-- Upload Area -->
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+                            <h3 style="color: var(--text-dark); margin-bottom: 8px;">Arraste arquivos aqui</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 16px;">ou clique para selecionar</p>
+                            <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
+                            <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+                                Escolher Arquivos
+                            </button>
+                            <p style="color: var(--text-secondary); margin-top: 12px; font-size: 13px;">
+                                Suporta: PDF, DOC, DOCX, TXT, CSV, XLS, XLSX, PNG, JPG
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Files List -->
+                    <div id="filesList" style="margin-top: 24px;"></div>
+                </div>
+
+                <!-- Usuários Section (Admin Only) -->
+                <div class="content-section hidden" id="usuariosSection">
+                    <h2 style="margin-bottom: 24px; color: var(--text-dark); font-size: 24px;">👥 Gerenciar Usuários</h2>
+                    
+                    <div class="card" style="padding: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="color: var(--text-dark); margin: 0;">Lista de Usuários</h3>
+                            <button class="btn-primary" onclick="showRegisterModal()">
+                                ➕ Novo Usuário
+                            </button>
+                        </div>
+                        <div id="usersList"></div>
+                    </div>
+                </div>
+
+                <!-- Configurações Section -->
+                <div class="content-section hidden" id="configuracoesSection">
+                    <h2 style="margin-bottom: 24px; color: var(--text-dark); font-size: 24px;">⚙️ Configurações</h2>
+                    
+                    <div class="card" style="padding: 24px;">
+                        <h3 style="color: var(--text-dark); margin-bottom: 20px;">Informações da Conta</h3>
+                        <div class="form-group">
+                            <label class="form-label">Nome</label>
+                            <input type="text" class="form-input" id="settingsName" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="settingsEmail" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Conta</label>
+                            <input type="text" class="form-input" id="settingsRole" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Relatórios Section -->
+                <div class="content-section hidden" id="relatoriosSection">
+                    <h2 style="margin-bottom: 24px; color: var(--text-dark); font-size: 24px;">📊 Relatórios e Análises</h2>
+                    
+                    <div class="cards-grid">
+                        <div class="card" style="cursor: pointer;" onclick="showNotification('Gerando relatório de vendas...', 'info')">
+                            <div class="card-header">
+                                <div class="card-icon">💰</div>
+                                <div class="card-title">Vendas</div>
+                            </div>
+                            <div class="card-label">Relatório mensal</div>
+                        </div>
+
+                        <div class="card" style="cursor: pointer;" onclick="showNotification('Gerando relatório de clientes...', 'info')">
+                            <div class="card-header">
+                                <div class="card-icon">👥</div>
+                                <div class="card-title">Clientes</div>
+                            </div>
+                            <div class="card-label">Análise completa</div>
+                        </div>
+
+                        <div class="card" style="cursor: pointer;" onclick="showNotification('Gerando relatório financeiro...', 'info')">
+                            <div class="card-header">
+                                <div class="card-icon">📈</div>
+                                <div class="card-title">Financeiro</div>
+                            </div>
+                            <div class="card-label">Demonstrativo</div>
+                        </div>
+
+                        <div class="card" style="cursor: pointer;" onclick="showNotification('Gerando relatório de desempenho...', 'info')">
+                            <div class="card-header">
+                                <div class="card-icon">⚡</div>
+                                <div class="card-title">Desempenho</div>
+                            </div>
+                            <div class="card-label">KPIs e métricas</div>
+                        </div>
+                    </div>
+
+                    <!-- Tempo de Uso (Admin Only) -->
+                    <div id="tempoUsoSection" class="hidden" style="margin-top: 32px;">
+                        <div class="card" style="padding: 24px;">
+                            <h3 style="color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 24px;">⏱️</span>
+                                Tempo de Uso da Plataforma
+                            </h3>
+                            <div id="usageStats"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // CONFIGURAÇÕES
+        // ========================================
+        const API_URL = 'https://chat-ai-backend-lox5.onrender.com';
+        
+        // Função para obter a chave GPT-4 de forma segura
+        function getGPTKey() {
+            return localStorage.getItem('gpt_api_key') || '';
+        }
+        
+        function setGPTKey(key) {
+            localStorage.setItem('gpt_api_key', key);
+            showNotification('Chave GPT-4 configurada com sucesso!', 'success');
+        }
+
+        let authToken = localStorage.getItem('token');
+        let currentUser = JSON.parse(localStorage.getItem('user'));
+        let conversationHistory = [];
+        let currentOption = '';
+        let uploadedFiles = [];
+        let sessionStartTime = Date.now();
+
+        // ========================================
+        // INICIALIZAÇÃO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDefaultUsers();
+            if (authToken) {
+                showMainApp();
+                initializeUsageTracking();
+                setupDragAndDrop();
+            }
+        });
+
+        function initializeDefaultUsers() {
+            // Cria 4 usuários admin padrão se não existirem
+            let users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            
+            const defaultAdmins = [
+                {
+                    id: 'admin_1',
+                    name: 'Nathiely',
+                    email: 'nathiely@empresa.com',
+                    password: 'Nathiely@2025',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                },
+                {
+                    id: 'admin_2',
+                    name: 'Roberto Felix',
+                    email: 'roberto.felix@empresa.com',
+                    password: 'Roberto@2025',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                },
+                {
+                    id: 'admin_3',
+                    name: 'Jefferson',
+                    email: 'jefferson@empresa.com',
+                    password: 'Jefferson@2025',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                },
+                {
+                    id: 'admin_4',
+                    name: 'Admin Geral',
+                    email: 'admin@example.com',
+                    password: 'Admin123!',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                }
+            ];
+
+            // Adiciona admins padrão se não existirem
+            defaultAdmins.forEach(admin => {
+                const exists = users.find(u => u.email === admin.email);
+                if (!exists) {
+                    users.push(admin);
+                }
+            });
+
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+
+        function initializeUsageTracking() {
+            // Registrar início da sessão
+            const sessions = JSON.parse(localStorage.getItem('userSessions') || '[]');
+            sessions.push({
+                user: currentUser.email,
+                startTime: sessionStartTime,
+                endTime: null
+            });
+            localStorage.setItem('userSessions', JSON.stringify(sessions));
+
+            // Atualizar tempo de uso quando fechar
+            window.addEventListener('beforeunload', () => {
+                updateSessionEndTime();
+            });
+
+            // Mostrar seção de tempo de uso se for admin
+            if (currentUser && currentUser.role === 'admin') {
+                document.getElementById('tempoUsoSection').classList.remove('hidden');
+                loadUsageStats();
+            }
+        }
+
+        function updateSessionEndTime() {
+            const sessions = JSON.parse(localStorage.getItem('userSessions') || '[]');
+            const lastSession = sessions[sessions.length - 1];
+            if (lastSession && !lastSession.endTime) {
+                lastSession.endTime = Date.now();
+                localStorage.setItem('userSessions', JSON.stringify(sessions));
+            }
+        }
+
+        function loadUsageStats() {
+            const sessions = JSON.parse(localStorage.getItem('userSessions') || '[]');
+            const userStats = {};
+
+            sessions.forEach(session => {
+                if (!userStats[session.user]) {
+                    userStats[session.user] = {
+                        totalTime: 0,
+                        sessions: 0,
+                        lastAccess: session.startTime
+                    };
+                }
+
+                if (session.endTime) {
+                    userStats[session.user].totalTime += (session.endTime - session.startTime);
+                } else {
+                    // Sessão ainda ativa
+                    userStats[session.user].totalTime += (Date.now() - session.startTime);
+                }
+                
+                userStats[session.user].sessions++;
+                if (session.startTime > userStats[session.user].lastAccess) {
+               Verifica comando de gráficos
+            if (message.toLowerCase().includes('/graficos') || message.toLowerCase().includes('/gráficos')) {
+                addMessage(message, 'user');
+                input.value = '';
+                generateCharts();
+                return;
+            }
+
+            // Adiciona mensagem do usuário
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Desabilita botão
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+
+            // Envia para GPT-4
+            await sendToGPT4(message);
+
+            // Reabilita botão
+            btn.disabled = false;
+            btn.innerHTML = 'Enviar';
+        }
+
+        function generateCharts() {
+            const chartHTML = `
+                <div class="chart-container">
+                    <h4 style="color: var(--text-dark); margin-bottom: 16px;">📊 Gráficos de Desempenho</h4>
+                    
+                    <div class="chart-bar">
+                        <div class="chart-label">Vendas</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 85%"></div>
+                        </div>
+                        <div class="chart-value">85%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Novos Clientes</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 72%"></div>
+                        </div>
+                        <div class="chart-value">72%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Satisfação</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 98%"></div>
+                        </div>
+                        <div class="chart-value">98%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Conversões</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 64%"></div>
+                        </div>
+                        <div class="chart-value">64%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Retenção</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 91%"></div>
+                        </div>
+                        <div class="chart-value">91%</div>
+                    </div>
+                </div>
+            `;
+
+            const container = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-sender">GPT-4 Assistant</span>
+                        <span class="message-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div class="message-text">
+                        Aqui estão os gráficos de desempenho atualizados:
+                        ${chartHTML}
+                        <br>
+                        Os dados mostram um excelente desempenho geral, com destaque para a taxa de satisfação de 98% e retenção de 91%.
+                    </div>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+
+            showNotification('Gráficos gerados com sucesso!', 'success')>';
+            html += '<th>Último Acesso</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            Object.keys(userStats).forEach(user => {
+                const stats = userStats[user];
+                const hours = Math.floor(stats.totalTime / 3600000);
+                const minutes = Math.floor((stats.totalTime % 3600000) / 60000);
+                const lastAccess = new Date(stats.lastAccess).toLocaleString('pt-BR');
+
+                html += '<tr>';
+                html += `<td><strong>${user}</strong></td>`;
+                html += `<td>${hours}h ${minutes}min</td>`;
+                html += `<td>${stats.sessions}</td>`;
+                html += `<td>${lastAccess}</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ========================================
+        // AUTENTICAÇÃO
+        // ========================================
+        async function login(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.access_token;
+                    currentUser = { email, role: data.role || 'user' };
+                    localStorage.setItem('token', authToken);
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    showMainApp();
+                    showNotification('Login realizado com sucesso!', 'success');
+                } else {
+                    showNotification(data.detail || 'Erro ao fazer login', 'error');
+                }
+            } catch (error) {
+                cnavigateTo(e, section) {
+            e.preventDefault();
+            
+            // Atualiza menu ativo
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            e.currentTarget.classList.add('active');
+
+            // Esconde todas as seções
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            // Mostra seção selecionada
+            document.getElementById(section + 'Section').classList.remove('hidden');
+
+            // Se for relatórios, atualiza stats de uso
+            if (section === 'relatorios' && currentUser && currentUser.role === 'admin') {
+                loadUsageStats();
+            }
+            
+            // Se for usuários, carrega lista
+            if (section === 'usuarios' && currentUser && currentUser.role === 'admin') {
+                loadUsersList();
+            }
+        }
+
+        // ========================================
+        // UPLOAD E LEITURA DE ARQUIVOS
+        // ========================================
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+        }
+
+        function handleFileSelect(event) {
+            handleFiles(event.target.files);
+        }
+
+        function handleFiles(files) {
+            for (let file of files) {
+                uploadFile(file);
+            }
+        }
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                showNotification(`Enviando ${file.name}...`, 'info');
+
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    uploadedFiles.push({
+                        id: data.file_id || Date.now(),
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        uploadDate: new Date(),
+                        file: file
+                    });
+                    
+                    displayFiles();
+                    showNotification(`${file.name} enviado com sucesso!`, 'success');
+                } else {
+                    throw new Error(data.detail || 'Erro no upload');
+                }
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                showNotification(`Erro ao enviar ${file.name}`, 'error');
+            }
+        }
+
+        function displayFiles() {
+            const container = document.getElementById('filesList');
+            
+            if (uploadedFiles.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum arquivo enviado ainda</p>';
+                return;
+            }
+
+            let html = '';
+            uploadedFiles.forEach((file, index) => {
+                const icon = getFileIcon(file.name);
+                const size = formatFileSize(file.size);
+                const date = file.uploadDate.toLocaleString('pt-BR');
+
+                html += `
+                    <div class="file-item">
+                        <div class="file-icon">${icon}</div>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">${size} • ${date}</div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-btn read" onclick="readFile(${index})">
+                                📖 Ler
+                            </button>
+                            <button class="file-btn delete" onclick="deleteFile(${index})">
+                                🗑️ Excluir
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': '📕',
+                'doc': '📘',
+                'docx': '📘',
+                'txt': '📄',
+                'csv': '📊',
+                'xls': '📊',
+                'xlsx': '📊',
+                'png': '🖼️',
+                'jpg': '🖼️',
+                'jpeg': '🖼️',
+                'gif': '🖼️'
+            };
+            return icons[ext] || '📎';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        async function readFile(index) {
+            const file = uploadedFiles[index];
+            showNotification(`Lendo ${file.name}...`, 'info');
+
+            try {
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    const content = e.target.result;
+                    let text = '';
+
+                    // Extrai texto baseado no tipo
+                    if (file.name.endsWith('.txt') || file.name.endsWith('.csv')) {
+                        text = content;
+                    } else if (file.name.endsWith('.pdf')) {
+                        text = 'Conteúdo do PDF (utilize uma biblioteca específica para leitura completa)';
+                        showNotification('Arquivo PDF detectado. Resumo disponível.', 'info');
+                    } else if (file.name.endsWith('.doc') || file.name.endsWith('.docx')) {
+                        text = 'Conteúdo do documento Word';
+                        showNotification('Documento Word detectado. Resumo disponível.', 'info');
+                    } else {
+                        text = 'Arquivo binário ou formato não suportado para visualização direta';
+                    }
+
+                    // Cria modal com conteúdo
+                    showFileContent(file.name, text);
+                    
+                    // Envia para GPT-4 para análise
+                    if (text.length > 0 && text.length < 10000) {
+                        await analyzeFileWithGPT(file.name, text);
+                    }
+                };
+
+                reader.readAsText(file.file);
+            } catch (error) {
+                console.error('Erro ao ler arquivo:', error);
+                showNotification('Erro ao ler arquivo', 'error');
+            }
+        }
+
+        function showFileContent(filename, content) {
+            const preview = content.substring(0, 1000);
+            const message = `
+                <div style="background: var(--bg-white); padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="color: var(--text-dark); margin-bottom: 12px;">📄 ${filename}</h4>
+                    <pre style="background: var(--bg-light); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; color: var(--text-dark); white-space: pre-wrap;">${preview}${content.length > 1000 ? '...' : ''}</pre>
+                    ${content.length > 1000 ? `<p style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">Mostrando primeiros 1000 caracteres de ${content.length}</p>` : ''}
+                </div>
+            `;
+            
+            showNotification('Arquivo lido com sucesso!', 'success');
+            
+            // Se estiver na aba de IA, adiciona ao chat
+            const iaSection = document.getElementById('iaSection');
+            if (!iaSection.classList.contains('hidden')) {
+                addMessage(`Ler arquivo: ${filename}`, 'user');
+                addMessage(message, 'ai');
+            }
+        }
+
+        async function analyzeFileWithGPT(filename, content) {
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GPT_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [
+                            { 
+                                role: 'system', 
+                                content: 'Você é um assistente que analisa documentos e fornece resumos e insights.' 
+                            },
+                            { 
+                                role: 'user', 
+                                content: `Analise o seguinte arquivo "${filename}" e forneça um resumo e insights importantes:\n\n${content.substring(0, 4000)}` 
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const analysis = data.choices[0].message.content;
+                    addMessage(`📊 Análise de ${filename}:\n\n${analysis}`, 'ai');
+                }
+            } catch (error) {
+                console.error('Erro ao analisar arquivo:', error);
+            }
+        }
+
+        function deleteFile(index) {
+            if (confirm(`Deseja excluir ${uploadedFiles[index].name}?`)) {
+                const filename = uploadedFiles[index].name;
+                uploadedFiles.splice(index, 1);
+                displayFiles();
+                showNotification(`${filename} excluído`, 'success');
+            }
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('authPage').classList.remove('hidden');
+            showNotification('Logout realizado!', 'info');
+        }
+
+        function showMainApp() {
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            // Mostra menu de usuários apenas para admin
+            if (currentUser && currentUser.role === 'admin') {
+                document.getElementById('usersMenuItem').style.display = 'block';
+            }
+            
+            // Preenche configurações
+            if (currentUser) {
+                document.getElementById('settingsName').value = currentUser.name || 'Usuário';
+                document.getElementById('settingsEmail').value = currentUser.email;
+                document.getElementById('settingsRole').value = currentUser.role === 'admin' ? 'Administrador' : currentUser.role === 'vendedor' ? 'Vendedor' : 'Usuário';
+            }
+        }
+
+        function loadUsersList() {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const container = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum usuário cadastrado</p>';
+                return;
+            }
+
+            let html = '<table class="usage-table">';
+            html += '<thead><tr>';
+            html += '<th>Nome</th>';
+            html += '<th>Email</th>';
+            html += '<th>Tipo</th>';
+            html += '<th>Cadastro</th>';
+            html += '<th>Ações</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            users.forEach((user, index) => {
+                const roleText = user.role === 'admin' ? '👑 Admin' : user.role === 'vendedor' ? '💼 Vendedor' : '👤 Usuário';
+                const createdDate = new Date(user.createdAt).toLocaleDateString('pt-BR');
+                
+                html += '<tr>';
+                html += `<td><strong>${user.name}</strong></td>`;
+                html += `<td>${user.email}</td>`;
+                html += `<td>${roleText}</td>`;
+                html += `<td>${createdDate}</td>`;
+                html += `<td>`;
+                if (currentUser.email !== user.email) {
+                    html += `<button class="file-btn delete" onclick="deleteUser('${user.email}')">🗑️ Excluir</button>`;
+                } else {
+                    html += '<span style="color: var(--text-secondary); font-size: 13px;">Você</span>';
+                }
+                html += `</td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function deleteUser(email) {
+            if (!confirm(`Deseja realmente excluir o usuário ${email}?`)) {
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            users = users.filter(u => u.email !== email);
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+            
+            loadUsersList();
+            showNotification('Usuário excluído com sucesso', 'success');
+        }
+
+        function showRegisterModal() {
+            showNotification('Use o formulário de registro na tela de login para criar novos usuários', 'info');
+        }
+
+        // ========================================
+        // CHAT COM GPT-4
+        // ========================================
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Adiciona mensagem do usuário
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Desabilita botão
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+
+            // Envia para GPT-4
+            await sendToGPT4(message);
+
+            // Reabilita botão
+            btn.disabled = false;
+            btn.innerHTML = 'Enviar';
+        }
+
+        async function sendToGPT4(message) {
+            const apiKey = getGPTKey();
+            
+            if (!apiKey) {
+                addMessage('⚠️ Configure sua chave API do GPT-4 para usar o assistente inteligente.', 'ai');
+                showNotification('Chave GPT-4 não configurada', 'error');
+                setTimeout(() => {
+                    document.getElementById('gptKeyModal').style.display = 'flex';
+                }, 500);
+                return;
+            }
+
+            try {
+                // Adiciona contexto da opção selecionada
+                let systemMessage = 'Você é um assistente inteligente para um sistema de gestão.';
+                
+                if (currentOption === 'novos_clientes') {
+                    systemMessage += ' Foque em análise e gestão de novos clientes.';
+                } else if (currentOption === 'nao_cobertos') {
+                    systemMessage += ' Foque em identificar e resolver casos não cobertos.';
+                } else if (currentOption === 'analise_dados') {
+                    systemMessage += ' Foque em análise detalhada de dados e métricas.';
+                } else if (currentOption === 'relatorio') {
+                    systemMessage += ' Foque em gerar relatórios profissionais e detalhados.';
+                } else if (currentOption === 'suporte') {
+                    systemMessage += ' Foque em fornecer suporte técnico claro e eficiente.';
+                }
+
+                conversationHistory.push({
+                    role: 'user',
+                    content: message
+                });
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [
+                            { role: 'system', content: systemMessage },
+                            ...conversationHistory
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const aiResponse = data.choices[0].message.content;
+                    conversationHistory.push({
+                        role: 'assistant',
+                        content: aiResponse
+                    });
+                    addMessage(aiResponse, 'ai');
+                } else if (response.status === 401) {
+                    throw new Error('Chave API inválida. Verifique sua configuração.');
+                } else {
+                    throw new Error(data.error?.message || 'Erro ao conectar com GPT-4');
+                }
+            } catch (error) {
+                console.error('Erro GPT-4:', error);
+                addMessage('Desculpe, houve um erro ao processar sua mensagem. ' + error.message, 'ai');
+                showNotification(error.message || 'Erro ao conectar com GPT-4', 'error');
+            }
+        }
+
+        function openGPTKeyModal() {
+            const currentKey = getGPTKey();
+            document.getElementById('gptKeyInput').value = currentKey;
+            document.getElementById('gptKeyModal').style.display = 'flex';
+        }
+
+        function closeGPTKeyModal() {
+            document.getElementById('gptKeyModal').style.display = 'none';
+        }
+
+        function saveGPTKey() {
+            const key = document.getElementById('gptKeyInput').value.trim();
+            if (!key) {
+                showNotification('Digite uma chave válida', 'error');
+                return;
+            }
+            if (!key.startsWith('sk-')) {
+                showNotification('Chave inválida. Deve começar com "sk-"', 'error');
+                return;
+            }
+            setGPTKey(key);
+            closeGPTKeyModal();
+        }
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('messagesArea');
+            const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            // Sanitiza HTML para prevenir XSS, mas permite alguns elementos seguros
+            const sanitizedText = sender === 'ai' ? text : escapeHtml(text);
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${sender === 'user' ? '👤' : '🤖'}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-sender">${sender === 'user' ? 'Você' : 'GPT-4 Assistant'}</span>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="message-text">${sanitizedText.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // ========================================
+        // OPÇÕES
+        // ========================================
+        function handleOptionChange() {
+            const select = document.getElementById('optionSelect');
+            currentOption = select.value;
+            
+            if (!currentOption) return;
+
+            const optionMessages = {
+                'novos_clientes': 'Você selecionou: Novos Clientes. Como posso ajudar com a análise ou gestão de novos clientes?',
+                'nao_cobertos': 'Você selecionou: Não Cobertos. Posso ajudar a identificar padrões e sugerir soluções.',
+                'analise_dados': 'Você selecionou: Análise de Dados. Pronto para analisar métricas e gerar insights.',
+                'relatorio': 'Você selecionou: Gerar Relatório. Que tipo de relatório você precisa?',
+                'suporte': 'Você selecionou: Suporte Técnico. Qual problema você está enfrentando?'
+            };
+
+            addMessage(optionMessages[currentOption], 'ai');
+            showNotification(`Opção selecionada: ${select.options[select.selectedIndex].text}`, 'success');
+        }
+
+        // ========================================
+        // UI HELPERS
+        // ========================================
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <strong>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</strong>
+                ${message}
+            `;
+            container.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function setActiveMenu(e) {
+            e.preventDefault();
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            e.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

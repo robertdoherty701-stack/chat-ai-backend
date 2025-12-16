@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Teste de Login - Debug</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .log-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid transparent;
+        }
+
+        .log-entry.info {
+            background: rgba(102, 126, 234, 0.1);
+            border-left-color: #667eea;
+            color: #333;
+        }
+
+        .log-entry.success {
+            background: rgba(56, 239, 125, 0.1);
+            border-left-color: #38ef7d;
+            color: #155724;
+        }
+
+        .log-entry.error {
+            background: rgba(255, 71, 87, 0.1);
+            border-left-color: #ff4757;
+            color: #721c24;
+        }
+
+        .log-entry.warning {
+            background: rgba(255, 165, 2, 0.1);
+            border-left-color: #ffa502;
+            color: #856404;
+        }
+
+        .credentials {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .credentials strong {
+            color: #667eea;
+        }
+
+        .credentials code {
+            background: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+        }
+
+        .quick-fill {
+            display: inline-block;
+            margin-top: 5px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+        }
+
+        .quick-fill:hover {
+            color: #764ba2;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.checking {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Teste de Login <span class="status checking" id="status">Verificando...</span></h1>
+        <p class="subtitle">Debug completo do sistema de autenticação</p>
+
+        <div class="credentials">
+            <strong>📧 Credenciais Padrão:</strong><br>
+            Email: <code>admin@example.com</code><br>
+            Senha: <code>Admin123!</code>
+            <br><br>
+            <span class="quick-fill" onclick="fillCredentials()">👆 Preencher automaticamente</span>
+        </div>
+
+        <form id="loginForm" onsubmit="login(event)">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" required placeholder="admin@example.com">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="password" required placeholder="Admin123!">
+            </div>
+            <button type="submit" class="btn" id="loginBtn">
+                🔓 Fazer Login
+            </button>
+        </form>
+
+        <button class="btn" onclick="testConnection()" style="background: #38ef7d;">
+            🔌 Testar Conexão Backend
+        </button>
+
+        <div class="log-container">
+            <div class="log-title">📋 Log de Debug</div>
+            <div id="logContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chat-ai-backend-lox5.onrender.com';
+        let logEntries = [];
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            logEntries.push({ message, type, timestamp });
+            
+            const logContent = document.getElementById('logContent');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logContent.appendChild(entry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        function fillCredentials() {
+            document.getElementById('email').value = 'admin@example.com';
+            document.getElementById('password').value = 'Admin123!';
+            addLog('✅ Credenciais preenchidas automaticamente', 'success');
+        }
+
+        async function testConnection() {
+            addLog('🔌 Testando conexão com backend...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/docs`, {
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                
+                addLog('✅ Backend está respondendo!', 'success');
+                addLog(`📡 URL: ${API_URL}`, 'info');
+                document.getElementById('status').textContent = 'Online';
+                document.getElementById('status').className = 'status online';
+                
+                // Testar endpoint de login
+                await testLoginEndpoint();
+                
+            } catch (error) {
+                addLog(`❌ Erro de conexão: ${error.message}`, 'error');
+                document.getElementById('status').textContent = 'Offline';
+                document.getElementById('status').className = 'status offline';
+            }
+        }
+
+        async function testLoginEndpoint() {
+            addLog('🔍 Testando endpoint /auth/login...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type'
+                    }
+                });
+                
+                addLog('✅ Endpoint /auth/login acessível', 'success');
+            } catch (error) {
+                addLog(`⚠️ Preflight pode estar bloqueado: ${error.message}`, 'warning');
+            }
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Entrando...';
+            
+            addLog('🔐 Iniciando login...', 'info');
+            addLog(`📧 Email: ${email}`, 'info');
+            addLog(`🔑 Senha: ${'*'.repeat(password.length)}`, 'info');
+            
+            try {
+                addLog('📤 Enviando requisição para backend...', 'info');
+                
+                const requestBody = { email, password };
+                addLog(`📦 Body: ${JSON.stringify(requestBody)}`, 'info');
+                
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                addLog(`📬 Resposta recebida - Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                const data = await response.json();
+                addLog(`📄 Dados: ${JSON.stringify(data).substring(0, 100)}...`, 'info');
+                
+                if (response.ok) {
+                    addLog('✅ LOGIN BEM-SUCEDIDO! 🎉', 'success');
+                    addLog(`🎫 Access Token: ${data.access_token.substring(0, 30)}...`, 'success');
+                    addLog(`👤 User ID: ${data.user_id || 'N/A'}`, 'success');
+                    addLog(`⏰ Expira em: ${data.expires_in || 'N/A'} segundos`, 'info');
+                    
+                    // Salvar token
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify({ 
+                        email, 
+                        role: data.role || 'user',
+                        user_id: data.user_id 
+                    }));
+                    
+                    addLog('💾 Token salvo no localStorage', 'success');
+                    
+                    // Redirecionar
+                    setTimeout(() => {
+                        addLog('🚀 Redirecionando para o app...', 'success');
+                        window.location.href = 'app-v3-pro.html';
+                    }, 2000);
+                    
+                } else {
+                    addLog(`❌ ERRO: ${data.detail || 'Falha no login'}`, 'error');
+                    
+                    if (response.status === 401) {
+                        addLog('⚠️ Credenciais inválidas! Verifique email e senha.', 'warning');
+                    } else if (response.status === 422) {
+                        addLog('⚠️ Dados de login inválidos. Verifique o formato.', 'warning');
+                    } else if (response.status >= 500) {
+                        addLog('⚠️ Erro no servidor. O backend pode estar reiniciando.', 'warning');
+                    }
+                }
+                
+            } catch (error) {
+                addLog(`❌ ERRO DE CONEXÃO: ${error.message}`, 'error');
+                addLog('⚠️ Possíveis causas:', 'warning');
+                addLog('  1. Backend offline ou reiniciando', 'warning');
+                addLog('  2. CORS bloqueado', 'warning');
+                addLog('  3. Timeout de conexão', 'warning');
+                addLog('💡 Tente aguardar 1 minuto e tente novamente', 'info');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔓 Fazer Login';
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            addLog('🚀 Página de teste carregada!', 'success');
+            addLog(`🌐 API URL: ${API_URL}`, 'info');
+            addLog('🔍 Testando conexão com backend...', 'info');
+            
+            setTimeout(() => {
+                testConnection();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
