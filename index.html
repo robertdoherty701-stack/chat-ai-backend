@@ -865,8 +865,19 @@
             }
         }
 
-        /* Esconder menu mobile no desktop */
+        /* Botão menu mobile - mostrar apenas no mobile */
         .mobile-menu-btn {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+
+        /* Esconder overlay no desktop */
+        .mobile-overlay {
             display: none;
         }
     </style>
