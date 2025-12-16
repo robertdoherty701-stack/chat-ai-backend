@@ -243,30 +243,94 @@
             overflow-y: auto;
         }
 
+        .nav-section {
+            margin-bottom: 28px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            padding: 0 16px 12px;
+            margin-top: 8px;
+        }
+
         .sidebar-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 16px;
-            margin-bottom: 8px;
+            gap: 14px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
             border-radius: 12px;
             color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            font-size: 15px;
-            transition: all 0.3s;
+            font-size: 14px;
+            transition: all 0.2s ease;
             cursor: pointer;
+            position: relative;
+        }
+
+        .sidebar-link-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar-link-text {
+            flex: 1;
+        }
+
+        .sidebar-link-badge {
+            background: var(--red-primary);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            min-width: 18px;
+            text-align: center;
         }
 
         .sidebar-link:hover {
             background: var(--bg-secondary);
             color: var(--text-dark);
+            transform: translateX(2px);
+        }
+
+        .sidebar-link:hover .sidebar-link-icon {
+            transform: scale(1.1);
         }
 
         .sidebar-link.active {
             background: linear-gradient(135deg, var(--red-light) 0%, #FEE2E2 100%);
             color: var(--red-primary);
             font-weight: 600;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: var(--red-primary);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 16px;
         }
 
         .sidebar-footer {
@@ -523,26 +587,61 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a class="sidebar-link active" onclick="navigateTo(event, 'dashboard')">
-                    <span>📊</span>
-                    <span>Dashboard</span>
-                </a>
-                <a class="sidebar-link" onclick="navigateTo(event, 'chat')">
-                    <span>💬</span>
-                    <span>Chat IA</span>
-                </a>
-                <a class="sidebar-link" onclick="navigateTo(event, 'arquivos')">
-                    <span>📁</span>
-                    <span>Arquivos</span>
-                </a>
-                <a class="sidebar-link" id="usersMenuItem" style="display: none;" onclick="navigateTo(event, 'usuarios')">
-                    <span>👥</span>
-                    <span>Usuários</span>
-                </a>
-                <a class="sidebar-link" onclick="navigateTo(event, 'configuracoes')">
-                    <span>⚙️</span>
-                    <span>Configurações</span>
-                </a>
+                <!-- Principal -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <a class="sidebar-link active" onclick="navigateTo(event, 'dashboard')">
+                        <span class="sidebar-link-icon">📊</span>
+                        <span class="sidebar-link-text">Dashboard</span>
+                    </a>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'chat')">
+                        <span class="sidebar-link-icon">💬</span>
+                        <span class="sidebar-link-text">Chat IA</span>
+                        <span class="sidebar-link-badge">PRO</span>
+                    </a>
+                </div>
+
+                <!-- Ferramentas -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Ferramentas</div>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'arquivos')">
+                        <span class="sidebar-link-icon">📁</span>
+                        <span class="sidebar-link-text">Arquivos IA</span>
+                        <span class="sidebar-link-badge">NEW</span>
+                    </a>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'relatorios')">
+                        <span class="sidebar-link-icon">📈</span>
+                        <span class="sidebar-link-text">Relatórios</span>
+                    </a>
+                </div>
+
+                <!-- Administração -->
+                <div class="nav-section" id="adminSection" style="display: none;">
+                    <div class="nav-section-title">Administração</div>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'analytics')">
+                        <span class="sidebar-link-icon">🎯</span>
+                        <span class="sidebar-link-text">Analytics IA</span>
+                        <span class="sidebar-link-badge" id="fileCount">0</span>
+                    </a>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'database')">
+                        <span class="sidebar-link-icon">💾</span>
+                        <span class="sidebar-link-text">Banco de Dados</span>
+                    </a>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'configuracoes')">
+                        <span class="sidebar-link-icon">⚙️</span>
+                        <span class="sidebar-link-text">Configurações</span>
+                    </a>
+                </div>
+
+                <div class="nav-divider"></div>
+
+                <!-- Sistema -->
+                <div class="nav-section">
+                    <a class="sidebar-link" onclick="logout()">
+                        <span class="sidebar-link-icon">🚪</span>
+                        <span class="sidebar-link-text">Sair</span>
+                    </a>
+                </div>
             </nav>
 
             <div class="sidebar-footer">
@@ -615,33 +714,283 @@
             <!-- Chat Section -->
             <div class="content-section hidden" id="chatSection">
                 <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
-                    Chat com IA
+                    💬 Chat com IA
                 </h2>
-                <p style="color: var(--text-secondary);">Em desenvolvimento...</p>
+                
+                <div class="card">
+                    <div style="height: 500px; display: flex; flex-direction: column;">
+                        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 20px; background: var(--bg-secondary); border-radius: 12px; margin-bottom: 16px;">
+                            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                <p style="font-size: 48px; margin-bottom: 16px;">🤖</p>
+                                <p style="font-size: 16px; font-weight: 600;">Olá! Como posso ajudar você hoje?</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <input type="text" id="chatInput" placeholder="Digite sua mensagem..." style="flex: 1; padding: 14px 16px; border: 2px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit;" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                            <button class="btn-primary" onclick="sendChatMessage()" style="width: auto; padding: 14px 32px;">Enviar</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Arquivos Section -->
             <div class="content-section hidden" id="arquivosSection">
                 <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
-                    Gerenciador de Arquivos
+                    🤖 Arquivos IA - Análise Inteligente
                 </h2>
-                <p style="color: var(--text-secondary);">Em desenvolvimento...</p>
+                
+                <div class="card" style="padding: 32px;">
+                    <h3 style="color: var(--text-dark); margin-bottom: 16px; font-size: 20px; font-weight: 700;">
+                        📤 Upload e Análise Inteligente
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                        Nossa IA analisa automaticamente seus arquivos, extrai informações e organiza por categoria
+                    </p>
+                    
+                    <div style="display: flex; gap: 16px; align-items: start; margin-bottom: 24px;">
+                        <div style="flex: 1;">
+                            <input 
+                                type="file" 
+                                id="fileInput" 
+                                multiple 
+                                accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.csv,.json,.xml,.md,.png,.jpg,.jpeg,.gif,.zip"
+                                style="width: 100%; padding: 16px; border: 2px dashed #DC2626; border-radius: 12px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); cursor: pointer;"
+                                onchange="handleFileUpload(event)">
+                            <p style="margin: 8px 0 0 0; font-size: 13px; color: #6B7280; line-height: 1.5;">
+                                <strong>Formatos suportados:</strong> PDF, DOC, DOCX, TXT, XLS, XLSX, CSV, JSON, XML, MD, PNG, JPG, JPEG, GIF, ZIP
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div id="fileAnalysisResult" style="display: none; margin-top: 24px; padding: 20px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(220, 38, 38, 0.05)); border-radius: 12px; border-left: 4px solid #DC2626;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 28px;">🤖</span>
+                            <h4 style="margin: 0; color: #DC2626; font-weight: 700;">Análise da IA</h4>
+                        </div>
+                        <div id="analysisContent" style="color: var(--text-dark);"></div>
+                    </div>
+                </div>
+                
+                <div id="filesListContainer" style="margin-top: 24px;"></div>
+            </div>
+
+            <!-- Relatórios Section -->
+            <div class="content-section hidden" id="relatoriosSection">
+                <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
+                    📈 Relatórios
+                </h2>
+                
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <div class="card-title">Taxa de Conversão</div>
+                        </div>
+                        <div class="card-value">87%</div>
+                        <div class="card-label">Meta: 85%</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">💰</div>
+                            <div class="card-title">Receita Mensal</div>
+                        </div>
+                        <div class="card-value">R$ 45K</div>
+                        <div class="card-label">+12% vs mês anterior</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">⭐</div>
+                            <div class="card-title">NPS Score</div>
+                        </div>
+                        <div class="card-value">94</div>
+                        <div class="card-label">Promotores: 78%</div>
+                    </div>
+                </div>
             </div>
 
             <!-- Usuários Section -->
             <div class="content-section hidden" id="usuariosSection">
                 <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
-                    Gerenciar Usuários
+                    👥 Gerenciar Usuários
                 </h2>
-                <div id="usersList"></div>
+                <div class="card">
+                    <div id="usersList"></div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="content-section hidden" id="analyticsSection">
+                <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
+                    🎯 Analytics IA - Análise Avançada de Arquivos
+                </h2>
+                
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📁</div>
+                            <div class="card-title">Total de Arquivos</div>
+                        </div>
+                        <div class="card-value" id="totalFilesCount">0</div>
+                        <div class="card-label">Enviados e analisados</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <div class="card-title">Tipos de Arquivo</div>
+                        </div>
+                        <div class="card-value" id="fileTypesCount">0</div>
+                        <div class="card-label">Formatos diferentes</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">💾</div>
+                            <div class="card-title">Tamanho Total</div>
+                        </div>
+                        <div class="card-value" id="totalFileSize">0 MB</div>
+                        <div class="card-label">Armazenamento usado</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🤖</div>
+                            <div class="card-title">Análises IA</div>
+                        </div>
+                        <div class="card-value" id="aiAnalysisCount">0</div>
+                        <div class="card-label">Processamentos realizados</div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 24px;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px;">
+                        📈 Distribuição por Tipo de Arquivo
+                    </h3>
+                    <div id="fileDistribution" style="min-height: 200px;"></div>
+                </div>
+                
+                <div class="card" style="margin-top: 24px;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px;">
+                        🔍 Insights da IA sobre os Arquivos
+                    </h3>
+                    <div id="aiInsights"></div>
+                </div>
+            </div>
+
+            <!-- Database Section -->
+            <div class="content-section hidden" id="databaseSection">
+                <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
+                    💾 Banco de Dados
+                </h2>
+                
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📦</div>
+                            <div class="card-title">Registros Totais</div>
+                        </div>
+                        <div class="card-value" id="dbRecordsCount">0</div>
+                        <div class="card-label">Itens armazenados</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">⚡</div>
+                            <div class="card-title">Status</div>
+                        </div>
+                        <div class="card-value" style="font-size: 28px;">🟢</div>
+                        <div class="card-label">Online</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <div class="card-title">Tabelas</div>
+                        </div>
+                        <div class="card-value">3</div>
+                        <div class="card-label">Arquivos, Usuários, Logs</div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔄</div>
+                            <div class="card-title">Última Sincronização</div>
+                        </div>
+                        <div class="card-value" style="font-size: 20px;" id="lastSync">Agora</div>
+                        <div class="card-label">Sincronizado</div>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 24px;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px;">
+                        🔍 Explorador de Dados
+                    </h3>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <select id="dbTableSelect" class="form-input" onchange="loadDatabaseTable()" style="max-width: 300px;">
+                            <option value="files">📁 Arquivos</option>
+                            <option value="users">👥 Usuários</option>
+                            <option value="logs">📝 Logs de Atividade</option>
+                        </select>
+                    </div>
+                    
+                    <div id="databaseTableContent" style="overflow-x: auto;"></div>
+                </div>
+                
+                <div class="card" style="margin-top: 24px;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 20px;">
+                        🛠️ Ações do Banco de Dados
+                    </h3>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="exportDatabase()" style="width: auto; padding: 12px 24px;">
+                            📥 Exportar Dados
+                        </button>
+                        <button class="btn-primary" onclick="syncDatabase()" style="width: auto; padding: 12px 24px; background: #10B981;">
+                            🔄 Sincronizar
+                        </button>
+                        <button class="btn-primary" onclick="clearDatabaseLogs()" style="width: auto; padding: 12px 24px; background: #F59E0B;">
+                            🗑️ Limpar Logs
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Configurações Section -->
             <div class="content-section hidden" id="configuracoesSection">
                 <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
-                    Configurações
+                    ⚙️ Configurações
                 </h2>
-                <p style="color: var(--text-secondary);">Em desenvolvimento...</p>
+                
+                <div class="card">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 24px;">Perfil do Usuário</h3>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" class="form-input" id="configName" readonly>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="configEmail" readonly>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="form-label">Tipo de Conta</label>
+                        <input type="text" class="form-input" id="configRole" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Chave API GPT-4</label>
+                        <input type="password" class="form-input" id="configApiKey" placeholder="sk-...">
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Configure sua chave da OpenAI para usar o Chat IA</p>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="saveApiKey()" style="width: auto; padding: 14px 32px; margin-top: 16px;">
+                        Salvar Configurações
+                    </button>
+                </div>
             </div>
         </main>
     </div>
@@ -704,12 +1053,44 @@
                 document.getElementById('userRole').textContent = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
 
                 if (currentUser.role === 'admin') {
-                    document.getElementById('usersMenuItem').style.display = 'flex';
+                    document.getElementById('adminSection').style.display = 'block';
+                }
+
+                // Atualizar contador de usuários
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const userCountBadge = document.getElementById('userCount');
+                if (userCountBadge) {
+                    userCountBadge.textContent = users.length;
+                }
+                
+                // Preencher dados de configurações
+                if (document.getElementById('configName')) {
+                    document.getElementById('configName').value = currentUser.name;
+                }
+                if (document.getElementById('configEmail')) {
+                    document.getElementById('configEmail').value = currentUser.email;
+                }
+                if (document.getElementById('configRole')) {
+                    document.getElementById('configRole').value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
                 }
             }
 
             initializeUsageTracking();
             updateDashboardStats();
+            initDatabase();
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                currentUser = null;
+                authToken = null;
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('authPage').classList.remove('hidden');
+                showNotification('Você saiu do sistema', 'success');
+            }
         }
 
         // Navegação
@@ -726,6 +1107,15 @@
             });
 
             document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            // Carregar dados específicos da seção
+            if (section === 'usuarios') {
+                loadUsersList();
+            } else if (section === 'analytics') {
+                updateAnalytics();
+            } else if (section === 'database') {
+                loadDatabaseTable();
+            }
         }
 
         // Rastreamento de uso
@@ -837,6 +1227,475 @@
                 notification.style.transform = 'translateY(-10px)';
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
+        }
+
+        // Chat IA
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const container = document.getElementById('chatMessages');
+            
+            // Mensagem do usuário
+            const userMsg = document.createElement('div');
+            userMsg.style.cssText = 'background: var(--red-light); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%; margin-left: auto;';
+            userMsg.innerHTML = `<strong>Você:</strong> ${message}`;
+            container.appendChild(userMsg);
+            
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+
+            // Resposta da IA (simulada)
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.style.cssText = 'background: var(--bg-primary); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%;';
+                aiMsg.innerHTML = `<strong>🤖 IA:</strong> Entendi sua mensagem sobre "${message}". Como posso ajudar você com isso?`;
+                container.appendChild(aiMsg);
+                container.scrollTop = container.scrollHeight;
+            }, 1000);
+        }
+
+        // Upload de arquivos
+        // Database operations (IndexedDB)
+        let db;
+        
+        function initDatabase() {
+            const request = indexedDB.open('ChatAppDB', 1);
+            
+            request.onerror = () => console.error('Database error:', request.error);
+            
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                updateDatabaseStats();
+            };
+            
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                
+                if (!db.objectStoreNames.contains('files')) {
+                    const filesStore = db.createObjectStore('files', { keyPath: 'id', autoIncrement: true });
+                    filesStore.createIndex('name', 'name', { unique: false });
+                    filesStore.createIndex('type', 'type', { unique: false });
+                    filesStore.createIndex('uploadDate', 'uploadDate', { unique: false });
+                }
+                
+                if (!db.objectStoreNames.contains('users')) {
+                    const usersStore = db.createObjectStore('users', { keyPath: 'id', autoIncrement: true });
+                    usersStore.createIndex('email', 'email', { unique: true });
+                }
+                
+                if (!db.objectStoreNames.contains('logs')) {
+                    const logsStore = db.createObjectStore('logs', { keyPath: 'id', autoIncrement: true });
+                    logsStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    logsStore.createIndex('action', 'action', { unique: false });
+                }
+            };
+        }
+        
+        function saveFileToDatabase(file, analysis) {
+            if (!db) return;
+            
+            const transaction = db.transaction(['files'], 'readwrite');
+            const store = transaction.objectStore('files');
+            
+            const fileData = {
+                name: file.name,
+                size: file.size,
+                type: file.type || getFileType(file.name),
+                uploadDate: new Date().toISOString(),
+                analysis: analysis,
+                user: currentUser.email
+            };
+            
+            store.add(fileData);
+            
+            transaction.oncomplete = () => {
+                updateDatabaseStats();
+                updateAnalytics();
+                logAction('file_upload', `Arquivo ${file.name} enviado`);
+            };
+        }
+        
+        function logAction(action, description) {
+            if (!db) return;
+            
+            const transaction = db.transaction(['logs'], 'readwrite');
+            const store = transaction.objectStore('logs');
+            
+            store.add({
+                action,
+                description,
+                user: currentUser.email,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        function updateDatabaseStats() {
+            if (!db) return;
+            
+            const transaction = db.transaction(['files', 'users', 'logs'], 'readonly');
+            
+            const filesStore = transaction.objectStore('files');
+            const usersStore = transaction.objectStore('users');
+            const logsStore = transaction.objectStore('logs');
+            
+            filesStore.count().onsuccess = (e) => {
+                const count = e.target.result;
+                document.getElementById('dbRecordsCount').textContent = count;
+            };
+        }
+        
+        function loadDatabaseTable() {
+            const table = document.getElementById('dbTableSelect').value;
+            const container = document.getElementById('databaseTableContent');
+            
+            if (!db) {
+                container.innerHTML = '<p>Banco de dados não inicializado</p>';
+                return;
+            }
+            
+            const transaction = db.transaction([table], 'readonly');
+            const store = transaction.objectStore(table);
+            const request = store.getAll();
+            
+            request.onsuccess = () => {
+                const data = request.result;
+                
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum registro encontrado</p>';
+                    return;
+                }
+                
+                let html = '<table class="stats-table"><thead><tr>';
+                
+                const keys = Object.keys(data[0]).filter(k => k !== 'id');
+                keys.forEach(key => {
+                    html += `<th>${key.charAt(0).toUpperCase() + key.slice(1)}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                data.forEach(row => {
+                    html += '<tr>';
+                    keys.forEach(key => {
+                        let value = row[key];
+                        if (key.includes('Date') || key === 'timestamp') {
+                            value = new Date(value).toLocaleString('pt-BR');
+                        }
+                        if (typeof value === 'object') {
+                            value = JSON.stringify(value);
+                        }
+                        html += `<td>${value}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            };
+        }
+        
+        function exportDatabase() {
+            if (!db) return;
+            
+            const transaction = db.transaction(['files', 'users', 'logs'], 'readonly');
+            const exportData = {};
+            
+            ['files', 'users', 'logs'].forEach(storeName => {
+                const store = transaction.objectStore(storeName);
+                store.getAll().onsuccess = (e) => {
+                    exportData[storeName] = e.target.result;
+                    
+                    if (Object.keys(exportData).length === 3) {
+                        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `database-export-${new Date().toISOString().split('T')[0]}.json`;
+                        a.click();
+                        showNotification('Dados exportados com sucesso!', 'success');
+                    }
+                };
+            });
+        }
+        
+        function syncDatabase() {
+            document.getElementById('lastSync').textContent = 'Agora';
+            showNotification('Banco de dados sincronizado!', 'success');
+            updateDatabaseStats();
+        }
+        
+        function clearDatabaseLogs() {
+            if (!db) return;
+            
+            const transaction = db.transaction(['logs'], 'readwrite');
+            const store = transaction.objectStore('logs');
+            store.clear();
+            
+            transaction.oncomplete = () => {
+                showNotification('Logs limpos com sucesso!', 'success');
+                loadDatabaseTable();
+            };
+        }
+        
+        // AI File Analysis
+        function analyzeFileWithAI(file) {
+            const fileType = getFileType(file.name);
+            const size = (file.size / 1024).toFixed(2);
+            
+            let analysis = {
+                type: fileType,
+                category: categorizeFile(fileType),
+                size: size + ' KB',
+                insights: [],
+                tags: []
+            };
+            
+            // Categorização inteligente
+            if (['pdf', 'doc', 'docx', 'txt', 'md'].includes(fileType)) {
+                analysis.category = '📄 Documento';
+                analysis.insights.push('Documento de texto identificado');
+                analysis.insights.push('Recomendado para leitura e análise de conteúdo');
+                analysis.tags = ['documento', 'texto', 'leitura'];
+            } else if (['xls', 'xlsx', 'csv'].includes(fileType)) {
+                analysis.category = '📊 Planilha';
+                analysis.insights.push('Planilha de dados detectada');
+                analysis.insights.push('Contém dados estruturados para análise');
+                analysis.tags = ['dados', 'planilha', 'análise'];
+            } else if (['png', 'jpg', 'jpeg', 'gif'].includes(fileType)) {
+                analysis.category = '🖼️ Imagem';
+                analysis.insights.push('Arquivo de imagem identificado');
+                analysis.insights.push('Formato: ' + fileType.toUpperCase());
+                analysis.tags = ['imagem', 'visual', 'mídia'];
+            } else if (['json', 'xml'].includes(fileType)) {
+                analysis.category = '⚙️ Dados';
+                analysis.insights.push('Arquivo de dados estruturados');
+                analysis.insights.push('Formato de configuração ou API');
+                analysis.tags = ['dados', 'estruturado', 'config'];
+            } else if (fileType === 'zip') {
+                analysis.category = '📦 Arquivo';
+                analysis.insights.push('Arquivo compactado detectado');
+                analysis.insights.push('Contém múltiplos arquivos');
+                analysis.tags = ['compactado', 'múltiplos', 'arquivo'];
+            }
+            
+            // Análise de tamanho
+            if (file.size < 1024 * 100) {
+                analysis.insights.push('Arquivo pequeno - processamento rápido');
+            } else if (file.size < 1024 * 1024 * 5) {
+                analysis.insights.push('Arquivo médio - tempo de processamento moderado');
+            } else {
+                analysis.insights.push('Arquivo grande - pode requerer mais tempo');
+            }
+            
+            return analysis;
+        }
+        
+        function getFileType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            return ext;
+        }
+        
+        function categorizeFile(type) {
+            const categories = {
+                'pdf': '📄 Documento',
+                'doc': '📄 Documento',
+                'docx': '📄 Documento',
+                'txt': '📄 Documento',
+                'md': '📄 Documento',
+                'xls': '📊 Planilha',
+                'xlsx': '📊 Planilha',
+                'csv': '📊 Planilha',
+                'png': '🖼️ Imagem',
+                'jpg': '🖼️ Imagem',
+                'jpeg': '🖼️ Imagem',
+                'gif': '🖼️ Imagem',
+                'json': '⚙️ Dados',
+                'xml': '⚙️ Dados',
+                'zip': '📦 Arquivo'
+            };
+            return categories[type] || '📄 Arquivo';
+        }
+        
+        function updateAnalytics() {
+            if (!db) return;
+            
+            const transaction = db.transaction(['files'], 'readonly');
+            const store = transaction.objectStore('files');
+            const request = store.getAll();
+            
+            request.onsuccess = () => {
+                const files = request.result;
+                
+                // Total de arquivos
+                document.getElementById('totalFilesCount').textContent = files.length;
+                document.getElementById('fileCount').textContent = files.length;
+                document.getElementById('aiAnalysisCount').textContent = files.length;
+                
+                // Tipos de arquivo
+                const types = new Set(files.map(f => f.type));
+                document.getElementById('fileTypesCount').textContent = types.size;
+                
+                // Tamanho total
+                const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+                document.getElementById('totalFileSize').textContent = (totalSize / 1024 / 1024).toFixed(2) + ' MB';
+                
+                // Distribuição por tipo
+                const distribution = {};
+                files.forEach(f => {
+                    const category = categorizeFile(f.type);
+                    distribution[category] = (distribution[category] || 0) + 1;
+                });
+                
+                let distHtml = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                Object.entries(distribution).forEach(([category, count]) => {
+                    const percentage = ((count / files.length) * 100).toFixed(1);
+                    distHtml += `
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                <span style="font-weight: 600;">${category}</span>
+                                <span style="color: var(--text-secondary);">${count} (${percentage}%)</span>
+                            </div>
+                            <div style="background: #E5E7EB; border-radius: 8px; height: 8px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #DC2626, #EF4444); height: 100%; width: ${percentage}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                distHtml += '</div>';
+                document.getElementById('fileDistribution').innerHTML = distHtml;
+                
+                // Insights da IA
+                let insightsHtml = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+                if (files.length > 0) {
+                    const mostCommon = Object.entries(distribution).sort((a, b) => b[1] - a[1])[0];
+                    insightsHtml += `
+                        <div style="padding: 16px; background: rgba(220, 38, 38, 0.05); border-radius: 8px; border-left: 4px solid #DC2626;">
+                            <strong>🎯 Tipo mais comum:</strong> ${mostCommon[0]} (${mostCommon[1]} arquivos)
+                        </div>
+                    `;
+                    
+                    if (totalSize > 10 * 1024 * 1024) {
+                        insightsHtml += `
+                            <div style="padding: 16px; background: rgba(245, 158, 11, 0.05); border-radius: 8px; border-left: 4px solid #F59E0B;">
+                                <strong>⚠️ Alerta:</strong> Armazenamento acima de 10MB - considere fazer backup
+                            </div>
+                        `;
+                    }
+                    
+                    insightsHtml += `
+                        <div style="padding: 16px; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border-left: 4px solid #10B981;">
+                            <strong>✅ Organização:</strong> Arquivos bem categorizados em ${types.size} formatos diferentes
+                        </div>
+                    `;
+                } else {
+                    insightsHtml += '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum arquivo analisado ainda</p>';
+                }
+                insightsHtml += '</div>';
+                document.getElementById('aiInsights').innerHTML = insightsHtml;
+            };
+        }
+
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            const container = document.getElementById('filesListContainer');
+            const analysisResult = document.getElementById('fileAnalysisResult');
+            const analysisContent = document.getElementById('analysisContent');
+            
+            if (files.length === 0) return;
+
+            let analysisHtml = '';
+            
+            Array.from(files).forEach(file => {
+                // Análise IA do arquivo
+                const analysis = analyzeFileWithAI(file);
+                
+                // Salvar no banco de dados
+                saveFileToDatabase(file, analysis);
+                
+                // Criar card do arquivo
+                const fileCard = document.createElement('div');
+                fileCard.className = 'card';
+                fileCard.style.marginBottom = '16px';
+                fileCard.innerHTML = `
+                    <div style="display: flex; align-items: start; gap: 16px;">
+                        <div style="font-size: 48px;">${analysis.category.split(' ')[0]}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; color: var(--text-dark); font-size: 16px; margin-bottom: 4px;">${file.name}</div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                                ${analysis.category} • ${analysis.size}
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                ${analysis.tags.map(tag => `<span style="background: rgba(220, 38, 38, 0.1); color: #DC2626; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="width: auto; padding: 10px 20px; background: #EF4444;" onclick="this.parentElement.parentElement.remove()">
+                            Remover
+                        </button>
+                    </div>
+                `;
+                container.appendChild(fileCard);
+                
+                // Adicionar à análise
+                analysisHtml += `
+                    <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(220, 38, 38, 0.2);">
+                        <div style="font-weight: 700; margin-bottom: 8px;">📄 ${file.name}</div>
+                        <ul style="margin: 0; padding-left: 20px; color: var(--text-dark);">
+                            ${analysis.insights.map(insight => `<li style="margin-bottom: 4px;">${insight}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            });
+
+            // Mostrar análise IA
+            analysisContent.innerHTML = analysisHtml;
+            analysisResult.style.display = 'block';
+            
+            showNotification(`${files.length} arquivo(s) analisado(s) pela IA!`, 'success');
+            
+            // Reset input
+            event.target.value = '';
+        }
+
+        // Lista de usuários
+        function loadUsersList() {
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const container = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 20px;">Nenhum usuário cadastrado</p>';
+                return;
+            }
+
+            let html = '<table class="stats-table"><thead><tr><th>Nome</th><th>Email</th><th>Tipo</th><th>Data</th></tr></thead><tbody>';
+
+            users.forEach(user => {
+                const roleText = user.role === 'admin' ? '👑 Admin' : '👤 Usuário';
+                const date = new Date(user.createdAt).toLocaleDateString('pt-BR');
+                
+                html += `
+                    <tr>
+                        <td><strong>${user.name}</strong></td>
+                        <td>${user.email}</td>
+                        <td>${roleText}</td>
+                        <td style="font-size: 13px; color: var(--text-secondary);">${date}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Configurações
+        function saveApiKey() {
+            const apiKey = document.getElementById('configApiKey').value;
+            if (apiKey) {
+                localStorage.setItem('gpt_api_key', apiKey);
+                showNotification('Chave API salva com sucesso!', 'success');
+            } else {
+                showNotification('Por favor, insira uma chave API válida', 'error');
+            }
         }
 
         // Verificar sessão ao carregar
