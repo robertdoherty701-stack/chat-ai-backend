@@ -2,13 +2,13 @@
 import os
 import logging
 import uuid
+import bcrypt
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from dotenv import load_dotenv
 
@@ -21,8 +21,6 @@ ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 PASSWORD_RESET_EXPIRE_MINUTES = int(os.getenv("PASSWORD_RESET_EXPIRE_MINUTES", "60"))
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # ==== In-memory stores (DEV only) ====
@@ -81,17 +79,17 @@ class UserUpdateResponse(BaseModel):
 
 # ==== Utilities ====
 def hash_password(password: str) -> str:
-    # Truncar senha para 72 bytes (limite do bcrypt)
+    # Truncar para 72 bytes e fazer hash com bcrypt
     password_bytes = password.encode('utf-8')[:72]
-    password_truncated = password_bytes.decode('utf-8', errors='ignore')
-    return pwd_context.hash(password_truncated)
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        # Truncar senha para 72 bytes (limite do bcrypt)
         password_bytes = plain_password.encode('utf-8')[:72]
-        password_truncated = password_bytes.decode('utf-8', errors='ignore')
-        return pwd_context.verify(password_truncated, hashed_password)
+        hashed_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
     except Exception:
         return False
 
@@ -273,13 +271,16 @@ async def password_reset_confirm(reset_confirm: PasswordResetConfirm = Body(...)
 def _create_dev_admin_if_missing():
     demo_email = os.getenv("DEV_ADMIN_EMAIL", "admin@example.com")
     if demo_email not in _users_db:
+        # Truncar senha explicitamente antes de passar para hash_password
+        raw_password = os.getenv("DEV_ADMIN_PASSWORD", "Admin123!")
         _users_db[demo_email] = {
             "id": "user_0",
             "email": demo_email,
-            "password": hash_password(os.getenv("DEV_ADMIN_PASSWORD", "Admin123!")),
+            "password": hash_password(raw_password),
             "name": os.getenv("DEV_ADMIN_NAME", "Admin"),
             "created_at": _now_utc().isoformat(),
             "is_active": True,
         }
 
-_create_dev_admin_if_missing()
+# Não chamar imediatamente - será chamado no startup
+# _create_dev_admin_if_missing()

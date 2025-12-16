@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Importa os módulos de rota
-from auth import router as auth_router
+from auth import router as auth_router, _create_dev_admin_if_missing
 from upload import router as upload_router
 from indexing import router as indexing_router
 from file_processor import router as file_processor_router
@@ -36,6 +36,11 @@ def create_app() -> FastAPI:
     app.include_router(upload_router)     # /upload/...
     app.include_router(indexing_router)   # /index/...
     app.include_router(file_processor_router)  # /files/...
+    
+    # === STARTUP EVENT ===
+    @app.on_event("startup")
+    async def startup_event():
+        _create_dev_admin_if_missing()
 
     return app
 

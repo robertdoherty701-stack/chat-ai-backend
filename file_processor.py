@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, HTTPException, Depends, File
 from typing import Dict, Any, Optional
 import os
 import json
@@ -9,6 +9,7 @@ from docx import Document
 import aiofiles
 from pathlib import Path
 import hashlib
+import time
 
 router = APIRouter(prefix="/files", tags=["File Processing"])
 
@@ -136,22 +137,24 @@ async def process_parquet_file(file_path: str) -> Dict[str, Any]:
     )
 
 @router.post("/process")
-async def process_file(file: UploadFile):
+async def process_file(file: UploadFile = File(...)):
     """
     Processa qualquer tipo de arquivo suportado
     """
-    # Salvar arquivo
-    file_ext = file.filename.split('.')[-1].lower()
-    file_path = os.path.join(UPLOAD_DIR, file.filename)
-    
-    content = await file.read()
-    checksum = hashlib.sha256(content).hexdigest()
-    
-    async with aiofiles.open(file_path, 'wb') as f:
-        await f.write(content)
-    
-    # Processar baseado na extensão
     try:
+        # Salvar arquivo com timestamp único
+        file_ext = file.filename.split('.')[-1].lower()
+        timestamp = int(time.time())
+        safe_filename = f"{timestamp}_{file.filename}"
+        file_path = os.path.join(UPLOAD_DIR, safe_filename)
+        
+        content = await file.read()
+        checksum = hashlib.sha256(content).hexdigest()
+        
+        async with aiofiles.open(file_path, 'wb') as f:
+            await f.write(content)
+        
+        # Processar baseado na extensão
         if file_ext in ['txt', 'md', 'rtf']:
             result = await process_text_file(file_path)
         elif file_ext == 'pdf':
@@ -176,7 +179,7 @@ async def process_file(file: UploadFile):
         return {
             "success": True,
             "file_name": file.filename,
-            "stored_name": file.filename,
+            "stored_name": safe_filename,
             "checksum": checksum,
             "size": len(content),
             **result
