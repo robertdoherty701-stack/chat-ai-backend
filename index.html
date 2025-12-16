@@ -861,7 +861,7 @@
             <h1 class="auth-title">Bem-vindo</h1>
             <p class="auth-subtitle">Faça login para continuar</p>
 
-            <form onsubmit="login(event)">
+            <form onsubmit="return handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
                     <input type="email" class="form-input" id="loginEmail" value="nathiely@empresa.com" required>
@@ -870,7 +870,7 @@
                     <label class="form-label">Senha</label>
                     <input type="password" class="form-input" id="loginPassword" value="Nathiely@2025" required>
                 </div>
-                <button type="submit" class="btn-primary" style="width: 100%;">
+                <button type="submit" class="btn-primary" style="width: 100%;" id="loginBtn">
                     Entrar
                 </button>
             </form>
@@ -1226,18 +1226,96 @@
 
     <script>
         // ========================================
-        // CONFIGURAÇÕES
+        // INICIALIZAÇÃO E USUÁRIOS PADRÃO
         // ========================================
-        const API_URL = 'https://chat-ai-backend-lox5.onrender.com';
         
-        // Função para obter a chave GPT-4 de forma segura
-        function getGPTKey() {
-            return localStorage.getItem('gpt_api_key') || '';
-        }
-        
-        function setGPTKey(key) {
-            localStorage.setItem('gpt_api_key', key);
-            showNotification('Chave GPT-4 configurada com sucesso!', 'success');
+        // Criar usuários padrão imediatamente
+        (function createDefaultUsers() {
+            const users = [
+                {
+                    id: 'admin_1',
+                    name: 'Nathiely',
+                    email: 'nathiely@empresa.com',
+                    password: 'Nathiely@2025',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                },
+                {
+                    id: 'admin_2',
+                    name: 'Roberto Felix',
+                    email: 'roberto.felix@empresa.com',
+                    password: 'Roberto@2025',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                },
+                {
+                    id: 'admin_3',
+                    name: 'Jefferson',
+                    email: 'jefferson@empresa.com',
+                    password: 'Jefferson@2025',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                },
+                {
+                    id: 'admin_4',
+                    name: 'Admin Geral',
+                    email: 'admin@example.com',
+                    password: 'Admin123!',
+                    role: 'admin',
+                    createdAt: '2025-12-16T10:00:00'
+                }
+            ];
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+            console.log('✅ 4 usuários admin criados');
+        })();
+
+        // ========================================
+        // LOGIN SIMPLIFICADO
+        // ========================================
+        function handleLogin(e) {
+            e.preventDefault();
+            console.log('🔵 Login iniciado...');
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            console.log('📧 Email:', email);
+            
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            console.log('👥 Total de usuários:', users.length);
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                console.log('✅ Usuário encontrado:', user.name);
+                
+                // Salvar sessão
+                authToken = 'token_' + Date.now();
+                currentUser = {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                };
+                
+                localStorage.setItem('token', authToken);
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                
+                console.log('💾 Sessão salva');
+                
+                // Mostrar app
+                document.getElementById('authPage').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                console.log('🎉 Login concluído!');
+                showNotification('Bem-vindo, ' + user.name + '!', 'success');
+                
+                return false;
+            } else {
+                console.log('❌ Usuário não encontrado');
+                showNotification('Email ou senha incorretos', 'error');
+                return false;
+            }
         }
 
         let authToken = localStorage.getItem('token');
