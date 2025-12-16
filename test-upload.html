@@ -304,15 +304,24 @@
 
             status.className = 'status info';
             status.style.display = 'block';
-            status.innerHTML = '<div class="spinner"></div> Autenticando...';
+            status.innerHTML = '<div class="spinner"></div> Autenticando... (aguarde até 30s na primeira vez)';
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
                 const response = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password }),
+                    signal: controller.signal,
+                    mode: 'cors'
                 });
 
+                clearTimeout(timeoutId);
                 const data = await response.json();
 
                 if (response.ok) {
@@ -332,7 +341,11 @@
                 }
             } catch (error) {
                 status.className = 'status error';
-                status.innerHTML = `❌ Erro de conexão: ${error.message}`;
+                if (error.name === 'AbortError') {
+                    status.innerHTML = `❌ Timeout: O servidor demorou muito para responder. Ele pode estar "dormindo" no Render (plano gratuito). Tente novamente em 1 minuto.`;
+                } else {
+                    status.innerHTML = `❌ Erro de conexão: ${error.message}<br><br><strong>Dica:</strong> Se o servidor Render estiver "dormindo", pode levar até 50 segundos para acordar na primeira requisição. <button class="btn btn-primary" onclick="login()" style="margin-top:10px;">Tentar Novamente</button>`;
+                }
             }
         }
 
@@ -411,14 +424,20 @@
             formData.append('file', selectedFile);
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
                 const response = await fetch(`${API_URL}/files/process`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: formData
+                    body: formData,
+                    signal: controller.signal,
+                    mode: 'cors'
                 });
 
+                clearTimeout(timeoutId);
                 const data = await response.json();
 
                 if (response.ok) {
@@ -438,7 +457,11 @@
                 }
             } catch (error) {
                 status.className = 'status error';
-                status.innerHTML = `❌ Erro de conexão: ${error.message}`;
+                if (error.name === 'AbortError') {
+                    status.innerHTML = `❌ Timeout: Upload demorou muito (>30s)`;
+                } else {
+                    status.innerHTML = `❌ Erro de conexão: ${error.message}`;
+                }
             } finally {
                 uploadBtnText.textContent = 'Enviar Arquivo';
             }
