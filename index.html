@@ -547,12 +547,13 @@
                 height: 100vh;
                 width: 260px;
                 z-index: 1000;
-                transition: left 0.3s ease;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 2px 0 20px rgba(0,0,0,0.1);
             }
 
             .sidebar.mobile-open {
                 left: 0;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+                box-shadow: 2px 0 30px rgba(0,0,0,0.3);
             }
 
             /* Overlay para fechar sidebar */
@@ -563,8 +564,11 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0,0,0,0.5);
+                background: rgba(0,0,0,0.6);
                 z-index: 999;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+                animation: fadeIn 0.3s ease;
             }
 
             .mobile-overlay.active {
@@ -573,20 +577,32 @@
 
             /* Botão menu hambúrguer */
             .mobile-menu-btn {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 position: fixed;
                 top: 12px;
                 left: 12px;
                 z-index: 998;
-                background: var(--red-primary);
+                background: linear-gradient(135deg, #DC2626, #B91C1C);
                 border: none;
                 color: white;
-                width: 42px;
-                height: 42px;
-                border-radius: 10px;
-                font-size: 20px;
+                width: 46px;
+                height: 46px;
+                border-radius: 12px;
+                font-size: 24px;
                 cursor: pointer;
-                box-shadow: var(--shadow-lg);
+                box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+                transition: all 0.3s ease;
+            }
+
+            .mobile-menu-btn:active {
+                transform: scale(0.95);
+                box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            }
+
+            .mobile-menu-btn.open {
+                background: linear-gradient(135deg, #991B1B, #7F1D1D);
             }
 
             .main-content {
@@ -830,9 +846,11 @@
             }
 
             .mobile-menu-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+                top: 10px;
+                left: 10px;
             }
 
             .sidebar {
@@ -853,8 +871,8 @@
 </head>
 <body>
     <!-- Mobile Menu Button -->
-    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
-        ☰
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Menu">
+        <span id="menuIcon">☰</span>
     </button>
 
     <!-- Mobile Overlay -->
@@ -1408,15 +1426,37 @@
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('active');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuIcon = document.getElementById('menuIcon');
+            
+            const isOpen = sidebar.classList.contains('mobile-open');
+            
+            if (isOpen) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                menuBtn.classList.remove('open');
+                if (menuIcon) menuIcon.textContent = '☰';
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('active');
+                menuBtn.classList.add('open');
+                if (menuIcon) menuIcon.textContent = '×';
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         function closeMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuIcon = document.getElementById('menuIcon');
+            
             sidebar.classList.remove('mobile-open');
             overlay.classList.remove('active');
+            menuBtn.classList.remove('open');
+            if (menuIcon) menuIcon.textContent = '☰';
+            document.body.style.overflow = '';
         }
 
         // Navegação
