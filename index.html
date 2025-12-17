@@ -1530,20 +1530,33 @@
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
+            console.log('Tentando fazer login com:', email);
+
             setTimeout(() => {
-                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                const user = users.find(u => u.email === email && u.password === password);
+                try {
+                    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    console.log('Usuários cadastrados:', users.length);
+                    
+                    const user = users.find(u => u.email === email && u.password === password);
 
-                if (user) {
-                    currentUser = user;
-                    authToken = 'token_' + Date.now();
-                    localStorage.setItem('token', authToken);
-                    localStorage.setItem('user', JSON.stringify(currentUser));
+                    if (user) {
+                        console.log('Login bem-sucedido:', user.name);
+                        currentUser = user;
+                        authToken = 'token_' + Date.now();
+                        localStorage.setItem('token', authToken);
+                        localStorage.setItem('user', JSON.stringify(currentUser));
 
-                    showMainApp();
-                    showNotification('Bem-vindo, ' + user.name + '!', 'success');
-                } else {
-                    showNotification('Email ou senha incorretos', 'error');
+                        showMainApp();
+                        showNotification('Bem-vindo, ' + user.name + '!', 'success');
+                    } else {
+                        console.log('Credenciais inválidas');
+                        showNotification('Email ou senha incorretos', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Entrar';
+                    }
+                } catch (error) {
+                    console.error('Erro no login:', error);
+                    showNotification('Erro ao processar login', 'error');
                     btn.disabled = false;
                     btn.innerHTML = 'Entrar';
                 }
@@ -1552,17 +1565,35 @@
 
         // Mostrar app principal
         function showMainApp() {
-            document.getElementById('authPage').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
+            const authPage = document.getElementById('authPage');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (!authPage || !mainApp) {
+                console.error('Elementos principais não encontrados');
+                return;
+            }
+
+            authPage.classList.add('hidden');
+            mainApp.classList.remove('hidden');
 
             if (currentUser) {
-                const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                document.getElementById('userAvatar').textContent = initials;
-                document.getElementById('userName').textContent = currentUser.name;
-                document.getElementById('userRole').textContent = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+                const userAvatar = document.getElementById('userAvatar');
+                const userName = document.getElementById('userName');
+                const userRole = document.getElementById('userRole');
+
+                if (userAvatar && userName && userRole) {
+                    const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                    userAvatar.textContent = initials;
+                    userName.textContent = currentUser.name;
+                    userRole.textContent = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+                }
 
                 if (currentUser.role === 'admin') {
-                    document.getElementById('adminSection').style.display = 'block';
+                    const adminSection = document.getElementById('adminSection');
+                    if (adminSection) {
+                        adminSection.style.display = 'block';
+                    }
+                    
                     // Mostrar área de upload de relatórios para admins
                     const adminReportsUpload = document.getElementById('adminReportsUpload');
                     if (adminReportsUpload) {
@@ -1578,20 +1609,21 @@
                 }
                 
                 // Preencher dados de configurações
-                if (document.getElementById('configName')) {
-                    document.getElementById('configName').value = currentUser.name;
-                }
-                if (document.getElementById('configEmail')) {
-                    document.getElementById('configEmail').value = currentUser.email;
-                }
-                if (document.getElementById('configRole')) {
-                    document.getElementById('configRole').value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
-                }
+                const configName = document.getElementById('configName');
+                const configEmail = document.getElementById('configEmail');
+                const configRole = document.getElementById('configRole');
+                
+                if (configName) configName.value = currentUser.name;
+                if (configEmail) configEmail.value = currentUser.email;
+                if (configRole) configRole.value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
             }
 
-            initializeUsageTracking();
-            updateDashboardStats();
-            initDatabase();
+            // Inicializar sistemas
+            setTimeout(() => {
+                initializeUsageTracking();
+                updateDashboardStats();
+                initDatabase();
+            }, 100);
         }
 
         // Logout
@@ -3368,12 +3400,36 @@
 
         // Verificar sessão ao carregar
         document.addEventListener('DOMContentLoaded', () => {
+            // Garantir que todos os elementos existam
+            const authPage = document.getElementById('authPage');
+            const mainApp = document.getElementById('mainApp');
+            
+            if (!authPage || !mainApp) {
+                console.error('Elementos de autenticação não encontrados');
+                return;
+            }
+
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
+            
             if (token && user) {
-                currentUser = JSON.parse(user);
-                authToken = token;
-                showMainApp();
+                try {
+                    currentUser = JSON.parse(user);
+                    authToken = token;
+                    showMainApp();
+                } catch (error) {
+                    console.error('Erro ao restaurar sessão:', error);
+                    // Limpar dados corrompidos
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    // Mostrar tela de login
+                    authPage.classList.remove('hidden');
+                    mainApp.classList.add('hidden');
+                }
+            } else {
+                // Garantir que mostra a tela de login
+                authPage.classList.remove('hidden');
+                mainApp.classList.add('hidden');
             }
         });
     </script>
