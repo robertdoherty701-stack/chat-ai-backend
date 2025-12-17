@@ -915,6 +915,11 @@
                 </button>
             </form>
             
+            <!-- BOTÃO DE TESTE DE EMERGÊNCIA -->
+            <button onclick="forceShowApp()" style="background: #10B981; border: none; color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 12px; width: 100%;">
+                🔧 TESTE: Forçar Entrada (Debug)
+            </button>
+            
             <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
                 <p style="color: rgba(255,255,255,0.8); font-size: 14px;">Não tem uma conta?</p>
                 <button onclick="showRegisterForm()" style="background: #DC2626; border: 2px solid #DC2626; color: white; padding: 12px 32px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.3s;" onmouseover="this.style.background='#1F2937'; this.style.borderColor='#1F2937'; this.style.color='white'" onmouseout="this.style.background='#DC2626'; this.style.borderColor='#DC2626'; this.style.color='white'">
@@ -1563,38 +1568,62 @@
             }, 800);
         }
 
+        // FUNÇÃO DE TESTE DE EMERGÊNCIA
+        function forceShowApp() {
+            console.log('🔧 TESTE DE EMERGÊNCIA - Forçando transição');
+            const auth = document.getElementById('authPage');
+            const app = document.getElementById('mainApp');
+            
+            if (!currentUser) {
+                currentUser = {
+                    name: 'Usuário Teste',
+                    email: 'teste@teste.com',
+                    role: 'admin'
+                };
+            }
+            
+            auth.style.cssText = 'display: none !important;';
+            app.style.cssText = 'display: flex !important;';
+            
+            console.log('✅ Transição forçada completa');
+        }
+        
         // Mostrar app principal
         function showMainApp() {
             console.log('=== showMainApp chamado ===');
             const authPage = document.getElementById('authPage');
             const mainApp = document.getElementById('mainApp');
             
-            console.log('authPage:', authPage);
-            console.log('mainApp:', mainApp);
+            console.log('authPage encontrado:', !!authPage);
+            console.log('mainApp encontrado:', !!mainApp);
+            console.log('currentUser:', currentUser);
             
             if (!authPage || !mainApp) {
-                console.error('ERRO: Elementos principais não encontrados!');
-                alert('ERRO: Elementos do DOM não encontrados. Recarregue a página.');
+                console.error('❌ ERRO: Elementos não encontrados!');
+                alert('ERRO CRÍTICO: Elementos do DOM não encontrados!\nauth: ' + !!authPage + '\napp: ' + !!mainApp);
                 return;
             }
 
             if (!currentUser) {
-                console.error('ERRO: currentUser não definido!');
+                console.error('❌ ERRO: currentUser não definido!');
+                alert('ERRO: Usuário não está definido!');
                 return;
             }
 
-            console.log('Usuário atual:', currentUser);
-            console.log('Ocultando authPage e mostrando mainApp...');
+            console.log('👤 Usuário:', currentUser.name);
+            console.log('🔄 Iniciando transição...');
             
-            // PRIMEIRO remover/adicionar classes
+            // Método 1: Classes CSS
             authPage.classList.add('hidden');
             mainApp.classList.remove('hidden');
             
-            // DEPOIS forçar com !important via atributo style
-            authPage.setAttribute('style', 'display: none !important;');
-            mainApp.setAttribute('style', 'display: flex !important;');
+            // Método 2: cssText com !important
+            authPage.style.cssText = 'display: none !important;';
+            mainApp.style.cssText = 'display: flex !important;';
             
-            console.log('Transição de tela completa');
+            console.log('✅ Transição aplicada');
+            console.log('authPage display:', window.getComputedStyle(authPage).display);
+            console.log('mainApp display:', window.getComputedStyle(mainApp).display);
 
             setTimeout(() => {
                 try {
@@ -3433,37 +3462,22 @@
             console.log('mainApp encontrado:', !!mainApp);
             
             if (!authPage || !mainApp) {
-                console.error('ERRO CRÍTICO: Elementos de autenticação não encontrados');
+                console.error('❌ ERRO CRÍTICO: Elementos de autenticação não encontrados');
                 return;
             }
 
-            // FORÇAR estado inicial - tela de login visível
-            authPage.style.display = 'flex';
-            authPage.classList.remove('hidden');
-            mainApp.style.display = 'none';
-            mainApp.classList.add('hidden');
+            // FORÇAR estado inicial - tela de login SEMPRE visível
+            authPage.style.cssText = 'display: flex !important;';
+            mainApp.style.cssText = 'display: none !important;';
             
-            console.log('Estado inicial forçado: authPage visível, mainApp oculto');
-
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
+            console.log('✅ Estado inicial: authPage visível, mainApp oculto');
             
-            console.log('Token existente:', !!token);
-            console.log('Usuário salvo:', !!user);
+            // DESABILITADO: Auto-login removido para debugging
+            // Limpar sessões antigas que podem estar causando problema
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
             
-            if (token && user) {
-                try {
-                    currentUser = JSON.parse(user);
-                    authToken = token;
-                    console.log('Tentando auto-login para:', currentUser.name);
-                    showMainApp();
-                } catch (error) {
-                    console.error('Erro ao restaurar sessão:', error);
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                }
-            }
-            
+            console.log('🔧 Auto-login DESABILITADO para debug');
             console.log('=== DOMContentLoaded concluído ===');
         });
     </script>
