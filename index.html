@@ -893,7 +893,8 @@
 
     <!-- Auth Page -->
     <div class="auth-page" id="authPage">
-        <div class="auth-container fade-in">
+        <!-- Login Form -->
+        <div class="auth-container fade-in" id="loginForm">
             <div class="auth-logo">
                 <img src="https://i.imgur.com/20qFKr1.png" alt="Logo">
             </div>
@@ -913,6 +914,51 @@
                     Entrar
                 </button>
             </form>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p style="color: rgba(255,255,255,0.8); font-size: 14px;">Não tem uma conta?</p>
+                <button onclick="showRegisterForm()" style="background: transparent; border: 2px solid white; color: white; padding: 12px 32px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.3s;" onmouseover="this.style.background='white'; this.style.color='#DC2626'" onmouseout="this.style.background='transparent'; this.style.color='white'">
+                    Criar Nova Conta
+                </button>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-container fade-in hidden" id="registerForm">
+            <div class="auth-logo">
+                <img src="https://i.imgur.com/20qFKr1.png" alt="Logo">
+            </div>
+            <h1 class="auth-title">Criar Nova Conta</h1>
+            <p class="auth-subtitle">Preencha os dados para se registrar</p>
+
+            <form onsubmit="return handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" class="form-input" id="registerName" placeholder="Seu nome completo" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="registerEmail" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirmar Senha</label>
+                    <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Digite a senha novamente" minlength="6" required>
+                </div>
+                <button type="submit" class="btn-primary" id="registerBtn">
+                    Criar Conta
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p style="color: rgba(255,255,255,0.8); font-size: 14px;">Já tem uma conta?</p>
+                <button onclick="showLoginForm()" style="background: transparent; border: 2px solid white; color: white; padding: 12px 32px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.3s;" onmouseover="this.style.background='white'; this.style.color='#DC2626'" onmouseout="this.style.background='transparent'; this.style.color='white'">
+                    Voltar ao Login
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1350,6 +1396,84 @@
                 { id: 'admin_4', name: 'Admin Geral', email: 'admin@example.com', password: 'Admin123!', role: 'admin', createdAt: new Date().toISOString() }
             ];
             localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+
+        // Funções de navegação entre login e registro
+        function showRegisterForm() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showLoginForm() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        // Função de registro de novo usuário
+        function handleRegister(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim().toLowerCase();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            // Validações
+            if (!name || !email || !password) {
+                showNotification('Por favor, preencha todos os campos', 'error');
+                return false;
+            }
+
+            if (password !== passwordConfirm) {
+                showNotification('As senhas não coincidem', 'error');
+                return false;
+            }
+
+            if (password.length < 6) {
+                showNotification('A senha deve ter pelo menos 6 caracteres', 'error');
+                return false;
+            }
+
+            // Verificar se o email já existe
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const emailExists = users.some(u => u.email === email);
+
+            if (emailExists) {
+                showNotification('Este email já está registrado', 'error');
+                return false;
+            }
+
+            // Criar novo usuário
+            const newUser = {
+                name: name,
+                email: email,
+                password: password,
+                role: 'user', // Usuários novos são sempre 'user', não 'admin'
+                createdAt: new Date().toISOString()
+            };
+
+            // Salvar no localStorage
+            users.push(newUser);
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+            // Mostrar sucesso e redirecionar para login
+            showNotification('✅ Conta criada com sucesso! Faça login agora.', 'success');
+            
+            // Limpar formulário
+            document.getElementById('registerName').value = '';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerPasswordConfirm').value = '';
+
+            // Voltar para tela de login após 1.5 segundos
+            setTimeout(() => {
+                showLoginForm();
+                // Preencher email no login
+                document.getElementById('loginEmail').value = email;
+                document.getElementById('loginPassword').value = '';
+            }, 1500);
+
+            return false;
         }
 
         // Login
