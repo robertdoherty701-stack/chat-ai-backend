@@ -1612,7 +1612,8 @@
         }
 
         // Chat IA
-        function sendChatMessage() {
+        // IA Inteligente - Respostas e análise de arquivos
+        async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             if (!message) return;
@@ -1628,14 +1629,170 @@
             input.value = '';
             container.scrollTop = container.scrollHeight;
 
-            // Resposta da IA (simulada)
-            setTimeout(() => {
+            // Mostrar indicador de digitação
+            const typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typingIndicator';
+            typingIndicator.style.cssText = 'background: var(--bg-primary); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%; opacity: 0.7;';
+            typingIndicator.innerHTML = `<strong>🤖 IA:</strong> <span style="animation: pulse 1.5s infinite;">Pensando...</span>`;
+            container.appendChild(typingIndicator);
+            container.scrollTop = container.scrollHeight;
+
+            // Processar resposta inteligente
+            setTimeout(async () => {
+                typingIndicator.remove();
+                const response = await generateIntelligentResponse(message);
+                
                 const aiMsg = document.createElement('div');
                 aiMsg.style.cssText = 'background: var(--bg-primary); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%;';
-                aiMsg.innerHTML = `<strong>🤖 IA:</strong> Entendi sua mensagem sobre "${message}". Como posso ajudar você com isso?`;
+                aiMsg.innerHTML = `<strong>🤖 IA:</strong> ${response}`;
                 container.appendChild(aiMsg);
                 container.scrollTop = container.scrollHeight;
-            }, 1000);
+            }, 800);
+        }
+
+        async function generateIntelligentResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Verificar se é uma pergunta sobre arquivos
+            if (lowerMessage.includes('arquivo') || lowerMessage.includes('upload') || 
+                lowerMessage.includes('documento') || lowerMessage.includes('enviei') ||
+                lowerMessage.includes('mandei')) {
+                return await respondAboutFiles(lowerMessage);
+            }
+            
+            // Perguntas sobre o sistema
+            if (lowerMessage.includes('como') && (lowerMessage.includes('usar') || lowerMessage.includes('funciona'))) {
+                return `Este sistema possui várias funcionalidades:\n\n📊 <strong>Dashboard</strong>: Visualize métricas e estatísticas\n💬 <strong>Chat IA</strong>: Converse comigo!\n📁 <strong>Arquivos IA</strong>: Envie arquivos para análise automática\n📈 <strong>Relatórios</strong>: Acesse relatórios detalhados\n\nVocê pode enviar arquivos PDF, DOC, DOCX, Excel, imagens e mais. Eu analiso automaticamente e organizo para você!`;
+            }
+            
+            // Perguntas sobre capacidades
+            if (lowerMessage.includes('o que') && (lowerMessage.includes('pode') || lowerMessage.includes('faz'))) {
+                return `Eu sou uma IA com várias capacidades:\n\n🤖 Respondo perguntas sobre o sistema\n📁 Analiso seus arquivos enviados\n📊 Forneço insights sobre seus documentos\n🔍 Busco informações nos arquivos\n📋 Organizo e categorizo automaticamente\n\nEnvie um arquivo e eu vou analisá-lo para você!`;
+            }
+            
+            // Saudações
+            if (lowerMessage.match(/\b(oi|olá|ola|hey|ola|bom dia|boa tarde|boa noite)\b/)) {
+                return `Olá! 👋 Sou sua assistente IA. Posso ajudá-lo com:\n\n✅ Informações sobre seus arquivos\n✅ Análise de documentos\n✅ Dúvidas sobre o sistema\n✅ Organização de dados\n\nComo posso ajudar você hoje?`;
+            }
+            
+            // Agradecimentos
+            if (lowerMessage.match(/\b(obrigad|obrigada|thanks|valeu)\b/)) {
+                return `Por nada! 😊 Estou aqui para ajudar. Se precisar de mais alguma coisa, é só chamar!`;
+            }
+            
+            // Perguntas sobre análise
+            if (lowerMessage.includes('analis') || lowerMessage.includes('resumo') || lowerMessage.includes('informação')) {
+                return await respondAboutFiles(lowerMessage);
+            }
+            
+            // Perguntas sobre quantidade
+            if (lowerMessage.includes('quantos') || lowerMessage.includes('quanto')) {
+                return await getFileStatistics();
+            }
+            
+            // Respostas contextuais padrão
+            const contextualResponses = [
+                `Entendi sua pergunta sobre "${message}". ${await getContextualHelp(lowerMessage)}`,
+                `Interessante! ${await getContextualHelp(lowerMessage)}`,
+                `Sobre "${message}": ${await getContextualHelp(lowerMessage)}`
+            ];
+            
+            return contextualResponses[Math.floor(Math.random() * contextualResponses.length)];
+        }
+
+        async function respondAboutFiles(message) {
+            if (!db) {
+                return `O banco de dados ainda está inicializando. Por favor, aguarde um momento e tente novamente.`;
+            }
+
+            try {
+                const files = await getAllFilesFromDB();
+                
+                if (files.length === 0) {
+                    return `Você ainda não enviou nenhum arquivo. Vá para a seção <strong>Arquivos IA</strong> e envie documentos para que eu possa analisá-los! 📁`;
+                }
+
+                // Estatísticas dos arquivos
+                const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+                const categories = {};
+                files.forEach(f => {
+                    const cat = f.analysis?.category || 'Outros';
+                    categories[cat] = (categories[cat] || 0) + 1;
+                });
+
+                let response = `📊 <strong>Análise dos seus arquivos:</strong>\n\n`;
+                response += `📁 Total: <strong>${files.length} arquivo(s)</strong>\n`;
+                response += `💾 Tamanho total: <strong>${(totalSize / 1024 / 1024).toFixed(2)} MB</strong>\n\n`;
+                
+                response += `<strong>Por categoria:</strong>\n`;
+                Object.entries(categories).forEach(([cat, count]) => {
+                    response += `${cat}: ${count} arquivo(s)\n`;
+                });
+
+                // Arquivos recentes
+                const recentFiles = files.slice(-3).reverse();
+                response += `\n<strong>Últimos enviados:</strong>\n`;
+                recentFiles.forEach(f => {
+                    response += `• ${f.name} (${(f.size / 1024).toFixed(2)} KB)\n`;
+                });
+
+                // Insights específicos se perguntarem
+                if (message.includes('pdf')) {
+                    const pdfs = files.filter(f => f.type === 'pdf');
+                    response += `\n📄 Você tem <strong>${pdfs.length} arquivo(s) PDF</strong>`;
+                }
+                if (message.includes('image') || message.includes('imagem')) {
+                    const images = files.filter(f => ['png', 'jpg', 'jpeg', 'gif'].includes(f.type));
+                    response += `\n🖼️ Você tem <strong>${images.length} imagem(ns)</strong>`;
+                }
+
+                return response;
+            } catch (error) {
+                return `Desculpe, tive um problema ao acessar os arquivos. Erro: ${error.message}`;
+            }
+        }
+
+        async function getAllFilesFromDB() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    resolve([]);
+                    return;
+                }
+                
+                const transaction = db.transaction(['files'], 'readonly');
+                const store = transaction.objectStore('files');
+                const request = store.getAll();
+                
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getFileStatistics() {
+            const files = await getAllFilesFromDB();
+            
+            if (files.length === 0) {
+                return `Você ainda não tem arquivos. Envie alguns documentos na seção <strong>Arquivos IA</strong>! 📤`;
+            }
+
+            const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+            const types = new Set(files.map(f => f.type));
+            
+            return `📊 <strong>Estatísticas:</strong>\n\n` +
+                   `📁 Arquivos: <strong>${files.length}</strong>\n` +
+                   `📂 Tipos diferentes: <strong>${types.size}</strong>\n` +
+                   `💾 Espaço usado: <strong>${(totalSize / 1024 / 1024).toFixed(2)} MB</strong>\n` +
+                   `📅 Último upload: <strong>${new Date(files[files.length - 1]?.uploadDate).toLocaleDateString('pt-BR')}</strong>`;
+        }
+
+        async function getContextualHelp(message) {
+            const files = await getAllFilesFromDB();
+            
+            if (files.length > 0) {
+                return `Vejo que você já tem ${files.length} arquivo(s) no sistema. Posso ajudá-lo a analisá-los ou organizar melhor. Me pergunte sobre seus arquivos!`;
+            } else {
+                return `Você pode começar enviando arquivos na seção <strong>Arquivos IA</strong>. Eu analiso automaticamente PDFs, documentos, planilhas, imagens e muito mais!`;
+            }
         }
 
         // Upload de arquivos
