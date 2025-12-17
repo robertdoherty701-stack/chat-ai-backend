@@ -1497,6 +1497,8 @@
                 updateAnalytics();
             } else if (section === 'database') {
                 loadDatabaseTable();
+            } else if (section === 'arquivos') {
+                loadUserFiles();
             }
         }
 
@@ -1763,7 +1765,22 @@
                 const store = transaction.objectStore('files');
                 const request = store.getAll();
                 
-                request.onsuccess = () => resolve(request.result || []);
+                request.onsuccess = () => {
+                    // Adicionar IDs aos arquivos
+                    const files = request.result || [];
+                    const cursorRequest = store.openCursor();
+                    const filesWithIds = [];
+                    
+                    cursorRequest.onsuccess = (e) => {
+                        const cursor = e.target.result;
+                        if (cursor) {
+                            filesWithIds.push({ ...cursor.value, id: cursor.key });
+                            cursor.continue();
+                        } else {
+                            resolve(filesWithIds);
+                        }
+                    };
+                };
                 request.onerror = () => reject(request.error);
             });
         }
@@ -1838,13 +1855,19 @@
             const transaction = db.transaction(['files'], 'readwrite');
             const store = transaction.objectStore('files');
             
+            // Verifica se é admin para compartilhar com todos
+            const isAdmin = currentUser.role === 'admin';
+            
             const fileData = {
                 name: file.name,
                 size: file.size,
                 type: file.type || getFileType(file.name),
                 uploadDate: new Date().toISOString(),
                 analysis: analysis,
-                user: currentUser.email
+                user: currentUser.email,
+                userName: currentUser.name,
+                sharedWithAll: isAdmin, // Admin compartilha com todos
+                uploadedBy: isAdmin ? 'admin' : 'user'
             };
             
             store.add(fileData);
@@ -1852,7 +1875,12 @@
             transaction.oncomplete = () => {
                 updateDatabaseStats();
                 updateAnalytics();
-                logAction('file_upload', `Arquivo ${file.name} enviado`);
+                logAction('file_upload', `Arquivo ${file.name} enviado${isAdmin ? ' e compartilhado com todos' : ''}`);
+                loadUserFiles(); // Recarregar lista de arquivos
+                
+                if (isAdmin) {
+                    showNotification(`Arquivo compartilhado com todos os usuários!`, 'success');
+                }
             };
         }
         
@@ -1868,6 +1896,111 @@
                 user: currentUser.email,
                 timestamp: new Date().toISOString()
             });
+        }
+        
+        // Carregar arquivos do usuário (próprios + compartilhados por admins)
+        async function loadUserFiles() {
+            const container = document.getElementById('filesListContainer');
+            if (!container || !db) return;
+            
+            try {
+                const allFiles = await getAllFilesFromDB();
+                
+                // Filtrar: arquivos próprios OU compartilhados por admin
+                const userFiles = allFiles.filter(file => 
+                    file.user === currentUser.email || file.sharedWithAll === true
+                );
+                
+                if (userFiles.length === 0) {
+                    container.innerHTML = '<div class="card" style="text-align: center; padding: 40px;"><p style="color: var(--text-secondary);">Nenhum arquivo ainda. Envie documentos para começar!</p></div>';
+                    return;
+                }
+                
+                // Agrupar por tipo
+                const myFiles = userFiles.filter(f => f.user === currentUser.email);
+                const sharedFiles = userFiles.filter(f => f.sharedWithAll && f.user !== currentUser.email);
+                
+                let html = '';
+                
+                // Arquivos compartilhados (se houver)
+                if (sharedFiles.length > 0) {
+                    html += '<div class="card" style="margin-bottom: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02));">';
+                    html += '<h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">';
+                    html += '🌐 Arquivos Compartilhados pela Administração</h3>';
+                    
+                    sharedFiles.forEach(file => {
+                        html += createFileCard(file, true);
+                    });
+                    
+                    html += '</div>';
+                }
+                
+                // Meus arquivos
+                if (myFiles.length > 0) {
+                    html += '<div class="card">';
+                    html += '<h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">';
+                    html += '📁 Meus Arquivos';
+                    if (currentUser.role === 'admin') {
+                        html += ' <span style="font-size: 11px; background: #DC2626; color: white; padding: 2px 8px; border-radius: 6px;">COMPARTILHADOS</span>';
+                    }
+                    html += '</h3>';
+                    
+                    myFiles.forEach(file => {
+                        html += createFileCard(file, false);
+                    });
+                    
+                    html += '</div>';
+                }
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Erro ao carregar arquivos:', error);
+                container.innerHTML = '<div class="card"><p style="color: var(--text-secondary); text-align: center;">Erro ao carregar arquivos</p></div>';
+            }
+        }
+        
+        function createFileCard(file, isShared) {
+            const icon = file.analysis?.category?.split(' ')[0] || '📄';
+            const category = file.analysis?.category || 'Arquivo';
+            const tags = file.analysis?.tags || [];
+            const uploadDate = new Date(file.uploadDate).toLocaleDateString('pt-BR');
+            const uploaderInfo = isShared ? `<div style="font-size: 11px; color: #DC2626; font-weight: 600; margin-top: 4px;">⬆️ Enviado por: ${file.userName || file.user}</div>` : '';
+            
+            return `
+                <div style="display: flex; align-items: start; gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); transition: background 0.2s;" onmouseover="this.style.background='rgba(220,38,38,0.02)'" onmouseout="this.style.background='transparent'">
+                    <div style="font-size: 48px;">${icon}</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; color: var(--text-dark); font-size: 15px; margin-bottom: 4px;">${file.name}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">
+                            ${category} • ${(file.size / 1024).toFixed(2)} KB • ${uploadDate}
+                        </div>
+                        ${uploaderInfo}
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+                            ${tags.map(tag => `<span style="background: rgba(220, 38, 38, 0.1); color: #DC2626; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;">${tag}</span>`).join('')}
+                            ${isShared ? '<span style="background: #10B981; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;">✅ Compartilhado</span>' : ''}
+                        </div>
+                    </div>
+                    ${!isShared ? `<button class="btn-primary" style="width: auto; padding: 8px 16px; background: #EF4444; font-size: 13px;" onclick="deleteFile(${file.id})">Remover</button>` : ''}
+                </div>
+            `;
+        }
+        
+        async function deleteFile(fileId) {
+            if (!confirm('Deseja realmente remover este arquivo?')) return;
+            
+            if (!db) return;
+            
+            const transaction = db.transaction(['files'], 'readwrite');
+            const store = transaction.objectStore('files');
+            store.delete(fileId);
+            
+            transaction.oncomplete = () => {
+                showNotification('Arquivo removido com sucesso!', 'success');
+                loadUserFiles();
+                updateAnalytics();
+                updateDatabaseStats();
+            };
         }
         
         function updateDatabaseStats() {
@@ -2152,29 +2285,6 @@
                 // Salvar no banco de dados
                 saveFileToDatabase(file, analysis);
                 
-                // Criar card do arquivo
-                const fileCard = document.createElement('div');
-                fileCard.className = 'card';
-                fileCard.style.marginBottom = '16px';
-                fileCard.innerHTML = `
-                    <div style="display: flex; align-items: start; gap: 16px;">
-                        <div style="font-size: 48px;">${analysis.category.split(' ')[0]}</div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 700; color: var(--text-dark); font-size: 16px; margin-bottom: 4px;">${file.name}</div>
-                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
-                                ${analysis.category} • ${analysis.size}
-                            </div>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                ${analysis.tags.map(tag => `<span style="background: rgba(220, 38, 38, 0.1); color: #DC2626; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${tag}</span>`).join('')}
-                            </div>
-                        </div>
-                        <button class="btn-primary" style="width: auto; padding: 10px 20px; background: #EF4444;" onclick="this.parentElement.parentElement.remove()">
-                            Remover
-                        </button>
-                    </div>
-                `;
-                container.appendChild(fileCard);
-                
                 // Adicionar à análise
                 analysisHtml += `
                     <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(220, 38, 38, 0.2);">
@@ -2190,10 +2300,15 @@
             analysisContent.innerHTML = analysisHtml;
             analysisResult.style.display = 'block';
             
-            showNotification(`${files.length} arquivo(s) analisado(s) pela IA!`, 'success');
+            const isAdmin = currentUser.role === 'admin';
+            const shareMsg = isAdmin ? ' e compartilhado(s) com todos os usuários' : '';
+            showNotification(`${files.length} arquivo(s) analisado(s) pela IA${shareMsg}!`, 'success');
             
             // Reset input
             event.target.value = '';
+            
+            // Recarregar lista após salvar
+            setTimeout(() => loadUserFiles(), 500);
         }
 
         // Lista de usuários
