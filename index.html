@@ -2040,21 +2040,92 @@
             }
         }
 
-        // Menu de Relatórios
+        // Menu de Relatórios com botões interativos
         function showReportsMenu() {
-            return `📊 <strong>RELATÓRIOS DISPONÍVEIS</strong>\n\n` +
-                   `Escolha uma opção digitando o <strong>número</strong> ou <strong>nome</strong>:\n\n` +
-                   `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05)); padding: 16px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n` +
-                   `<strong>1</strong> - 📊 Novos Clientes\n` +
-                   `<strong>2</strong> - 🧀 Queijo do Reino\n` +
-                   `<strong>3</strong> - 🚫 Não Cobertos Clientes\n` +
-                   `<strong>4</strong> - 🏭 Não Cobertos Fornecedor\n` +
-                   `<strong>5</strong> - 🥛 MSL Danone\n` +
-                   `<strong>6</strong> - 🎯 MSL OTG\n` +
-                   `<strong>7</strong> - 🏪 MSL Min\n` +
-                   `<strong>8</strong> - 🛒 MSL Super\n` +
-                   `</div>\n\n` +
-                   `<small>💡 Exemplo: Digite "1" ou "novos clientes"</small>`;
+            const buttons = `
+                <div style="background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05)); padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 16px 0;">
+                    <h3 style="margin: 0 0 16px 0; color: #DC2626;">📊 RELATÓRIOS DISPONÍVEIS</h3>
+                    <p style="margin-bottom: 16px; color: #6B7280;">Clique em uma opção para visualizar o relatório:</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <button onclick="selectReport('novos_clientes')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            📊 Novos Clientes
+                        </button>
+                        
+                        <button onclick="selectReport('queijo_reino')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🧀 Queijo do Reino
+                        </button>
+                        
+                        <button onclick="selectReport('nao_cobertos_clientes')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🚫 Não Cobertos Clientes
+                        </button>
+                        
+                        <button onclick="selectReport('nao_cobertos_fornecedor')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🏭 Não Cobertos Fornecedor
+                        </button>
+                        
+                        <button onclick="selectReport('msl_danone')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🥛 MSL Danone
+                        </button>
+                        
+                        <button onclick="selectReport('msl_otg')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🎯 MSL OTG
+                        </button>
+                        
+                        <button onclick="selectReport('msl_min')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🏪 MSL Min
+                        </button>
+                        
+                        <button onclick="selectReport('msl_super')" style="background: linear-gradient(135deg, #DC2626, #B91C1C); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.3s; box-shadow: 0 2px 8px rgba(220,38,38,0.2);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(220,38,38,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(220,38,38,0.2)'">
+                            🛒 MSL Super
+                        </button>
+                    </div>
+                </div>
+            `;
+            return buttons;
+        }
+
+        // Função para selecionar relatório via botão
+        async function selectReport(reportType) {
+            const container = document.getElementById('chatMessages');
+            
+            // Adicionar mensagem do usuário simulando a escolha
+            const reportNames = {
+                'novos_clientes': '📊 Novos Clientes',
+                'queijo_reino': '🧀 Queijo do Reino',
+                'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
+                'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
+                'msl_danone': '🥛 MSL Danone',
+                'msl_otg': '🎯 MSL OTG',
+                'msl_min': '🏪 MSL Min',
+                'msl_super': '🛒 MSL Super'
+            };
+            
+            const userMsg = document.createElement('div');
+            userMsg.style.cssText = 'background: var(--red-light); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%; margin-left: auto;';
+            userMsg.innerHTML = `<strong>Você:</strong> ${reportNames[reportType]}`;
+            container.appendChild(userMsg);
+            container.scrollTop = container.scrollHeight;
+
+            // Mostrar indicador de carregamento
+            const typingIndicator = document.createElement('div');
+            typingIndicator.id = 'typingIndicator';
+            typingIndicator.style.cssText = 'background: var(--bg-primary); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%; opacity: 0.7;';
+            typingIndicator.innerHTML = `<strong>🤖 IA:</strong> <span style="animation: pulse 1.5s infinite;">Carregando relatório...</span>`;
+            container.appendChild(typingIndicator);
+            container.scrollTop = container.scrollHeight;
+
+            // Carregar dados do relatório
+            setTimeout(async () => {
+                typingIndicator.remove();
+                const response = await loadReportData(reportType);
+                
+                const aiMsg = document.createElement('div');
+                aiMsg.style.cssText = 'background: var(--bg-primary); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; margin-bottom: 12px; max-width: 70%;';
+                aiMsg.innerHTML = `<strong>🤖 IA:</strong> ${response}`;
+                container.appendChild(aiMsg);
+                container.scrollTop = container.scrollHeight;
+            }, 600);
         }
 
         // Carregar dados do relatório
