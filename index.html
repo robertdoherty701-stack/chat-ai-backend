@@ -904,11 +904,11 @@
             <form onsubmit="return handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" value="nathiely@empresa.com" required>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Senha</label>
-                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" value="Nathiely@2025" required>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
                 </div>
                 <button type="submit" class="btn-primary" id="loginBtn">
                     Entrar
@@ -1565,65 +1565,85 @@
 
         // Mostrar app principal
         function showMainApp() {
+            console.log('=== showMainApp chamado ===');
             const authPage = document.getElementById('authPage');
             const mainApp = document.getElementById('mainApp');
             
+            console.log('authPage:', authPage);
+            console.log('mainApp:', mainApp);
+            
             if (!authPage || !mainApp) {
-                console.error('Elementos principais não encontrados');
+                console.error('ERRO: Elementos principais não encontrados!');
+                alert('ERRO: Elementos do DOM não encontrados. Recarregue a página.');
                 return;
             }
 
+            console.log('Ocultando authPage...');
+            authPage.style.display = 'none';
             authPage.classList.add('hidden');
+            
+            console.log('Mostrando mainApp...');
+            mainApp.style.display = 'flex';
             mainApp.classList.remove('hidden');
 
-            if (currentUser) {
-                const userAvatar = document.getElementById('userAvatar');
-                const userName = document.getElementById('userName');
-                const userRole = document.getElementById('userRole');
-
-                if (userAvatar && userName && userRole) {
-                    const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                    userAvatar.textContent = initials;
-                    userName.textContent = currentUser.name;
-                    userRole.textContent = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
-                }
-
-                if (currentUser.role === 'admin') {
-                    const adminSection = document.getElementById('adminSection');
-                    if (adminSection) {
-                        adminSection.style.display = 'block';
-                    }
-                    
-                    // Mostrar área de upload de relatórios para admins
-                    const adminReportsUpload = document.getElementById('adminReportsUpload');
-                    if (adminReportsUpload) {
-                        adminReportsUpload.style.display = 'block';
-                    }
-                }
-
-                // Atualizar contador de usuários
-                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                const userCountBadge = document.getElementById('userCount');
-                if (userCountBadge) {
-                    userCountBadge.textContent = users.length;
-                }
-                
-                // Preencher dados de configurações
-                const configName = document.getElementById('configName');
-                const configEmail = document.getElementById('configEmail');
-                const configRole = document.getElementById('configRole');
-                
-                if (configName) configName.value = currentUser.name;
-                if (configEmail) configEmail.value = currentUser.email;
-                if (configRole) configRole.value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+            if (!currentUser) {
+                console.error('ERRO: currentUser não definido!');
+                return;
             }
 
-            // Inicializar sistemas
+            console.log('Usuário atual:', currentUser);
+
             setTimeout(() => {
-                initializeUsageTracking();
-                updateDashboardStats();
-                initDatabase();
-            }, 100);
+                try {
+                    const userAvatar = document.getElementById('userAvatar');
+                    const userName = document.getElementById('userName');
+                    const userRole = document.getElementById('userRole');
+
+                    if (userAvatar && userName && userRole) {
+                        const initials = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                        userAvatar.textContent = initials;
+                        userName.textContent = currentUser.name;
+                        userRole.textContent = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+                        console.log('Perfil do usuário atualizado');
+                    }
+
+                    if (currentUser.role === 'admin') {
+                        const adminSection = document.getElementById('adminSection');
+                        if (adminSection) {
+                            adminSection.style.display = 'block';
+                            console.log('Seção admin ativada');
+                        }
+                        
+                        const adminReportsUpload = document.getElementById('adminReportsUpload');
+                        if (adminReportsUpload) {
+                            adminReportsUpload.style.display = 'block';
+                            console.log('Upload de relatórios ativado');
+                        }
+                    }
+
+                    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                    const userCountBadge = document.getElementById('userCount');
+                    if (userCountBadge) {
+                        userCountBadge.textContent = users.length;
+                    }
+                    
+                    const configName = document.getElementById('configName');
+                    const configEmail = document.getElementById('configEmail');
+                    const configRole = document.getElementById('configRole');
+                    
+                    if (configName) configName.value = currentUser.name;
+                    if (configEmail) configEmail.value = currentUser.email;
+                    if (configRole) configRole.value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+
+                    initializeUsageTracking();
+                    updateDashboardStats();
+                    initDatabase();
+                    
+                    console.log('=== showMainApp concluído com sucesso ===');
+                } catch (error) {
+                    console.error('Erro ao inicializar app:', error);
+                }
+            }, 200);
         }
 
         // Logout
