@@ -977,11 +977,7 @@
                 <!-- Principal -->
                 <div class="nav-section">
                     <div class="nav-section-title">Principal</div>
-                    <a class="sidebar-link active" onclick="navigateTo(event, 'dashboard')">
-                        <span class="sidebar-link-icon">📊</span>
-                        <span class="sidebar-link-text">Dashboard</span>
-                    </a>
-                    <a class="sidebar-link" onclick="navigateTo(event, 'chat')">
+                    <a class="sidebar-link active" onclick="navigateTo(event, 'chat')">
                         <span class="sidebar-link-icon">💬</span>
                         <span class="sidebar-link-text">Chat IA</span>
                         <span class="sidebar-link-badge">PRO</span>
@@ -991,11 +987,6 @@
                 <!-- Ferramentas -->
                 <div class="nav-section">
                     <div class="nav-section-title">Ferramentas</div>
-                    <a class="sidebar-link" onclick="navigateTo(event, 'arquivos')">
-                        <span class="sidebar-link-icon">📁</span>
-                        <span class="sidebar-link-text">Arquivos IA</span>
-                        <span class="sidebar-link-badge">NEW</span>
-                    </a>
                     <a class="sidebar-link" onclick="navigateTo(event, 'relatorios')">
                         <span class="sidebar-link-icon">📈</span>
                         <span class="sidebar-link-text">Relatórios</span>
@@ -1005,6 +996,15 @@
                 <!-- Administração -->
                 <div class="nav-section" id="adminSection" style="display: none;">
                     <div class="nav-section-title">Administração</div>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'dashboard')">
+                        <span class="sidebar-link-icon">📊</span>
+                        <span class="sidebar-link-text">Dashboard</span>
+                    </a>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'arquivos')">
+                        <span class="sidebar-link-icon">📁</span>
+                        <span class="sidebar-link-text">Arquivos IA</span>
+                        <span class="sidebar-link-badge">NEW</span>
+                    </a>
                     <a class="sidebar-link" onclick="navigateTo(event, 'analytics')">
                         <span class="sidebar-link-icon">🎯</span>
                         <span class="sidebar-link-text">Analytics IA</span>
@@ -1599,6 +1599,12 @@
         // Navegação
         function navigateTo(e, section) {
             e.preventDefault();
+
+            // Verificar permissões para seções restritas
+            if ((section === 'dashboard' || section === 'arquivos') && currentUser.role !== 'admin') {
+                showNotification('Acesso restrito. Apenas administradores podem acessar esta seção.', 'error');
+                return;
+            }
 
             document.querySelectorAll('.sidebar-link').forEach(link => {
                 link.classList.remove('active');
