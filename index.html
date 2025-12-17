@@ -1164,35 +1164,79 @@
             <!-- Relatórios Section -->
             <div class="content-section hidden" id="relatoriosSection">
                 <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
-                    📈 Relatórios
+                    📈 Gerenciamento de Relatórios
                 </h2>
                 
-                <div class="cards-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon">📊</div>
-                            <div class="card-title">Taxa de Conversão</div>
-                        </div>
-                        <div class="card-value">87%</div>
-                        <div class="card-label">Meta: 85%</div>
-                    </div>
+                <!-- Upload de Relatórios (Admin Only) -->
+                <div class="card" id="adminReportsUpload" style="display: none; margin-bottom: 24px;">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">
+                        📤 Upload de Relatórios (Admin)
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                        Faça upload de planilhas Excel ou CSV para cada categoria. A IA do chat analisará automaticamente.
+                    </p>
                     
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon">💰</div>
-                            <div class="card-title">Receita Mensal</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">📊 Novos Clientes</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'novos_clientes')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_novos_clientes" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
                         </div>
-                        <div class="card-value">R$ 45K</div>
-                        <div class="card-label">+12% vs mês anterior</div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🧀 Queijo do Reino</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'queijo_reino')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_queijo_reino" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🚫 Não Cobertos Clientes</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'nao_cobertos_clientes')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_nao_cobertos_clientes" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🏭 Não Cobertos Fornecedor</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'nao_cobertos_fornecedor')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_nao_cobertos_fornecedor" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🥛 MSL Danone</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'msl_danone')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_msl_danone" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🎯 MSL OTG</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'msl_otg')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_msl_otg" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🏪 MSL Min</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'msl_min')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_msl_min" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
+                        
+                        <div style="padding: 16px; background: linear-gradient(135deg, rgba(220, 38, 38, 0.05), rgba(220, 38, 38, 0.02)); border-radius: 12px; border: 2px dashed #DC2626;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 8px;">🛒 MSL Super</label>
+                            <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadReport(event, 'msl_super')" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+                            <div id="status_msl_super" style="margin-top: 8px; font-size: 12px; color: #059669;"></div>
+                        </div>
                     </div>
-                    
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-icon">⭐</div>
-                            <div class="card-title">NPS Score</div>
-                        </div>
-                        <div class="card-value">94</div>
-                        <div class="card-label">Promotores: 78%</div>
+                </div>
+                
+                <!-- Visualização de Relatórios -->
+                <div class="card">
+                    <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">
+                        📊 Relatórios Disponíveis
+                    </h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                        Use o <strong>Chat IA</strong> e digite "relatórios" para consultar os dados via IA.
+                    </p>
+                    <div id="reportsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <!-- Será preenchido dinamicamente -->
                     </div>
                 </div>
             </div>
@@ -1519,6 +1563,11 @@
 
                 if (currentUser.role === 'admin') {
                     document.getElementById('adminSection').style.display = 'block';
+                    // Mostrar área de upload de relatórios para admins
+                    const adminReportsUpload = document.getElementById('adminReportsUpload');
+                    if (adminReportsUpload) {
+                        adminReportsUpload.style.display = 'block';
+                    }
                 }
 
                 // Atualizar contador de usuários
@@ -1629,6 +1678,8 @@
                 loadDatabaseTable();
             } else if (section === 'arquivos') {
                 loadUserFiles();
+            } else if (section === 'relatorios') {
+                updateReportsList();
             }
         }
 
@@ -1785,6 +1836,53 @@
         async function generateIntelligentResponse(message) {
             const lowerMessage = message.toLowerCase();
             
+            // Comando especial para relatórios
+            if (lowerMessage.includes('relatório') || lowerMessage.includes('relatorio') || lowerMessage === 'relatórios' || lowerMessage === 'relatorios') {
+                return showReportsMenu();
+            }
+            
+            // Verificar se é uma escolha de relatório
+            const reportChoices = {
+                '1': 'novos_clientes',
+                '2': 'queijo_reino',
+                '3': 'nao_cobertos_clientes',
+                '4': 'nao_cobertos_fornecedor',
+                '5': 'msl_danone',
+                '6': 'msl_otg',
+                '7': 'msl_min',
+                '8': 'msl_super'
+            };
+            
+            const reportNames = {
+                'novos clientes': 'novos_clientes',
+                'queijo do reino': 'queijo_reino',
+                'queijo reino': 'queijo_reino',
+                'não cobertos clientes': 'nao_cobertos_clientes',
+                'nao cobertos clientes': 'nao_cobertos_clientes',
+                'não cobertos fornecedor': 'nao_cobertos_fornecedor',
+                'nao cobertos fornecedor': 'nao_cobertos_fornecedor',
+                'msl danone': 'msl_danone',
+                'danone': 'msl_danone',
+                'msl otg': 'msl_otg',
+                'otg': 'msl_otg',
+                'msl min': 'msl_min',
+                'min': 'msl_min',
+                'msl super': 'msl_super',
+                'super': 'msl_super'
+            };
+            
+            // Verificar escolha por número
+            if (reportChoices[lowerMessage]) {
+                return await loadReportData(reportChoices[lowerMessage]);
+            }
+            
+            // Verificar escolha por nome
+            for (const [key, value] of Object.entries(reportNames)) {
+                if (lowerMessage.includes(key)) {
+                    return await loadReportData(value);
+                }
+            }
+            
             // Verificar se é uma pergunta sobre arquivos
             if (lowerMessage.includes('arquivo') || lowerMessage.includes('upload') || 
                 lowerMessage.includes('documento') || lowerMessage.includes('enviei') ||
@@ -1940,6 +2038,295 @@
             } else {
                 return `Você pode começar enviando arquivos na seção <strong>Arquivos IA</strong>. Eu analiso automaticamente PDFs, documentos, planilhas, imagens e muito mais!`;
             }
+        }
+
+        // Menu de Relatórios
+        function showReportsMenu() {
+            return `📊 <strong>RELATÓRIOS DISPONÍVEIS</strong>\n\n` +
+                   `Escolha uma opção digitando o <strong>número</strong> ou <strong>nome</strong>:\n\n` +
+                   `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(220,38,38,0.05)); padding: 16px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n` +
+                   `<strong>1</strong> - 📊 Novos Clientes\n` +
+                   `<strong>2</strong> - 🧀 Queijo do Reino\n` +
+                   `<strong>3</strong> - 🚫 Não Cobertos Clientes\n` +
+                   `<strong>4</strong> - 🏭 Não Cobertos Fornecedor\n` +
+                   `<strong>5</strong> - 🥛 MSL Danone\n` +
+                   `<strong>6</strong> - 🎯 MSL OTG\n` +
+                   `<strong>7</strong> - 🏪 MSL Min\n` +
+                   `<strong>8</strong> - 🛒 MSL Super\n` +
+                   `</div>\n\n` +
+                   `<small>💡 Exemplo: Digite "1" ou "novos clientes"</small>`;
+        }
+
+        // Carregar dados do relatório
+        async function loadReportData(reportType) {
+            if (!db) {
+                return `⚠️ Aguarde... O banco de dados está sendo inicializado.`;
+            }
+
+            try {
+                const report = await getReportFromDB(reportType);
+                
+                if (!report) {
+                    const reportNames = {
+                        'novos_clientes': '📊 Novos Clientes',
+                        'queijo_reino': '🧀 Queijo do Reino',
+                        'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
+                        'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
+                        'msl_danone': '🥛 MSL Danone',
+                        'msl_otg': '🎯 MSL OTG',
+                        'msl_min': '🏪 MSL Min',
+                        'msl_super': '🛒 MSL Super'
+                    };
+                    
+                    return `❌ <strong>Relatório não encontrado</strong>\n\n` +
+                           `O relatório <strong>${reportNames[reportType]}</strong> ainda não foi enviado.\n\n` +
+                           `${currentUser && currentUser.role === 'admin' ? 
+                             '👉 Vá para a seção <strong>Relatórios</strong> e faça o upload da planilha.' : 
+                             '👉 Contate o administrador para enviar este relatório.'}`;
+                }
+
+                // Processar dados da planilha
+                return formatReportData(report, reportType);
+                
+            } catch (error) {
+                console.error('Erro ao carregar relatório:', error);
+                return `❌ Erro ao carregar o relatório: ${error.message}`;
+            }
+        }
+
+        // Buscar relatório do IndexedDB
+        async function getReportFromDB(reportType) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['files'], 'readonly');
+                const store = transaction.objectStore('files');
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    const files = request.result || [];
+                    const report = files.find(f => f.reportType === reportType);
+                    resolve(report);
+                };
+                
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Formatar dados do relatório para exibição
+        function formatReportData(report, reportType) {
+            const reportNames = {
+                'novos_clientes': '📊 Novos Clientes',
+                'queijo_reino': '🧀 Queijo do Reino',
+                'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
+                'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
+                'msl_danone': '🥛 MSL Danone',
+                'msl_otg': '🎯 MSL OTG',
+                'msl_min': '🏪 MSL Min',
+                'msl_super': '🛒 MSL Super'
+            };
+
+            let response = `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n`;
+            response += `<h3 style="margin: 0 0 16px 0; color: #DC2626;">${reportNames[reportType]}</h3>\n\n`;
+            
+            // Informações básicas do arquivo
+            response += `📁 <strong>Arquivo:</strong> ${report.name}\n`;
+            response += `📅 <strong>Enviado:</strong> ${new Date(report.uploadDate).toLocaleDateString('pt-BR')}\n`;
+            response += `💾 <strong>Tamanho:</strong> ${(report.size / 1024).toFixed(2)} KB\n\n`;
+            
+            // Dados da planilha
+            if (report.data && report.data.length > 0) {
+                response += `📊 <strong>Total de registros:</strong> ${report.data.length}\n\n`;
+                
+                // Mostrar primeiras 5 linhas como preview
+                response += `<strong>Preview dos dados:</strong>\n`;
+                response += `<div style="background: white; padding: 12px; border-radius: 8px; margin-top: 8px; overflow-x: auto;">\n`;
+                response += `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">\n`;
+                
+                // Cabeçalhos
+                if (report.data[0]) {
+                    const headers = Object.keys(report.data[0]);
+                    response += `<tr style="background: #f3f4f6; font-weight: 600;">\n`;
+                    headers.forEach(header => {
+                        response += `<td style="padding: 8px; border: 1px solid #e5e7eb;">${header}</td>\n`;
+                    });
+                    response += `</tr>\n`;
+                    
+                    // Dados (primeiras 5 linhas)
+                    const preview = report.data.slice(0, 5);
+                    preview.forEach(row => {
+                        response += `<tr>\n`;
+                        headers.forEach(header => {
+                            response += `<td style="padding: 8px; border: 1px solid #e5e7eb;">${row[header] || '-'}</td>\n`;
+                        });
+                        response += `</tr>\n`;
+                    });
+                }
+                
+                response += `</table>\n`;
+                response += `</div>\n\n`;
+                
+                if (report.data.length > 5) {
+                    response += `<small>... e mais ${report.data.length - 5} registros</small>\n`;
+                }
+            } else {
+                response += `⚠️ <em>Dados ainda não foram processados ou planilha vazia.</em>\n`;
+            }
+            
+            response += `</div>\n\n`;
+            response += `💡 <em>Digite "relatórios" para ver outras opções</em>`;
+            
+            return response;
+        }
+
+        // Upload de relatório
+        async function uploadReport(event, reportType) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById(`status_${reportType}`);
+            statusDiv.textContent = '⏳ Processando...';
+            statusDiv.style.color = '#DC2626';
+
+            try {
+                // Ler arquivo
+                const data = await readSpreadsheet(file);
+                
+                // Salvar no IndexedDB
+                await saveReportToDB({
+                    name: file.name,
+                    size: file.size,
+                    type: file.name.split('.').pop().toLowerCase(),
+                    reportType: reportType,
+                    uploadDate: Date.now(),
+                    uploadedBy: currentUser.email,
+                    data: data
+                });
+
+                statusDiv.textContent = '✅ Enviado com sucesso!';
+                statusDiv.style.color = '#059669';
+                
+                showNotification('Relatório enviado e processado com sucesso!', 'success');
+                updateReportsList();
+                
+            } catch (error) {
+                console.error('Erro ao processar relatório:', error);
+                statusDiv.textContent = '❌ Erro ao processar';
+                statusDiv.style.color = '#DC2626';
+                showNotification('Erro ao processar relatório: ' + error.message, 'error');
+            }
+        }
+
+        // Ler planilha Excel ou CSV
+        async function readSpreadsheet(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                
+                reader.onload = (e) => {
+                    try {
+                        if (fileExt === 'csv') {
+                            // Processar CSV
+                            const text = e.target.result;
+                            const lines = text.split('\n');
+                            const headers = lines[0].split(',').map(h => h.trim());
+                            
+                            const data = [];
+                            for (let i = 1; i < lines.length; i++) {
+                                if (lines[i].trim()) {
+                                    const values = lines[i].split(',');
+                                    const row = {};
+                                    headers.forEach((header, index) => {
+                                        row[header] = values[index]?.trim() || '';
+                                    });
+                                    data.push(row);
+                                }
+                            }
+                            resolve(data);
+                            
+                        } else {
+                            // Para Excel, vamos simular dados por enquanto
+                            // Em produção, use biblioteca como SheetJS (xlsx)
+                            showNotification('⚠️ Formato Excel detectado. Use CSV para melhor compatibilidade.', 'info');
+                            resolve([{
+                                info: 'Arquivo Excel detectado',
+                                nota: 'Converta para CSV para visualização completa'
+                            }]);
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                
+                if (fileExt === 'csv') {
+                    reader.readAsText(file);
+                } else {
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+        }
+
+        // Salvar relatório no IndexedDB
+        async function saveReportToDB(reportData) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['files'], 'readwrite');
+                const store = transaction.objectStore('files');
+                
+                // Remover relatório anterior do mesmo tipo
+                const getAllRequest = store.getAll();
+                getAllRequest.onsuccess = () => {
+                    const files = getAllRequest.result || [];
+                    const oldReport = files.find(f => f.reportType === reportData.reportType);
+                    
+                    if (oldReport && oldReport.id) {
+                        store.delete(oldReport.id);
+                    }
+                    
+                    // Adicionar novo relatório
+                    const addRequest = store.add(reportData);
+                    addRequest.onsuccess = () => resolve();
+                    addRequest.onerror = () => reject(addRequest.error);
+                };
+            });
+        }
+
+        // Atualizar lista de relatórios disponíveis
+        function updateReportsList() {
+            if (!db) return;
+            
+            const container = document.getElementById('reportsList');
+            if (!container) return;
+
+            const transaction = db.transaction(['files'], 'readonly');
+            const store = transaction.objectStore('files');
+            const request = store.getAll();
+            
+            request.onsuccess = () => {
+                const files = request.result || [];
+                const reports = files.filter(f => f.reportType);
+                
+                if (reports.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 40px;">Nenhum relatório enviado ainda.</p>';
+                    return;
+                }
+                
+                const reportNames = {
+                    'novos_clientes': '📊 Novos Clientes',
+                    'queijo_reino': '🧀 Queijo do Reino',
+                    'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
+                    'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
+                    'msl_danone': '🥛 MSL Danone',
+                    'msl_otg': '🎯 MSL OTG',
+                    'msl_min': '🏪 MSL Min',
+                    'msl_super': '🛒 MSL Super'
+                };
+                
+                container.innerHTML = reports.map(report => `
+                    <div style="padding: 16px; background: var(--bg-secondary); border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="font-weight: 600; color: var(--text-dark); margin-bottom: 4px;">${reportNames[report.reportType] || report.reportType}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">${new Date(report.uploadDate).toLocaleDateString('pt-BR')}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">📁 ${report.name}</div>
+                    </div>
+                `).join('');
+            };
         }
 
         // Upload de arquivos
