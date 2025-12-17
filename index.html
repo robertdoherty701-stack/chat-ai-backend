@@ -1578,20 +1578,23 @@
                 return;
             }
 
-            console.log('Ocultando authPage...');
-            authPage.style.display = 'none';
-            authPage.classList.add('hidden');
-            
-            console.log('Mostrando mainApp...');
-            mainApp.style.display = 'flex';
-            mainApp.classList.remove('hidden');
-
             if (!currentUser) {
                 console.error('ERRO: currentUser não definido!');
                 return;
             }
 
             console.log('Usuário atual:', currentUser);
+            console.log('Ocultando authPage e mostrando mainApp...');
+            
+            // PRIMEIRO remover/adicionar classes
+            authPage.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            
+            // DEPOIS forçar com !important via atributo style
+            authPage.setAttribute('style', 'display: none !important;');
+            mainApp.setAttribute('style', 'display: flex !important;');
+            
+            console.log('Transição de tela completa');
 
             setTimeout(() => {
                 try {
@@ -3420,37 +3423,48 @@
 
         // Verificar sessão ao carregar
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('=== DOMContentLoaded iniciado ===');
+            
             // Garantir que todos os elementos existam
             const authPage = document.getElementById('authPage');
             const mainApp = document.getElementById('mainApp');
             
+            console.log('authPage encontrado:', !!authPage);
+            console.log('mainApp encontrado:', !!mainApp);
+            
             if (!authPage || !mainApp) {
-                console.error('Elementos de autenticação não encontrados');
+                console.error('ERRO CRÍTICO: Elementos de autenticação não encontrados');
                 return;
             }
 
+            // FORÇAR estado inicial - tela de login visível
+            authPage.style.display = 'flex';
+            authPage.classList.remove('hidden');
+            mainApp.style.display = 'none';
+            mainApp.classList.add('hidden');
+            
+            console.log('Estado inicial forçado: authPage visível, mainApp oculto');
+
             const token = localStorage.getItem('token');
             const user = localStorage.getItem('user');
+            
+            console.log('Token existente:', !!token);
+            console.log('Usuário salvo:', !!user);
             
             if (token && user) {
                 try {
                     currentUser = JSON.parse(user);
                     authToken = token;
+                    console.log('Tentando auto-login para:', currentUser.name);
                     showMainApp();
                 } catch (error) {
                     console.error('Erro ao restaurar sessão:', error);
-                    // Limpar dados corrompidos
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
-                    // Mostrar tela de login
-                    authPage.classList.remove('hidden');
-                    mainApp.classList.add('hidden');
                 }
-            } else {
-                // Garantir que mostra a tela de login
-                authPage.classList.remove('hidden');
-                mainApp.classList.add('hidden');
             }
+            
+            console.log('=== DOMContentLoaded concluído ===');
         });
     </script>
 </body>
