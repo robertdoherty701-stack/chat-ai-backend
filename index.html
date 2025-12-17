@@ -1435,6 +1435,26 @@
         // Variáveis globais
         let currentUser = null;
         let authToken = null;
+        
+        // FUNÇÃO DE TESTE DE EMERGÊNCIA (deve estar no topo para o botão funcionar)
+        function forceShowApp() {
+            console.log('🔧 TESTE DE EMERGÊNCIA - Forçando transição');
+            const auth = document.getElementById('authPage');
+            const app = document.getElementById('mainApp');
+            
+            if (!currentUser) {
+                currentUser = {
+                    name: 'Usuário Teste',
+                    email: 'teste@teste.com',
+                    role: 'admin'
+                };
+            }
+            
+            auth.style.cssText = 'display: none !important;';
+            app.style.cssText = 'display: flex !important;';
+            
+            console.log('✅ Transição forçada completa');
+        }
 
         // Criar usuários padrão
         if (!localStorage.getItem('registeredUsers')) {
@@ -1568,26 +1588,6 @@
             }, 800);
         }
 
-        // FUNÇÃO DE TESTE DE EMERGÊNCIA
-        function forceShowApp() {
-            console.log('🔧 TESTE DE EMERGÊNCIA - Forçando transição');
-            const auth = document.getElementById('authPage');
-            const app = document.getElementById('mainApp');
-            
-            if (!currentUser) {
-                currentUser = {
-                    name: 'Usuário Teste',
-                    email: 'teste@teste.com',
-                    role: 'admin'
-                };
-            }
-            
-            auth.style.cssText = 'display: none !important;';
-            app.style.cssText = 'display: flex !important;';
-            
-            console.log('✅ Transição forçada completa');
-        }
-        
         // Mostrar app principal
         function showMainApp() {
             console.log('=== showMainApp chamado ===');
@@ -2489,7 +2489,7 @@
         // ============ FUNÇÕES DE FILTRO POR RELATÓRIO ============
         
         // 1. Não Cobertos - Clientes
-        function filterNaoCobert osClientes(data) {
+        function filterNaoCobertosClientes(data) {
             const vendorCode = chatContext.vendorCode;
             const vendorName = chatContext.vendorName;
             
