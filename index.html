@@ -1159,16 +1159,9 @@
                 </div>
                 
                 <div id="filesListContainer" style="margin-top: 24px;"></div>
-            </div>
-
-            <!-- Relatórios Section -->
-            <div class="content-section hidden" id="relatoriosSection">
-                <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
-                    📈 Gerenciamento de Relatórios
-                </h2>
                 
                 <!-- Upload de Relatórios (Admin Only) -->
-                <div class="card" id="adminReportsUpload" style="display: none; margin-bottom: 24px;">
+                <div class="card" id="adminReportsUpload" style="display: none; margin-top: 24px;">
                     <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">
                         📤 Upload de Relatórios (Admin)
                     </h3>
@@ -1226,17 +1219,52 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Relatórios Section -->
+            <div class="content-section hidden" id="relatoriosSection">
+                <h2 style="font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 32px;">
+                    📈 Relatórios Gerenciais
+                </h2>
                 
-                <!-- Visualização de Relatórios -->
                 <div class="card">
                     <h3 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">
-                        📊 Relatórios Disponíveis
+                        📊 Selecione um Relatório
                     </h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                        Use o <strong>Chat IA</strong> e digite "relatórios" para consultar os dados via IA.
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                        Escolha uma das opções abaixo para visualizar o relatório correspondente.
                     </p>
-                    <div id="reportsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                        <!-- Será preenchido dinamicamente -->
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                        <button onclick="openReport('msl_danone')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                            <span style="font-size: 28px;">🥛</span>
+                            <span>MSL DANONE</span>
+                        </button>
+                        
+                        <button onclick="openReport('msl_otg')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                            <span style="font-size: 28px;">🎯</span>
+                            <span>MSL OTG</span>
+                        </button>
+                        
+                        <button onclick="openReport('msl_mini')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                            <span style="font-size: 28px;">🏪</span>
+                            <span>MSL MINI</span>
+                        </button>
+                        
+                        <button onclick="openReport('msl_super')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                            <span style="font-size: 28px;">🛒</span>
+                            <span>MSL SUPER</span>
+                        </button>
+                        
+                        <button onclick="openReport('vendas')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                            <span style="font-size: 28px;">💰</span>
+                            <span>RELATÓRIO DE VENDAS</span>
+                        </button>
+                        
+                        <button onclick="openReport('campanhas')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                            <span style="font-size: 28px;">📢</span>
+                            <span>CAMPANHAS</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1685,6 +1713,63 @@
                 showNotification('Você saiu do sistema', 'success');
                 closeMobileMenu();
             }
+        }
+        
+        // Abrir relatório específico
+        function openReport(reportType) {
+            console.log('📊 Abrindo relatório:', reportType);
+            
+            const reportNames = {
+                'msl_danone': 'MSL DANONE',
+                'msl_otg': 'MSL OTG',
+                'msl_mini': 'MSL MINI',
+                'msl_super': 'MSL SUPER',
+                'vendas': 'Relatório de Vendas',
+                'campanhas': 'Campanhas'
+            };
+            
+            const reportName = reportNames[reportType] || reportType.toUpperCase();
+            
+            showNotification(`Abrindo ${reportName}...`, 'info');
+            
+            // Ir para a seção de Chat e abrir o relatório
+            showSection('chat');
+            
+            // Adicionar mensagem no chat simulando a consulta
+            setTimeout(() => {
+                const chatMessages = document.getElementById('chatMessages');
+                if (chatMessages) {
+                    // Mensagem do usuário
+                    const userMsg = document.createElement('div');
+                    userMsg.className = 'message user-message';
+                    userMsg.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-text">Mostrar relatório: ${reportName}</div>
+                        </div>
+                    `;
+                    chatMessages.appendChild(userMsg);
+                    
+                    // Simular resposta da IA
+                    setTimeout(() => {
+                        const aiMsg = document.createElement('div');
+                        aiMsg.className = 'message ai-message';
+                        aiMsg.innerHTML = `
+                            <div class="message-avatar">🤖</div>
+                            <div class="message-content">
+                                <div class="message-text">
+                                    📊 <strong>${reportName}</strong><br><br>
+                                    Para visualizar este relatório, você precisa fazer o upload do arquivo correspondente na seção <strong>Arquivos IA</strong>.<br><br>
+                                    Após o upload, volte aqui e digite o nome do seu vendedor ou código para consultar os dados específicos.
+                                </div>
+                            </div>
+                        `;
+                        chatMessages.appendChild(aiMsg);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 500);
+                    
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }, 300);
         }
 
         // Mobile menu functions
