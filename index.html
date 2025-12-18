@@ -2083,22 +2083,50 @@
         }
 
         // Chat IA
-        // Contexto da conversa para relatórios
+        // =================================================================================
+        // SISTEMA DE ESTADOS DO CHAT (Adaptado do script Python)
+        // =================================================================================
         let chatContext = {
-            activeReport: null,
-            waitingFor: null,
-            vendorCode: null,
-            vendorName: null
+            estado: 'INICIAL',        // INICIAL, ESCOLHA, CODVD, VENDEDOR
+            activeReport: null,       // Relatório selecionado
+            codvd: null,             // Código do vendedor
+            vendedor: null           // Nome do vendedor
         };
 
         // Resetar contexto
         function resetChatContext() {
             chatContext = {
+                estado: 'INICIAL',
                 activeReport: null,
-                waitingFor: null,
-                vendorCode: null,
-                vendorName: null
+                codvd: null,
+                vendedor: null
             };
+        }
+
+        // =================================================================================
+        // DETECÇÃO AUTOMÁTICA DE COLUNAS (adaptado do Python)
+        // =================================================================================
+        function normalizarNomeColuna(nome) {
+            return String(nome || '').toUpperCase().trim()
+                .replace(/[ÀÁÂÃÄÅ]/g, 'A')
+                .replace(/[ÈÉÊË]/g, 'E')
+                .replace(/[ÌÍÎÏ]/g, 'I')
+                .replace(/[ÒÓÔÕÖ]/g, 'O')
+                .replace(/[ÙÚÛÜ]/g, 'U')
+                .replace(/[Ç]/g, 'C')
+                .replace(/\s+/g, ' ');
+        }
+
+        function encontrarColuna(row, variacoes) {
+            for (const variacao of variacoes) {
+                for (const [key, value] of Object.entries(row)) {
+                    const normalizado = normalizarNomeColuna(key);
+                    if (normalizado.includes(variacao) || variacao.includes(normalizado)) {
+                        return value;
+                    }
+                }
+            }
+            return '';
         }
 
         // IA Inteligente - Respostas e análise de arquivos
@@ -2142,12 +2170,176 @@
         async function generateIntelligentResponse(message) {
             const lowerMessage = message.toLowerCase();
             
-            // Verificar se está aguardando dados do relatório
-            if (chatContext.waitingFor) {
-                return await handleReportInput(message);
+            // =================================================================================
+            // MÁQUINA DE ESTADOS (Adaptado do Python ChatIA)
+            // =================================================================================
+            
+            // ESTADO: INICIAL - Aguardando comando "relatórios"
+            if (chatContext.estado === 'INICIAL') {
+                if (lowerMessage.includes('relatório') || lowerMessage.includes('relatorio') || lowerMessage === 'relatórios' || lowerMessage === 'relatorios') {
+                    chatContext.estado = 'ESCOLHA';
+                    return showReportsMenu();
+                }
+                
+                // Respostas gerais quando não está em fluxo de relatório
+                return await handleGeneralQuestions(lowerMessage);
             }
             
-            // Comando especial para relatórios
+            // ESTADO: ESCOLHA - Aguardando escolha do relatório
+            if (chatContext.estado === 'ESCOLHA') {
+                const reportChoices = {
+                    '1': 'novos_clientes',
+                    '2': 'queijo_reino',
+                    '3': 'nao_cobertos_clientes',
+                    '4': 'nao_cobertos_fornecedor',
+                    '5': 'msl_danone',
+                    '6': 'msl_otg',
+                    '7': 'msl_mini',
+                    '8': 'msl_super'
+                };
+                
+                const reportNames = {
+                    'novos clientes': 'novos_clientes',
+                    'queijo do reino': 'queijo_reino',
+                    'queijo reino': 'queijo_reino',
+                    'não cobertos clientes': 'nao_cobertos_clientes',
+                    'nao cobertos clientes': 'nao_cobertos_clientes',
+                    'cobertos clientes': 'nao_cobertos_clientes',
+                    'cliente': 'nao_cobertos_clientes',
+                    'não cobertos fornecedor': 'nao_cobertos_fornecedor',
+                    'nao cobertos fornecedor': 'nao_cobertos_fornecedor',
+                    'cobertos fornecedor': 'nao_cobertos_fornecedor',
+                    'fornecedor': 'nao_cobertos_fornecedor',
+                    'msl danone': 'msl_danone',
+                    'danone': 'msl_danone',
+                    'msl otg': 'msl_otg',
+                    'otg': 'msl_otg',
+                    'msl min': 'msl_mini',
+                    'mini': 'msl_mini',
+                    'msl super': 'msl_super',
+                    'super': 'msl_super'
+                };
+                
+                // Verificar escolha por número
+                if (reportChoices[lowerMessage]) {
+                    chatContext.activeReport = reportChoices[lowerMessage];
+                } else {
+                    // Verificar escolha por nome
+                    let found = false;
+                    for (const [key, value] of Object.entries(reportNames)) {
+                        if (lowerMessage.includes(key)) {
+                            chatContext.activeReport = value;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        return `❌ Opção inválida. Por favor, digite o número (1-8) ou o nome do relatório.\n\n${showReportsMenu()}`;
+                    }
+                }
+                
+                // Verificar se o relatório precisa de filtro por vendedor
+                const relatoriosComFiltro = ['nao_cobertos_clientes', 'nao_cobertos_fornecedor'];
+                
+                if (relatoriosComFiltro.includes(chatContext.activeReport)) {
+                    chatContext.estado = 'CODVD';
+                    return `✅ Relatório selecionado: <strong>${getReportLabel(chatContext.activeReport)}</strong>\n\n` +
+                           `📝 Agora informe o <strong>código do vendedor (CODVD)</strong>:`;
+                } else {
+                    // Relatórios que não precisam de filtro, carregar direto
+                    chatContext.estado = 'INICIAL';
+                    return await loadReportData(chatContext.activeReport);
+                }
+            }
+            
+            // ESTADO: CODVD - Aguardando código do vendedor
+            if (chatContext.estado === 'CODVD') {
+                const codigo = message.trim();
+                if (!codigo || codigo.length === 0) {
+                    return `❌ Por favor, informe um código válido.`;
+                }
+                
+                chatContext.codvd = codigo;
+                chatContext.estado = 'VENDEDOR';
+                return `✅ Código registrado: <strong>${codigo}</strong>\n\n` +
+                       `📝 Agora informe o <strong>nome do vendedor</strong>:`;
+            }
+            
+            // ESTADO: VENDEDOR - Aguardando nome do vendedor e processando
+            if (chatContext.estado === 'VENDEDOR') {
+                const vendedor = message.trim();
+                if (!vendedor || vendedor.length === 0) {
+                    return `❌ Por favor, informe um nome válido.`;
+                }
+                
+                chatContext.vendedor = vendedor;
+                
+                console.log(`🔍 Processando: CODVD=${chatContext.codvd}, VENDEDOR=${chatContext.vendedor}, RELATÓRIO=${chatContext.activeReport}`);
+                
+                // Processar o relatório com os filtros
+                const resultado = await processarRelatorioComFiltros(
+                    chatContext.activeReport,
+                    chatContext.codvd,
+                    chatContext.vendedor
+                );
+                
+                // Resetar para o estado inicial
+                chatContext.estado = 'INICIAL';
+                chatContext.activeReport = null;
+                
+                return resultado;
+            }
+            
+            // Fallback
+            return await handleGeneralQuestions(lowerMessage);
+        }
+        
+        // Obter label do relatório
+        function getReportLabel(reportType) {
+            const labels = {
+                'novos_clientes': '📊 Novos Clientes',
+                'queijo_reino': '🧀 Queijo do Reino',
+                'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
+                'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
+                'msl_danone': '🥛 MSL Danone',
+                'msl_otg': '🎯 MSL OTG',
+                'msl_mini': '🏪 MSL Mini',
+                'msl_super': '🛒 MSL Super'
+            };
+            return labels[reportType] || reportType;
+        }
+        
+        // Processar relatório com filtros de CODVD e VENDEDOR
+        async function processarRelatorioComFiltros(reportType, codvd, vendedor) {
+            console.log(`📊 Carregando relatório ${reportType} com filtros...`);
+            
+            // Verificar se os dados do Google Sheets estão carregados
+            if (!reportDataCache[reportType] || reportDataCache[reportType].length === 0) {
+                return `❌ <strong>Relatório não disponível</strong>\n\n` +
+                       `O relatório <strong>${getReportLabel(reportType)}</strong> não está carregado.\n` +
+                       `🔄 Recarregue a página e aguarde o carregamento dos dados.`;
+            }
+            
+            const dados = reportDataCache[reportType];
+            console.log(`📥 Total de registros brutos: ${dados.length}`);
+            
+            // Aplicar filtros
+            let dadosFiltrados = [];
+            
+            if (reportType === 'nao_cobertos_clientes') {
+                dadosFiltrados = filtrarNaoCobertosClientes(dados, codvd, vendedor);
+            } else if (reportType === 'nao_cobertos_fornecedor') {
+                dadosFiltrados = filtrarNaoCobertosFornecedor(dados, codvd, vendedor);
+            }
+            
+            console.log(`✅ Registros após filtro: ${dadosFiltrados.length}`);
+            
+            // Formatar resposta
+            return formatarResultadoFiltrado(dadosFiltrados, reportType, codvd, vendedor);
+        }
+        
+        // Perguntas gerais (quando não está em fluxo de relatório)
+        async function handleGeneralQuestions(lowerMessage) {
             if (lowerMessage.includes('relatório') || lowerMessage.includes('relatorio') || lowerMessage === 'relatórios' || lowerMessage === 'relatorios') {
                 resetChatContext();
                 return showReportsMenu();
@@ -2759,6 +2951,112 @@
             }));
             
             return removeDuplicates(result, ['CODCLI', 'FORNECEDOR']);
+        }
+        
+        // =================================================================================
+        // FUNÇÕES DE FILTRO COM CODVD E VENDEDOR (Adaptadas do Python)
+        // =================================================================================
+        
+        function filtrarNaoCobertosClientes(data, codvd, vendedor) {
+            console.log(`🔍 Filtrando Não Cobertos Clientes para CODVD=${codvd}, VENDEDOR=${vendedor}`);
+            
+            const filtered = data.filter(row => {
+                const rowCodvd = String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim();
+                const rowVendedor = String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim().toUpperCase();
+                const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
+                
+                return rowCodvd === codvd &&
+                       rowVendedor.includes(vendedor.toUpperCase()) &&
+                       status === 'FALTA';
+            });
+            
+            console.log(`✅ Encontrados ${filtered.length} registros`);
+            
+            const result = filtered.map(row => ({
+                'CODVD': String(row['CODVD'] || row['Código do Vendedor'] || '').trim(),
+                'VENDEDOR': String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim(),
+                'CODCLI': String(row['CODCLI'] || row['Código do Cliente'] || '').trim(),
+                'CLIENTE': String(row['CLIENTE'] || row['Cliente'] || '').trim(),
+                'CIDADE': String(row['CIDADE'] || row['Cidade'] || '').trim(),
+                'FORNECEDOR': String(row['FORNECEDOR'] || row['Fornecedor'] || '').trim(),
+                'STATUS': 'FALTA'
+            }));
+            
+            return removeDuplicates(result, ['CODCLI', 'FORNECEDOR']);
+        }
+        
+        function filtrarNaoCobertosFornecedor(data, codvd, vendedor) {
+            console.log(`🔍 Filtrando Não Cobertos Fornecedor para CODVD=${codvd}, VENDEDOR=${vendedor}`);
+            
+            const filtered = data.filter(row => {
+                const rowCodvd = String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim();
+                const rowVendedor = String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim().toUpperCase();
+                const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
+                
+                return rowCodvd === codvd &&
+                       rowVendedor.includes(vendedor.toUpperCase()) &&
+                       status === 'FALTA';
+            });
+            
+            console.log(`✅ Encontrados ${filtered.length} registros`);
+            
+            const result = filtered.map(row => ({
+                'CODVD': String(row['CODVD'] || row['Código do Vendedor'] || '').trim(),
+                'VENDEDOR': String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim(),
+                'FORNECEDOR': String(row['FORNECEDOR'] || row['Fornecedor'] || '').trim(),
+                'CODCLI': String(row['CODCLI'] || row['Código do Cliente'] || '').trim(),
+                'CLIENTE': String(row['CLIENTE'] || row['Cliente'] || '').trim(),
+                'CIDADE': String(row['CIDADE'] || row['Cidade'] || '').trim(),
+                'STATUS': 'FALTA'
+            }));
+            
+            return removeDuplicates(result, ['CODCLI', 'FORNECEDOR']);
+        }
+        
+        // Formatar resultado filtrado
+        function formatarResultadoFiltrado(dados, reportType, codvd, vendedor) {
+            let response = `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n`;
+            response += `<h3 style="margin: 0 0 16px 0; color: #DC2626;">${getReportLabel(reportType)}</h3>\n\n`;
+            response += `👤 <strong>Vendedor:</strong> ${vendedor} (Código: ${codvd})\n`;
+            response += `🔍 <strong>Filtro:</strong> STATUS = FALTA\n`;
+            response += `📊 <strong>Total encontrado:</strong> ${dados.length} registros\n\n`;
+            
+            if (dados.length === 0) {
+                response += `✅ <strong>Nenhum registro com STATUS = FALTA encontrado!</strong>\n\n`;
+                response += `Parabéns! Não há pendências para este vendedor.\n`;
+            } else {
+                response += `<div style="background: white; padding: 12px; border-radius: 8px; margin-top: 12px; overflow-x: auto; max-height: 500px; overflow-y: auto;">\n`;
+                response += `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">\n`;
+                
+                if (dados[0]) {
+                    const headers = Object.keys(dados[0]);
+                    response += `<tr style="background: #DC2626; color: white; position: sticky; top: 0; z-index: 10;">\n`;
+                    headers.forEach(header => {
+                        response += `<td style="padding: 10px; font-weight: 700; white-space: nowrap; border: 1px solid white;">${header}</td>\n`;
+                    });
+                    response += `</tr>\n`;
+                    
+                    dados.slice(0, 100).forEach((row, index) => {
+                        const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        response += `<tr style="background: ${bgColor};">\n`;
+                        headers.forEach(header => {
+                            response += `<td style="padding: 8px; border: 1px solid #e5e7eb; white-space: nowrap;">${row[header] || '-'}</td>\n`;
+                        });
+                        response += `</tr>\n`;
+                    });
+                }
+                
+                response += `</table>\n</div>\n\n`;
+                
+                if (dados.length > 100) {
+                    response += `<small>⚠️ Mostrando primeiros 100 de ${dados.length} registros</small>\n`;
+                }
+            }
+            
+            response += `</div>\n\n`;
+            response += `💡 <em>Digite "relatórios" para consultar outro relatório</em>`;
+            
+            return response;
         }
 
         // 3. MSL Super
