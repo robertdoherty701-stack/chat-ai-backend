@@ -910,6 +910,12 @@
                     <label class="form-label">Senha</label>
                     <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
                 </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.9);">
+                        <input type="checkbox" id="rememberMe" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+                        <span style="font-size: 14px;">🔒 Lembre de mim (manter conectado por 30 dias)</span>
+                    </label>
+                </div>
                 <button type="submit" class="btn-primary" id="loginBtn">
                     Entrar
                 </button>
@@ -1708,8 +1714,9 @@
 
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
+            const rememberMe = document.getElementById('rememberMe')?.checked || false;
 
-            console.log('Tentando fazer login com:', email);
+            console.log('Tentando fazer login com:', email, '| Lembre de mim:', rememberMe);
 
             setTimeout(() => {
                 try {
@@ -1723,11 +1730,7 @@
                         currentUser = user;
                         authToken = 'token_' + Date.now();
                         
-                        // Salvar tokens no formato antigo (compatibilidade)
-                        localStorage.setItem('token', authToken);
-                        localStorage.setItem('user', JSON.stringify(currentUser));
-                        
-                        // Salvar no novo formato auth_state (para manter sessão)
+                        // Criar objeto de autenticação
                         const authState = {
                             isAuthenticated: true,
                             user: {
@@ -1740,7 +1743,19 @@
                                 refresh: authToken
                             }
                         };
-                        localStorage.setItem('auth_state', JSON.stringify(authState));
+                        
+                        // Salvar baseado no "Lembre de mim"
+                        if (rememberMe) {
+                            console.log('✅ Salvando no localStorage (30 dias)');
+                            localStorage.setItem('auth_state', JSON.stringify(authState));
+                            localStorage.setItem('token', authToken);
+                            localStorage.setItem('user', JSON.stringify(currentUser));
+                        } else {
+                            console.log('✅ Salvando no sessionStorage (sessão)');
+                            sessionStorage.setItem('auth_state', JSON.stringify(authState));
+                            sessionStorage.setItem('token', authToken);
+                            sessionStorage.setItem('user', JSON.stringify(currentUser));
+                        }
 
                         showMainApp();
                         showNotification('Bem-vindo, ' + user.name + '!', 'success');
@@ -4129,17 +4144,47 @@
             // Verificar se usuário está autenticado
             const authStateLocal = localStorage.getItem('auth_state');
             const authStateSession = sessionStorage.getItem('auth_state');
-            const isAuthenticated = authStateLocal || authStateSession;
+            const tokenLocal = localStorage.getItem('token');
+            const tokenSession = sessionStorage.getItem('token');
+            const userLocal = localStorage.getItem('user');
+            const userSession = sessionStorage.getItem('user');
+            
+            const isAuthenticated = authStateLocal || authStateSession || tokenLocal || tokenSession;
             
             console.log('🔍 Verificando autenticação...');
             console.log('localStorage auth_state:', !!authStateLocal);
             console.log('sessionStorage auth_state:', !!authStateSession);
+            console.log('localStorage token:', !!tokenLocal);
+            console.log('sessionStorage token:', !!tokenSession);
             
             if (isAuthenticated) {
+                // Restaurar variáveis globais
+                authToken = tokenLocal || tokenSession;
+                if (userLocal) {
+                    currentUser = JSON.parse(userLocal);
+                } else if (userSession) {
+                    currentUser = JSON.parse(userSession);
+                }
+                
+                console.log('✅ Sessão restaurada:', currentUser?.name);
+                
                 // Usuário autenticado - mostrar aplicativo
                 authPage.style.cssText = 'display: none !important;';
                 mainApp.style.cssText = 'display: flex !important;';
                 console.log('✅ Usuário autenticado - mostrando aplicativo');
+                
+                // Atualizar UI com dados do usuário
+                setTimeout(() => {
+                    if (currentUser) {
+                        const userAvatar = document.getElementById('userAvatar');
+                        const userName = document.getElementById('userName');
+                        const userRole = document.getElementById('userRole');
+                        
+                        if (userName) userName.textContent = currentUser.name;
+                        if (userRole) userRole.textContent = currentUser.role || 'Usuário';
+                        if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+                    }
+                }, 100);
             } else {
                 // Usuário não autenticado - mostrar login
                 authPage.style.cssText = 'display: flex !important;';
@@ -4153,6 +4198,11 @@
                 await carregarDadosDoSheets();
                 console.log('✅ Relatórios carregados com sucesso!');
             } catch (error) {
+                console.error('❌ Erro ao carregar relatórios:', error);
+            }
+            
+            console.log('=== DOMContentLoaded concluído ===');
+        });
                 console.error('❌ Erro ao carregar relatórios:', error);
             }
             
