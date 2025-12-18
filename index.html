@@ -2261,19 +2261,21 @@
                 chatContext.codvd = codigo;
                 chatContext.estado = 'VENDEDOR';
                 return `✅ Código registrado: <strong>${codigo}</strong>\n\n` +
-                       `📝 Agora informe o <strong>nome do vendedor</strong>:`;
+                       `📝 Informe o <strong>nome do vendedor</strong> ou digite <strong>"todos"</strong> para buscar todos os vendedores deste código:`;
             }
             
             // ESTADO: VENDEDOR - Aguardando nome do vendedor e processando
             if (chatContext.estado === 'VENDEDOR') {
-                const vendedor = message.trim();
-                if (!vendedor || vendedor.length === 0) {
-                    return `❌ Por favor, informe um nome válido.`;
+                const input = message.trim().toLowerCase();
+                
+                // Verificar se quer buscar todos os vendedores
+                if (input === 'todos' || input === 'todo' || input === 'pular' || input.length === 0) {
+                    chatContext.vendedor = null; // null = buscar todos
+                } else {
+                    chatContext.vendedor = message.trim();
                 }
                 
-                chatContext.vendedor = vendedor;
-                
-                console.log(`🔍 Processando: CODVD=${chatContext.codvd}, VENDEDOR=${chatContext.vendedor}, RELATÓRIO=${chatContext.activeReport}`);
+                console.log(`🔍 Processando: CODVD=${chatContext.codvd}, VENDEDOR=${chatContext.vendedor || 'TODOS'}, RELATÓRIO=${chatContext.activeReport}`);
                 
                 // Processar o relatório com os filtros (agora inclui MSL)
                 const resultado = await processarRelatorioComFiltros(
@@ -2961,16 +2963,17 @@
         // =================================================================================
         
         function filtrarNaoCobertosClientes(data, codvd, vendedor) {
-            console.log(`🔍 Filtrando Não Cobertos Clientes para CODVD=${codvd}, VENDEDOR=${vendedor}`);
+            console.log(`🔍 Filtrando Não Cobertos Clientes para CODVD=${codvd}, VENDEDOR=${vendedor || 'TODOS'}`);
             
             const filtered = data.filter(row => {
                 const rowCodvd = String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim();
                 const rowVendedor = String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim().toUpperCase();
                 const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
                 
-                return rowCodvd === codvd &&
-                       rowVendedor.includes(vendedor.toUpperCase()) &&
-                       status === 'FALTA';
+                const codvdMatch = rowCodvd === codvd;
+                const vendedorMatch = !vendedor || rowVendedor.includes(vendedor.toUpperCase());
+                
+                return codvdMatch && vendedorMatch && status === 'FALTA';
             });
             
             console.log(`✅ Encontrados ${filtered.length} registros`);
@@ -2989,16 +2992,17 @@
         }
         
         function filtrarNaoCobertosFornecedor(data, codvd, vendedor) {
-            console.log(`🔍 Filtrando Não Cobertos Fornecedor para CODVD=${codvd}, VENDEDOR=${vendedor}`);
+            console.log(`🔍 Filtrando Não Cobertos Fornecedor para CODVD=${codvd}, VENDEDOR=${vendedor || 'TODOS'}`);
             
             const filtered = data.filter(row => {
                 const rowCodvd = String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim();
                 const rowVendedor = String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim().toUpperCase();
                 const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
                 
-                return rowCodvd === codvd &&
-                       rowVendedor.includes(vendedor.toUpperCase()) &&
-                       status === 'FALTA';
+                const codvdMatch = rowCodvd === codvd;
+                const vendedorMatch = !vendedor || rowVendedor.includes(vendedor.toUpperCase());
+                
+                return codvdMatch && vendedorMatch && status === 'FALTA';
             });
             
             console.log(`✅ Encontrados ${filtered.length} registros`);
@@ -3051,7 +3055,7 @@
         // =================================================================================
         
         function filtrarMSL(data, codvd, vendedor, tipoMSL) {
-            console.log(`🔍 Filtrando MSL ${tipoMSL} para CODVD=${codvd}, VENDEDOR=${vendedor}`);
+            console.log(`🔍 Filtrando MSL ${tipoMSL} para CODVD=${codvd}, VENDEDOR=${vendedor || 'TODOS'}`);
             
             const colunaMSL = identificarColunaMSL(data);
             
@@ -3066,8 +3070,10 @@
                 const valorMSL = String(row[colunaMSL] || '').trim().toUpperCase();
                 const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
                 
-                return rowCodvd === codvd &&
-                       rowVendedor.includes(vendedor.toUpperCase()) &&
+                const codvdMatch = rowCodvd === codvd;
+                const vendedorMatch = !vendedor || rowVendedor.includes(vendedor.toUpperCase());
+                
+                return codvdMatch && vendedorMatch &&
                        valorMSL === tipoMSL.toUpperCase() &&
                        (status === 'OK' || status === 'FALTA');
             });
@@ -3089,7 +3095,12 @@
         function formatarResultadoFiltrado(dados, reportType, codvd, vendedor) {
             let response = `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n`;
             response += `<h3 style="margin: 0 0 16px 0; color: #DC2626;">${getReportLabel(reportType)}</h3>\n\n`;
-            response += `👤 <strong>Vendedor:</strong> ${vendedor} (Código: ${codvd})\n`;
+            
+            if (vendedor) {
+                response += `👤 <strong>Vendedor:</strong> ${vendedor} (Código: ${codvd})\n`;
+            } else {
+                response += `👤 <strong>Código do Vendedor:</strong> ${codvd} (Todos os vendedores)\n`;
+            }
             
             // Determinar filtro aplicado
             if (['msl_super', 'msl_mini', 'msl_otg', 'exp'].includes(reportType)) {

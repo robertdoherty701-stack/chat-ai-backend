@@ -1,0 +1,25 @@
+🔍 GUIA DE SOLUÇÃO: Login Travado
+
+PASSO 1: Abra o Console do Navegador
+- Pressione F12
+- Clique na aba "Console"
+
+PASSO 2: Limpe o Cache
+Cole e execute no Console:
+localStorage.clear();
+location.reload();
+
+PASSO 3: Faça Login
+Email: nathiely@empresa.com
+Senha: Nathiely@2025
+
+PASSO 4: Se ainda não funcionar
+No Console, execute:
+localStorage.setItem('registeredUsers', '[]');
+location.reload();
+
+Depois faça login novamente.
+
+PASSO 5: Verificar erros
+Veja se há erros em vermelho no Console.
+Copie e me envie os erros.
