@@ -981,7 +981,7 @@
     </div>
 
     <!-- Main App -->
-    <div class="app-container hidden" id="mainApp">
+    <div class="app-container" id="mainApp" style="display: none;">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -1835,55 +1835,53 @@
 
         // Mostrar app principal
         function showMainApp() {
-            console.log('=== showMainApp chamado ===');
+            console.log('🎯 === showMainApp CHAMADO ===');
+            
             const authPage = document.getElementById('authPage');
             const mainApp = document.getElementById('mainApp');
             
-            console.log('authPage encontrado:', !!authPage);
-            console.log('mainApp encontrado:', !!mainApp);
-            console.log('currentUser:', currentUser);
-            
             if (!authPage || !mainApp) {
                 console.error('❌ ERRO: Elementos não encontrados!');
+                alert('ERRO CRÍTICO: authPage ou mainApp não encontrado!');
                 return;
             }
 
             if (!currentUser) {
-                console.error('❌ ERRO: currentUser não definido!');
+                console.error('❌ ERRO: currentUser undefined!');
+                alert('ERRO: Usuário não definido!');
                 return;
             }
 
-            console.log('👤 Usuário:', currentUser.name);
-            console.log('🔄 Forçando transição...');
+            console.log('👤 Usuário logado:', currentUser.name);
             
-            // Método DEFINITIVO - Forçar com setAttribute
-            authPage.setAttribute('style', 'display: none !important;');
-            mainApp.setAttribute('style', 'display: flex !important;');
+            // MÉTODO 1: Display direto
+            authPage.style.display = 'none';
+            mainApp.style.display = 'flex';
             
-            // Remover classes hidden se existirem
+            // MÉTODO 2: Visibility
+            authPage.style.visibility = 'hidden';
+            mainApp.style.visibility = 'visible';
+            
+            // MÉTODO 3: Classes
             authPage.classList.add('hidden');
             mainApp.classList.remove('hidden');
             
-            console.log('✅ Transição aplicada');
-            console.log('authPage display:', window.getComputedStyle(authPage).display);
-            console.log('mainApp display:', window.getComputedStyle(mainApp).display);
+            console.log('✅ TRANSIÇÃO COMPLETA');
+            console.log('  authPage display:', window.getComputedStyle(authPage).display);
+            console.log('  mainApp display:', window.getComputedStyle(mainApp).display);
 
+            // Atualizar UI do usuário
             setTimeout(() => {
-                try {
-                    const userAvatar = document.getElementById('userAvatar');
-                    const userName = document.getElementById('userName');
-                    const userRole = document.getElementById('userRole');
+                const userAvatar = document.getElementById('userAvatar');
+                const userName = document.getElementById('userName');
+                const userRole = document.getElementById('userRole');
 
-                    if (userAvatar && userName && userRole) {
-                        userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
-                        userName.textContent = currentUser.name;
-                        userRole.textContent = currentUser.role || 'Usuário';
-                        console.log('✅ Interface do usuário atualizada');
-                    }
-                } catch (error) {
-                    console.error('⚠️ Erro ao atualizar interface:', error);
-                }
-            }, 100);
+                if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+                if (userName) userName.textContent = currentUser.name;
+                if (userRole) userRole.textContent = currentUser.role || 'Usuário';
+                
+                console.log('✅ UI atualizada com sucesso');
+            }, 50);
         }
             }
 
@@ -4218,69 +4216,71 @@
 
         // Verificar sessão ao carregar
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('=== DOMContentLoaded iniciado ===');
+            console.log('🚀 === DOMContentLoaded iniciado ===');
             
             // Garantir que todos os elementos existam
             const authPage = document.getElementById('authPage');
             const mainApp = document.getElementById('mainApp');
             
-            console.log('authPage encontrado:', !!authPage);
-            console.log('mainApp encontrado:', !!mainApp);
+            console.log('✓ authPage encontrado:', !!authPage);
+            console.log('✓ mainApp encontrado:', !!mainApp);
             
             if (!authPage || !mainApp) {
-                console.error('❌ ERRO CRÍTICO: Elementos de autenticação não encontrados');
+                console.error('❌ ERRO CRÍTICO: Elementos não encontrados');
+                alert('ERRO: Elementos authPage ou mainApp não encontrados!');
                 return;
             }
 
-            // Verificar se usuário está autenticado
-            const authStateLocal = localStorage.getItem('auth_state');
-            const authStateSession = sessionStorage.getItem('auth_state');
+            // Verificar autenticação
             const tokenLocal = localStorage.getItem('token');
             const tokenSession = sessionStorage.getItem('token');
             const userLocal = localStorage.getItem('user');
             const userSession = sessionStorage.getItem('user');
             
-            const isAuthenticated = authStateLocal || authStateSession || tokenLocal || tokenSession;
+            const hasToken = tokenLocal || tokenSession;
+            const hasUser = userLocal || userSession;
             
             console.log('🔍 Verificando autenticação...');
-            console.log('localStorage auth_state:', !!authStateLocal);
-            console.log('sessionStorage auth_state:', !!authStateSession);
-            console.log('localStorage token:', !!tokenLocal);
-            console.log('sessionStorage token:', !!tokenSession);
+            console.log('  - Token em localStorage:', !!tokenLocal);
+            console.log('  - Token em sessionStorage:', !!tokenSession);
+            console.log('  - User em localStorage:', !!userLocal);
+            console.log('  - User em sessionStorage:', !!userSession);
             
-            if (isAuthenticated) {
-                // Restaurar variáveis globais
+            if (hasToken && hasUser) {
+                // Restaurar sessão
                 authToken = tokenLocal || tokenSession;
-                if (userLocal) {
-                    currentUser = JSON.parse(userLocal);
-                } else if (userSession) {
-                    currentUser = JSON.parse(userSession);
-                }
+                currentUser = JSON.parse(userLocal || userSession);
                 
-                console.log('✅ Sessão restaurada:', currentUser?.name);
+                console.log('✅ SESSÃO RESTAURADA:', currentUser.name);
                 
-                // Usuário autenticado - mostrar aplicativo
-                authPage.style.cssText = 'display: none !important;';
-                mainApp.style.cssText = 'display: flex !important;';
-                console.log('✅ Usuário autenticado - mostrando aplicativo');
+                // FORÇAR exibição do app
+                authPage.style.display = 'none';
+                authPage.style.visibility = 'hidden';
+                mainApp.style.display = 'flex';
+                mainApp.style.visibility = 'visible';
                 
-                // Atualizar UI com dados do usuário
+                console.log('✅ Interface alternada para APP');
+                
+                // Atualizar UI
                 setTimeout(() => {
-                    if (currentUser) {
-                        const userAvatar = document.getElementById('userAvatar');
-                        const userName = document.getElementById('userName');
-                        const userRole = document.getElementById('userRole');
-                        
-                        if (userName) userName.textContent = currentUser.name;
-                        if (userRole) userRole.textContent = currentUser.role || 'Usuário';
-                        if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
-                    }
+                    const userAvatar = document.getElementById('userAvatar');
+                    const userName = document.getElementById('userName');
+                    const userRole = document.getElementById('userRole');
+                    
+                    if (userName) userName.textContent = currentUser.name;
+                    if (userRole) userRole.textContent = currentUser.role || 'Usuário';
+                    if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+                    
+                    console.log('✅ UI atualizada');
                 }, 100);
             } else {
-                // Usuário não autenticado - mostrar login
-                authPage.style.cssText = 'display: flex !important;';
-                mainApp.style.cssText = 'display: none !important;';
-                console.log('🔒 Usuário não autenticado - mostrando login');
+                // Mostrar login
+                authPage.style.display = 'flex';
+                authPage.style.visibility = 'visible';
+                mainApp.style.display = 'none';
+                mainApp.style.visibility = 'hidden';
+                
+                console.log('🔒 Mostrando tela de LOGIN');
             }
             
             // CARREGAR DADOS DO GOOGLE SHEETS
