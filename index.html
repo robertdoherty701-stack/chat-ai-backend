@@ -1722,8 +1722,25 @@
                         console.log('Login bem-sucedido:', user.name);
                         currentUser = user;
                         authToken = 'token_' + Date.now();
+                        
+                        // Salvar tokens no formato antigo (compatibilidade)
                         localStorage.setItem('token', authToken);
                         localStorage.setItem('user', JSON.stringify(currentUser));
+                        
+                        // Salvar no novo formato auth_state (para manter sessão)
+                        const authState = {
+                            isAuthenticated: true,
+                            user: {
+                                email: user.email,
+                                user_id: user.email,
+                                name: user.name
+                            },
+                            tokens: {
+                                access: authToken,
+                                refresh: authToken
+                            }
+                        };
+                        localStorage.setItem('auth_state', JSON.stringify(authState));
 
                         showMainApp();
                         showNotification('Bem-vindo, ' + user.name + '!', 'success');
@@ -1835,10 +1852,17 @@
         // Logout
         function logout() {
             if (confirm('Deseja realmente sair do sistema?')) {
+                // Limpar tokens antigos
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                
+                // Limpar auth_state (novo sistema)
+                localStorage.removeItem('auth_state');
+                sessionStorage.removeItem('auth_state');
+                
                 currentUser = null;
                 authToken = null;
+                
                 document.getElementById('mainApp').classList.add('hidden');
                 document.getElementById('authPage').classList.remove('hidden');
                 showNotification('Você saiu do sistema', 'success');
@@ -4102,18 +4126,26 @@
                 return;
             }
 
-            // FORÇAR estado inicial - tela de login SEMPRE visível
-            authPage.style.cssText = 'display: flex !important;';
-            mainApp.style.cssText = 'display: none !important;';
+            // Verificar se usuário está autenticado
+            const authStateLocal = localStorage.getItem('auth_state');
+            const authStateSession = sessionStorage.getItem('auth_state');
+            const isAuthenticated = authStateLocal || authStateSession;
             
-            console.log('✅ Estado inicial: authPage visível, mainApp oculto');
+            console.log('🔍 Verificando autenticação...');
+            console.log('localStorage auth_state:', !!authStateLocal);
+            console.log('sessionStorage auth_state:', !!authStateSession);
             
-            // DESABILITADO: Auto-login removido para debugging
-            // Limpar sessões antigas que podem estar causando problema
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            
-            console.log('🔧 Auto-login DESABILITADO para debug');
+            if (isAuthenticated) {
+                // Usuário autenticado - mostrar aplicativo
+                authPage.style.cssText = 'display: none !important;';
+                mainApp.style.cssText = 'display: flex !important;';
+                console.log('✅ Usuário autenticado - mostrando aplicativo');
+            } else {
+                // Usuário não autenticado - mostrar login
+                authPage.style.cssText = 'display: flex !important;';
+                mainApp.style.cssText = 'display: none !important;';
+                console.log('🔒 Usuário não autenticado - mostrando login');
+            }
             
             // CARREGAR DADOS DO GOOGLE SHEETS
             console.log('📥 Iniciando carregamento dos relatórios do Google Sheets...');
