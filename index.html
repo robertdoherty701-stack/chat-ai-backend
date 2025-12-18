@@ -1193,15 +1193,115 @@
         }
         
         // ========== FUNÇÕES DOS RELATÓRIOS ==========
+        // Função nova que usa reportDataCache
+        function openReportFromCache(reportId) {
+            console.log('🔍 Abrindo relatório do cache:', reportId);
+            
+            const data = reportDataCache[reportId];
+            const config = REPORTS_CONFIG.find(r => r.id === reportId);
+            
+            if (!data || data.length === 0) {
+                alert(`⚠️ Relatório "${config?.label || reportId}" ainda não foi carregado.\\n\\n🔄 Aguarde o carregamento completo dos dados do Google Sheets ou recarregue a página.`);
+                return;
+            }
+            
+            console.log(`✅ Dados encontrados: ${data.length} registros`);
+            
+            // Criar modal
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
+            
+            const content = document.createElement('div');
+            content.style.cssText = 'background: white; border-radius: 20px; max-width: 1400px; width: 100%; max-height: 90vh; overflow: auto; padding: 32px; position: relative;';
+            
+            const preview = data.slice(0, 20);
+            const headers = Object.keys(preview[0] || {});
+            
+            content.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 28px; font-weight: 800; color: #DC2626; margin-bottom: 8px;">
+                            📊 ${config?.label || reportId}
+                        </h2>
+                        <p style="color: #64748B; font-size: 14px;">Google Sheets - ${data.length} registros carregados</p>
+                    </div>
+                    <button onclick="this.closest('div[style*=\\'fixed\\']').remove()" style="background: #DC2626; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; cursor: pointer; font-size: 16px;">
+                        ✖ Fechar
+                    </button>
+                </div>
+                
+                <div style="background: #F8FAFC; border-radius: 12px; padding: 20px; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #DC2626; color: white;">
+                                ${headers.map(key => 
+                                    `<th style="padding: 12px; text-align: left; font-weight: 700; white-space: nowrap;">${key}</th>`
+                                ).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${preview.map((row, i) => `
+                                <tr style="background: ${i % 2 === 0 ? 'white' : '#F8FAFC'}; border-bottom: 1px solid #E2E8F0;">
+                                    ${headers.map(key => 
+                                        `<td style="padding: 12px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${row[key] || '-'}</td>`
+                                    ).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    ${data.length > 20 ? `<p style="text-align: center; margin-top: 16px; color: #64748B; font-size: 13px;">Mostrando 20 de ${data.length} registros</p>` : ''}
+                </div>
+                
+                <div style="margin-top: 24px; text-align: right;">
+                    <button onclick="exportReportFromCache('${reportId}')" style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; border-radius: 12px; padding: 14px 28px; font-weight: 700; cursor: pointer; font-size: 15px; margin-right: 12px;">
+                        📥 Exportar CSV
+                    </button>
+                    <button onclick="this.closest('div[style*=\\'fixed\\']').remove()" style="background: #E2E8F0; color: #64748B; border: none; border-radius: 12px; padding: 14px 28px; font-weight: 700; cursor: pointer; font-size: 15px;">
+                        Fechar
+                    </button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+        }
+        
+        // Exportar relatório do cache
+        function exportReportFromCache(reportId) {
+            const data = reportDataCache[reportId];
+            const config = REPORTS_CONFIG.find(r => r.id === reportId);
+            
+            if (!data || data.length === 0) {
+                alert('❌ Não há dados para exportar');
+                return;
+            }
+            
+            const headers = Object.keys(data[0]);
+            const csv = [headers.join(',')];
+            
+            data.forEach(row => {
+                const values = headers.map(h => {
+                    const val = row[h] || '';
+                    return `"${String(val).replace(/"/g, '""')}"`;
+                });
+                csv.push(values.join(','));
+            });
+            
+            const blob = new Blob([csv.join('\\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${reportId}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`✅ Relatório exportado!\\n\\n📄 ${config?.label || reportId}\\n📊 ${data.length} registros`);
+        }
+        
         function openReport(reportName) {
-            console.log('🔍 Abrindo relatório:', reportName);
-            
-            // Buscar relatório no cache do Google Sheets
-            const sheets = JSON.parse(localStorage.getItem('googleSheetsData') || '[]');
-            const report = sheets.find(s => s.id === reportName);
-            
-            if (report && report.data) {
-                console.log('✅ Relatório encontrado no Google Sheets:', report.label);
+            // Compatibilidade: redireciona para openReportFromCache
+            openReportFromCache(reportName);
+        }
                 
                 // Mostrar modal com os dados
                 const modal = document.createElement('div');
@@ -1691,34 +1791,51 @@
                     </p>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-                        <button onclick="openReport('msl_danone')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                        <!-- Relatórios Especiais -->
+                        <button onclick="openReportFromCache('novos_clientes')" style="padding: 20px; background: linear-gradient(135deg, #10B981, #059669); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
+                            <span style="font-size: 28px;">👥</span>
+                            <span>NOVOS CLIENTES</span>
+                        </button>
+                        
+                        <button onclick="openReportFromCache('queijo_reino')" style="padding: 20px; background: linear-gradient(135deg, #F59E0B, #D97706); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(245, 158, 11, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(245, 158, 11, 0.3)'">
+                            <span style="font-size: 28px;">🧀</span>
+                            <span>QUEIJO DO REINO</span>
+                        </button>
+                        
+                        <button onclick="openReportFromCache('nao_cobertos_clientes')" style="padding: 20px; background: linear-gradient(135deg, #8B5CF6, #7C3AED); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(139, 92, 246, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.3)'">
+                            <span style="font-size: 28px;">🚫</span>
+                            <span>NÃO COBERTOS (CLIENTE)</span>
+                        </button>
+                        
+                        <button onclick="openReportFromCache('nao_cobertos_fornecedor')" style="padding: 20px; background: linear-gradient(135deg, #EC4899, #DB2777); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(236, 72, 153, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(236, 72, 153, 0.3)'">
+                            <span style="font-size: 28px;">🏭</span>
+                            <span>NÃO COBERTOS (FORNECEDOR)</span>
+                        </button>
+                        
+                        <!-- Relatórios MSL -->
+                        <button onclick="openReportFromCache('msl_danone')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
                             <span style="font-size: 28px;">🥛</span>
                             <span>MSL DANONE</span>
                         </button>
                         
-                        <button onclick="openReport('msl_otg')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                        <button onclick="openReportFromCache('msl_otg')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
                             <span style="font-size: 28px;">🎯</span>
                             <span>MSL OTG</span>
                         </button>
                         
-                        <button onclick="openReport('msl_mini')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                        <button onclick="openReportFromCache('msl_mini')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
                             <span style="font-size: 28px;">🏪</span>
                             <span>MSL MINI</span>
                         </button>
                         
-                        <button onclick="openReport('msl_super')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
+                        <button onclick="openReportFromCache('msl_super')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
                             <span style="font-size: 28px;">🛒</span>
                             <span>MSL SUPER</span>
                         </button>
                         
-                        <button onclick="openReport('vendas')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
-                            <span style="font-size: 28px;">💰</span>
-                            <span>RELATÓRIO DE VENDAS</span>
-                        </button>
-                        
-                        <button onclick="openReport('campanhas')" style="padding: 20px; background: linear-gradient(135deg, #DC2626, #B91C1C); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(220, 38, 38, 0.3)'">
-                            <span style="font-size: 28px;">📢</span>
-                            <span>CAMPANHAS</span>
+                        <button onclick="openReportFromCache('exp')" style="padding: 20px; background: linear-gradient(135deg, #06B6D4, #0891B2); border: none; border-radius: 16px; color: white; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3); display: flex; align-items: center; gap: 12px;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 20px rgba(6, 182, 212, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(6, 182, 212, 0.3)'">
+                            <span style="font-size: 28px;">📦</span>
+                            <span>EXP (EXPOSITOR)</span>
                         </button>
                     </div>
                 </div>
