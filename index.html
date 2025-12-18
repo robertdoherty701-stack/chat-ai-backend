@@ -1201,7 +1201,23 @@
             const config = REPORTS_CONFIG.find(r => r.id === reportId);
             
             if (!data || data.length === 0) {
-                alert(`⚠️ Relatório "${config?.label || reportId}" ainda não foi carregado.\\n\\n🔄 Aguarde o carregamento completo dos dados do Google Sheets ou recarregue a página.`);
+                // Tentar recarregar do localStorage
+                try {
+                    const savedData = localStorage.getItem('googleSheetsCache');
+                    if (savedData) {
+                        reportDataCache = JSON.parse(savedData);
+                        const retryData = reportDataCache[reportId];
+                        if (retryData && retryData.length > 0) {
+                            console.log('✅ Dados recuperados do cache local');
+                            openReportFromCache(reportId); // Tentar novamente
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Erro ao recuperar cache:', e);
+                }
+                
+                alert(`⚠️ Relatório: ${config?.label || reportId}\\n\\n⏳ Os dados ainda estão sendo carregados do Google Sheets.\\n\\n✅ Aguarde alguns segundos e tente novamente.\\n\\n💡 Ou recarregue a página (F5).`);
                 return;
             }
             
@@ -2101,6 +2117,17 @@
 
         // Variável onde os dados ficam salvos na memória
         var reportDataCache = {};
+        
+        // Carregar dados do localStorage se existir
+        try {
+            const savedData = localStorage.getItem('googleSheetsCache');
+            if (savedData) {
+                reportDataCache = JSON.parse(savedData);
+                console.log('📦 Dados carregados do cache local:', Object.keys(reportDataCache).length, 'relatórios');
+            }
+        } catch (e) {
+            console.warn('⚠️ Erro ao carregar cache:', e);
+        }
 
         // =================================================================================
         // 2. FUNÇÃO UTILITÁRIA: PARSER DE CSV (Converte texto em objeto JSON)
@@ -2174,6 +2201,15 @@
 
             await Promise.all(promises);
             
+            // SALVAR no localStorage para persistência
+            try {
+                localStorage.setItem('googleSheetsCache', JSON.stringify(reportDataCache));
+                localStorage.setItem('googleSheetsLastUpdate', new Date().toISOString());
+                console.log('💾 Dados salvos no localStorage');
+            } catch (e) {
+                console.warn('⚠️ Erro ao salvar cache:', e);
+            }
+            
             // Remover mensagem de carregamento
             const loadingMsg = document.getElementById('loading-reports-message');
             if (loadingMsg) {
@@ -2188,7 +2224,7 @@
                     <div class="message-content">
                         <div class="message-avatar">🤖</div>
                         <div class="message-text">
-                            ✅ Relatórios carregados com sucesso! Digite <strong>"relatórios"</strong> para começar.
+                            ✅ ${Object.keys(reportDataCache).length} relatórios carregados! Digite <strong>ajuda</strong> para comandos.
                         </div>
                     </div>
                 `;
