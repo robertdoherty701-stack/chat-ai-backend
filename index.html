@@ -1455,7 +1455,131 @@
     </div>
 
     <script>
-        // Variáveis globais
+        // =================================================================================
+        // 1. CONFIGURAÇÃO DOS LINKS E RELATÓRIOS DO GOOGLE SHEETS
+        // =================================================================================
+        const REPORTS_CONFIG = [
+            // --- BLOCO 1: Relatórios Especiais ---
+            {
+                id: 'novos_clientes',
+                label: 'Novos Clientes', 
+                keywords: ['novos', 'cidade', 'leads'], 
+                type: 'city_leads', 
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
+            },
+            {
+                id: 'queijo_reino',
+                label: 'Queijo do Reino',
+                keywords: ['queijo', 'reino'],
+                type: 'client_code_details', 
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv',
+            },
+            {
+                id: 'nao_cobertos_clientes',
+                label: 'Não Cobertos (Cliente)',
+                keywords: ['cobertos', 'cliente'],
+                type: 'client_code_list_items', 
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=953923858&single=true&output=csv',
+            },
+            {
+                id: 'nao_cobertos_fornecedor',
+                label: 'Não Cobertos (Fornecedor)',
+                keywords: ['fornecedor'],
+                type: 'vendor_supplier_filter',
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1981950621&single=true&output=csv',
+            },
+            
+            // --- BLOCO 2: Relatórios MSL ---
+            {
+                id: 'msl_danone',
+                label: 'MSL DANONE',
+                keywords: ['msl', 'danone'],
+                type: 'vendor_status_list',
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=402511992&single=true&output=csv',
+            },
+            {
+                id: 'msl_otg',
+                label: 'MSL OTG',
+                keywords: ['otg'],
+                type: 'vendor_status_list',
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1571578249&single=true&output=csv',
+            },
+            {
+                id: 'msl_mini',
+                label: 'MSL MINI',
+                keywords: ['mini'],
+                type: 'vendor_status_list',
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=544996255&single=true&output=csv',
+            },
+            {
+                id: 'msl_super',
+                label: 'MSL SUPER',
+                keywords: ['super'],
+                type: 'vendor_status_list',
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2086321744&single=true&output=csv',
+            }
+        ];
+
+        // Variável onde os dados ficam salvos na memória
+        var reportDataCache = {};
+
+        // =================================================================================
+        // 2. FUNÇÃO UTILITÁRIA: PARSER DE CSV (Converte texto em objeto JSON)
+        // =================================================================================
+        function parseRobustCSV(text) {
+            const rows = text.trim().replace(/^\uFEFF/, '').match(/(?:[^\r\n"]+|"[^"]*")+/g);
+            if (!rows || rows.length < 2) return [];
+            
+            const headers = rows[0].split(',').map(h => h.trim());
+            const regex = /("([^"]|"")"|[^,])(,|$)/g;
+            const res = [];
+            
+            for (let i = 1; i < rows.length; i++) {
+                if (!rows[i].trim()) continue;
+                const obj = {}; let m; let j = 0; regex.lastIndex = 0;
+                while ((m = regex.exec(rows[i])) !== null) {
+                    if (j >= headers.length) break;
+                    let v = m[1];
+                    if (v.startsWith('"') && v.endsWith('"')) v = v.substring(1, v.length - 1).replace(/""/g, '"');
+                    obj[headers[j]] = v.trim(); j++;
+                    if (m.index === regex.lastIndex) regex.lastIndex++;
+                }
+                res.push(obj);
+            }
+            return res;
+        }
+
+        // =================================================================================
+        // 3. FUNÇÃO PRINCIPAL DE REQUISIÇÃO (FETCH)
+        // =================================================================================
+        async function carregarDadosDoSheets() {
+            console.log("📥 Iniciando download das planilhas do Google Sheets...");
+            
+            const promises = REPORTS_CONFIG.map(async (config) => {
+                try {
+                    // cache: "no-store" garante que não pegaremos uma versão velha em cache
+                    const response = await fetch(config.url, { cache: "no-store" });
+                    
+                    if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+                    
+                    const text = await response.text();
+                    reportDataCache[config.id] = parseRobustCSV(text);
+                    
+                    console.log(`✅ Sucesso: ${config.label} (${reportDataCache[config.id].length} linhas)`);
+                } catch (err) {
+                    console.error(`❌ Erro em ${config.label}:`, err);
+                    reportDataCache[config.id] = [];
+                }
+            });
+
+            await Promise.all(promises);
+            console.log("✅ Todos os dados foram carregados e estão em 'reportDataCache'.");
+            return reportDataCache;
+        }
+
+        // =================================================================================
+        // VARIÁVEIS GLOBAIS
+        // =================================================================================
         let currentUser = null;
         let authToken = null;
         
@@ -2510,43 +2634,60 @@
 
         // Carregar dados do relatório (função antiga - manter para compatibilidade)
         async function loadReportData(reportType) {
-            if (!db) {
-                return `⚠️ Aguarde... O banco de dados está sendo inicializado.`;
+            console.log('📊 Carregando relatório:', reportType);
+            
+            // Verificar se os dados do Google Sheets estão carregados
+            if (!reportDataCache[reportType] || reportDataCache[reportType].length === 0) {
+                const reportNames = {
+                    'novos_clientes': '📊 Novos Clientes',
+                    'queijo_reino': '🧀 Queijo do Reino',
+                    'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
+                    'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
+                    'msl_danone': '🥛 MSL Danone',
+                    'msl_otg': '🎯 MSL OTG',
+                    'msl_mini': '🏪 MSL Mini',
+                    'msl_super': '🛒 MSL Super'
+                };
+                
+                return `❌ <strong>Relatório não disponível</strong>\n\n` +
+                       `O relatório <strong>${reportNames[reportType]}</strong> não está carregado ou não possui dados.\n\n` +
+                       `📥 Os dados são carregados automaticamente do Google Sheets ao abrir o sistema.\n` +
+                       `🔄 Recarregue a página se necessário.`;
             }
 
             try {
-                const report = await getReportFromDB(reportType);
+                // Criar objeto simulando estrutura do IndexedDB
+                const report = {
+                    reportType: reportType,
+                    data: reportDataCache[reportType],
+                    uploadedAt: new Date().toISOString(),
+                    fileName: `${reportType}_google_sheets.csv`
+                };
                 
-                if (!report) {
-                    const reportNames = {
-                        'novos_clientes': '📊 Novos Clientes',
-                        'queijo_reino': '🧀 Queijo do Reino',
-                        'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
-                        'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
-                        'msl_danone': '🥛 MSL Danone',
-                        'msl_otg': '🎯 MSL OTG',
-                        'msl_min': '🏪 MSL Min',
-                        'msl_super': '🛒 MSL Super'
-                    };
-                    
-                    return `❌ <strong>Relatório não encontrado</strong>\n\n` +
-                           `O relatório <strong>${reportNames[reportType]}</strong> ainda não foi enviado.\n\n` +
-                           `${currentUser && currentUser.role === 'admin' ? 
-                             '👉 Vá para a seção <strong>Relatórios</strong> e faça o upload da planilha.' : 
-                             '👉 Contate o administrador para enviar este relatório.'}`;
-                }
-
+                console.log(`✅ Dados encontrados: ${report.data.length} linhas`);
+                
                 // Processar dados da planilha
                 return formatReportData(report, reportType);
                 
             } catch (error) {
-                console.error('Erro ao carregar relatório:', error);
+                console.error('❌ Erro ao carregar relatório:', error);
                 return `❌ Erro ao carregar o relatório: ${error.message}`;
             }
         }
 
-        // Buscar relatório do IndexedDB
+        // Buscar relatório do Google Sheets Cache (mantendo compatibilidade com IndexedDB legado)
         async function getReportFromDB(reportType) {
+            // Primeiro tentar pegar do cache do Google Sheets
+            if (reportDataCache[reportType] && reportDataCache[reportType].length > 0) {
+                return {
+                    reportType: reportType,
+                    data: reportDataCache[reportType],
+                    uploadedAt: new Date().toISOString(),
+                    fileName: `${reportType}_google_sheets.csv`
+                };
+            }
+            
+            // Fallback para IndexedDB (caso ainda haja dados antigos)
             return new Promise((resolve, reject) => {
                 if (!db) {
                     resolve(null);
@@ -3531,7 +3672,7 @@
         }
 
         // Verificar sessão ao carregar
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log('=== DOMContentLoaded iniciado ===');
             
             // Garantir que todos os elementos existam
@@ -3558,6 +3699,16 @@
             localStorage.removeItem('user');
             
             console.log('🔧 Auto-login DESABILITADO para debug');
+            
+            // CARREGAR DADOS DO GOOGLE SHEETS
+            console.log('📥 Iniciando carregamento dos relatórios do Google Sheets...');
+            try {
+                await carregarDadosDoSheets();
+                console.log('✅ Relatórios carregados com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao carregar relatórios:', error);
+            }
+            
             console.log('=== DOMContentLoaded concluído ===');
         });
     </script>
