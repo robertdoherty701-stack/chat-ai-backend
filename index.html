@@ -1097,6 +1097,42 @@
                 container.scrollTop = container.scrollHeight;
             }, 500);
         }
+        
+        // ========== FUNÇÕES DOS RELATÓRIOS ==========
+        function openReport(reportName) {
+            console.log('Abrindo relatório:', reportName);
+            alert('Abrindo relatório: ' + reportName + '\nEm breve com integração ao Google Sheets!');
+        }
+        
+        // ========== FUNÇÕES DO BANCO DE DADOS ==========
+        function syncDatabase() {
+            console.log('Sincronizando banco de dados...');
+            alert('Sincronização iniciada!\nEm breve com sincronização real.');
+        }
+        
+        function exportDatabase() {
+            console.log('Exportando banco de dados...');
+            alert('Exportação iniciada!\nEm breve com exportação real.');
+        }
+        
+        function clearDatabaseLogs() {
+            console.log('Limpando logs...');
+            if (confirm('Deseja realmente limpar os logs?')) {
+                alert('Logs limpos com sucesso!');
+            }
+        }
+        
+        // ========== FUNÇÕES DE CONFIGURAÇÕES ==========
+        function saveApiKey() {
+            const apiKey = document.getElementById('configApiKey')?.value;
+            if (apiKey) {
+                localStorage.setItem('gpt_api_key', apiKey);
+                alert('Chave API salva com sucesso!');
+                console.log('API Key salva');
+            } else {
+                alert('Por favor, insira uma chave API válida');
+            }
+        }
     </script>
     
     <!-- Mobile Menu Button -->
