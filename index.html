@@ -4283,6 +4283,28 @@
                 console.log('🔒 Mostrando tela de LOGIN');
             }
             
+            // CONECTAR EVENT LISTENER DO FORMULÁRIO DE LOGIN
+            const loginForm = document.querySelector('#authPage form');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            if (loginForm) {
+                console.log('✅ Formulário de login encontrado - conectando event listener');
+                loginForm.addEventListener('submit', handleLogin);
+            } else {
+                console.error('❌ ERRO: Formulário de login NÃO encontrado!');
+            }
+            
+            if (loginBtn) {
+                console.log('✅ Botão de login encontrado');
+                // Adicionar listener adicional ao botão direto
+                loginBtn.addEventListener('click', (e) => {
+                    console.log('🖱️ Clique no botão de login detectado');
+                    // O submit do form vai chamar handleLogin
+                });
+            } else {
+                console.error('❌ ERRO: Botão de login NÃO encontrado!');
+            }
+            
             // CARREGAR DADOS DO GOOGLE SHEETS
             console.log('📥 Iniciando carregamento dos relatórios do Google Sheets...');
             try {
