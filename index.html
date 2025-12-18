@@ -927,6 +927,13 @@
                         const userAvatar = document.getElementById('userAvatar');
                         if (userName) userName.textContent = user.name;
                         if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
+                        
+                        // Mostrar menu admin se for admin
+                        const adminSection = document.getElementById('adminSection');
+                        if (adminSection && user.role === 'admin') {
+                            adminSection.style.display = 'block';
+                            console.log('✅ Menu admin ativado');
+                        }
                     }, 100);
                     
                     console.log('✅ Login OK');
@@ -1056,7 +1063,9 @@
             <!-- Dica de Login -->
             <div style="background: rgba(34, 197, 94, 0.1); border-left: 4px solid #22C55E; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
                 <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">
-                    💡 <strong>Login de teste:</strong> teste@teste.com / 123456
+                    💡 <strong>Logins de teste:</strong><br>
+                    👤 Usuário: teste@teste.com / 123456<br>
+                    👨‍💼 Admin: admin@teste.com / 123456
                 </p>
             </div>
 
@@ -1827,10 +1836,13 @@
                 { id: 'admin_2', name: 'Roberto Felix', email: 'roberto.felix@empresa.com', password: 'Roberto@2025', role: 'admin', createdAt: new Date().toISOString() },
                 { id: 'admin_3', name: 'Jefferson', email: 'jefferson@empresa.com', password: 'Jefferson@2025', role: 'admin', createdAt: new Date().toISOString() },
                 { id: 'admin_4', name: 'Admin Geral', email: 'admin@example.com', password: 'Admin123!', role: 'admin', createdAt: new Date().toISOString() },
-                { id: 'test_1', name: 'Teste', email: 'teste@teste.com', password: '123456', role: 'user', createdAt: new Date().toISOString() }
+                { id: 'test_1', name: 'Teste', email: 'teste@teste.com', password: '123456', role: 'user', createdAt: new Date().toISOString() },
+                { id: 'admin_5', name: 'Admin Teste', email: 'admin@teste.com', password: '123456', role: 'admin', createdAt: new Date().toISOString() }
             ];
             localStorage.setItem('registeredUsers', JSON.stringify(users));
-            console.log('✅ Usuários padrão criados. Use: teste@teste.com / 123456');
+            console.log('✅ Usuários criados:');
+            console.log('   👤 Usuário: teste@teste.com / 123456');
+            console.log('   👨‍💼 Admin: admin@teste.com / 123456');
         }
 
         // Funções de navegação entre login e registro
@@ -4276,6 +4288,13 @@
                     if (userName) userName.textContent = currentUser.name;
                     if (userRole) userRole.textContent = currentUser.role || 'Usuário';
                     if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+                    
+                    // Mostrar menu admin se for admin
+                    const adminSection = document.getElementById('adminSection');
+                    if (adminSection && currentUser.role === 'admin') {
+                        adminSection.style.display = 'block';
+                        console.log('✅ Menu admin ativado (sessão restaurada)');
+                    }
                     
                     console.log('✅ UI atualizada');
                 }, 100);
