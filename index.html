@@ -1017,41 +1017,56 @@
         // ========== NAVEGAÇÃO ==========
         function navigateTo(e, section) {
             try {
-                console.log('→ Navegando:', section);
+                console.log('🔄 ========== NAVEGANDO ==========');
+                console.log('   Seção destino:', section);
+                console.log('   CurrentUser:', window.currentUser?.name || 'não definido');
+                console.log('   Role:', window.currentUser?.role || 'não definido');
                 
                 if (e) e.preventDefault();
 
                 // Verificar permissões
                 if ((section === 'dashboard' || section === 'arquivos') && 
                     (!window.currentUser || window.currentUser.role !== 'admin')) {
+                    console.log('❌ Acesso negado - requer admin');
                     alert('Acesso restrito aos administradores');
                     return;
                 }
 
                 // Atualizar menu
-                document.querySelectorAll('.sidebar-link').forEach(link => {
+                const allLinks = document.querySelectorAll('.sidebar-link');
+                console.log('   Links encontrados:', allLinks.length);
+                allLinks.forEach(link => {
                     link.classList.remove('active');
                 });
                 if (e && e.currentTarget) {
                     e.currentTarget.classList.add('active');
+                    console.log('   Link marcado como ativo');
                 }
 
                 // Trocar seções
-                document.querySelectorAll('.content-section').forEach(sec => {
+                const allSections = document.querySelectorAll('.content-section');
+                console.log('   Seções encontradas:', allSections.length);
+                allSections.forEach(sec => {
                     sec.classList.add('hidden');
                 });
 
                 const targetSection = document.getElementById(section + 'Section');
+                console.log('   Buscando ID:', section + 'Section');
+                console.log('   Seção encontrada:', !!targetSection);
+                
                 if (targetSection) {
                     targetSection.classList.remove('hidden');
-                    console.log('✅ Seção:', section);
+                    console.log('✅ Seção exibida:', section);
                 } else {
-                    console.error('❌ Seção não existe:', section);
+                    console.error('❌ SEÇÃO NÃO EXISTE:', section + 'Section');
+                    alert('ERRO: Seção "' + section + '" não encontrada!');
                 }
                 
                 closeMobileMenu();
+                console.log('================================');
             } catch (error) {
                 console.error('❌ Erro navegação:', error);
+                alert('ERRO: ' + error.message);
             }
         }
     </script>
