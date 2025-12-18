@@ -900,6 +900,13 @@
             </div>
             <h1 class="auth-title">Bem-vindo de volta</h1>
             <p class="auth-subtitle">Faça login para acessar o sistema</p>
+            
+            <!-- Dica de Login -->
+            <div style="background: rgba(34, 197, 94, 0.1); border-left: 4px solid #22C55E; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 13px;">
+                    💡 <strong>Login de teste:</strong> teste@teste.com / 123456
+                </p>
+            </div>
 
             <form onsubmit="return handleLogin(event)">
                 <div class="form-group">
@@ -910,10 +917,10 @@
                     <label class="form-label">Senha</label>
                     <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display: flex; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.9);">
-                        <input type="checkbox" id="rememberMe" style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
-                        <span style="font-size: 14px;">🔒 Lembre de mim (manter conectado por 30 dias)</span>
+                <div class="form-group" style="margin-bottom: 20px; margin-top: 15px;">
+                    <label style="display: flex !important; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.95); background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        <input type="checkbox" id="rememberMe" style="margin-right: 12px; width: 20px; height: 20px; cursor: pointer; accent-color: #DC2626;">
+                        <span style="font-size: 15px; font-weight: 500;">🔒 Lembre de mim (ficar conectado por 30 dias)</span>
                     </label>
                 </div>
                 <button type="submit" class="btn-primary" id="loginBtn">
@@ -1568,6 +1575,27 @@
         async function carregarDadosDoSheets() {
             console.log("📥 Iniciando download das planilhas do Google Sheets...");
             
+            // Mostrar indicador de carregamento no chat
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                const loadingMsg = document.createElement('div');
+                loadingMsg.className = 'message bot-message';
+                loadingMsg.id = 'loading-reports-message';
+                loadingMsg.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-text">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="loading" style="width: 20px; height: 20px;"></div>
+                                <span>Carregando relatórios do Google Sheets...</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatMessages.appendChild(loadingMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
             const promises = REPORTS_CONFIG.map(async (config) => {
                 try {
                     // cache: "no-store" garante que não pegaremos uma versão velha em cache
@@ -1586,7 +1614,31 @@
             });
 
             await Promise.all(promises);
+            
+            // Remover mensagem de carregamento
+            const loadingMsg = document.getElementById('loading-reports-message');
+            if (loadingMsg) {
+                loadingMsg.remove();
+            }
+            
+            // Adicionar mensagem de sucesso
+            if (chatMessages) {
+                const successMsg = document.createElement('div');
+                successMsg.className = 'message bot-message';
+                successMsg.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-text">
+                            ✅ Relatórios carregados com sucesso! Digite <strong>"relatórios"</strong> para começar.
+                        </div>
+                    </div>
+                `;
+                chatMessages.appendChild(successMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
             console.log("✅ Todos os dados foram carregados e estão em 'reportDataCache'.");
+            console.log("📊 Total de relatórios:", Object.keys(reportDataCache).length);
             return reportDataCache;
         }
 
@@ -1622,9 +1674,11 @@
                 { id: 'admin_1', name: 'Nathiely', email: 'nathiely@empresa.com', password: 'Nathiely@2025', role: 'admin', createdAt: new Date().toISOString() },
                 { id: 'admin_2', name: 'Roberto Felix', email: 'roberto.felix@empresa.com', password: 'Roberto@2025', role: 'admin', createdAt: new Date().toISOString() },
                 { id: 'admin_3', name: 'Jefferson', email: 'jefferson@empresa.com', password: 'Jefferson@2025', role: 'admin', createdAt: new Date().toISOString() },
-                { id: 'admin_4', name: 'Admin Geral', email: 'admin@example.com', password: 'Admin123!', role: 'admin', createdAt: new Date().toISOString() }
+                { id: 'admin_4', name: 'Admin Geral', email: 'admin@example.com', password: 'Admin123!', role: 'admin', createdAt: new Date().toISOString() },
+                { id: 'test_1', name: 'Teste', email: 'teste@teste.com', password: '123456', role: 'user', createdAt: new Date().toISOString() }
             ];
             localStorage.setItem('registeredUsers', JSON.stringify(users));
+            console.log('✅ Usuários padrão criados. Use: teste@teste.com / 123456');
         }
 
         // Funções de navegação entre login e registro
