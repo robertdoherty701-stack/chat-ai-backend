@@ -57,6 +57,7 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    remember_me: Optional[bool] = False
 
 class TokenRefresh(BaseModel):
     refresh_token: str
@@ -125,6 +126,14 @@ def create_refresh_token(user_id: str, email: str) -> Dict[str, Any]:
     token = _encode_jwt(payload, expires)
     return {"token": token, "jti": jti}
 
+def create_refresh_token_extended(user_id: str, email: str) -> Dict[str, Any]:
+    """Cria refresh token com validade de 30 dias para 'lembre de mim'"""
+    jti = _make_jti()
+    expires = timedelta(days=30)  # 30 dias para remember_me
+    payload = {"sub": user_id, "email": email, "type": "refresh", "jti": jti}
+    token = _encode_jwt(payload, expires)
+    return {"token": token, "jti": jti}
+
 def create_password_reset_token(user_id: str) -> Dict[str, Any]:
     jti = _make_jti()
     expires = timedelta(minutes=PASSWORD_RESET_EXPIRE_MINUTES)
@@ -179,9 +188,15 @@ async def login(credentials: UserLogin = Body(...)):
     if not user.get("is_active", True):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Usuário inativo")
 
+    # Se remember_me = True, criar refresh token com validade de 30 dias
     at = create_access_token(user_id=user["id"], email=user["email"])
-    rt = create_refresh_token(user_id=user["id"], email=user["email"])
-    logger.info("Login bem-sucedido: %s", credentials.email)
+    if credentials.remember_me:
+        rt = create_refresh_token_extended(user_id=user["id"], email=user["email"])
+        logger.info("Login bem-sucedido (lembre de mim): %s", credentials.email)
+    else:
+        rt = create_refresh_token(user_id=user["id"], email=user["email"])
+        logger.info("Login bem-sucedido: %s", credentials.email)
+    
     return TokenResponse(access_token=at["token"], refresh_token=rt["token"], expires_in=at["expires_in"], user_id=user["id"])
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -282,5 +297,5 @@ def _create_dev_admin_if_missing():
             "is_active": True,
         }
 
-# Não chamar imediatamente - será chamado no startup
-# _create_dev_admin_if_missing()
+# Chamar no startup para criar admin de desenvolvimento
+_create_dev_admin_if_missing()

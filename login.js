@@ -164,7 +164,7 @@ class UIManager {
 
 // ==================== AUTENTICAÇÃO ====================
 class AuthService {
-  static async login(email, password) {
+  static async login(email, password, rememberMe = false) {
     // Validação
     if (!ValidationService.validateEmail(email)) {
       UIManager.showError('Email inválido');
@@ -179,7 +179,7 @@ class AuthService {
     try {
       UIManager.showLoadingSpinner(true);
 
-      const response = await API_CLIENT.login(email, password);
+      const response = await API_CLIENT.login(email, password, rememberMe);
 
       AUTH_STATE.isAuthenticated = true;
       AUTH_STATE.user = {
@@ -191,8 +191,14 @@ class AuthService {
         refresh: response.refresh_token,
       };
 
-      // Salva no localStorage
-      localStorage.setItem('auth_state', JSON.stringify(AUTH_STATE));
+      // Salva no localStorage ou sessionStorage dependendo do "lembre de mim"
+      if (rememberMe) {
+        localStorage.setItem('auth_state', JSON.stringify(AUTH_STATE));
+        localStorage.setItem('remember_me', 'true');
+      } else {
+        sessionStorage.setItem('auth_state', JSON.stringify(AUTH_STATE));
+        localStorage.removeItem('remember_me');
+      }
 
       UIManager.showSuccess('Login realizado com sucesso!');
       
@@ -267,7 +273,12 @@ class AuthService {
       AUTH_STATE.isAuthenticated = false;
       AUTH_STATE.user = null;
       AUTH_STATE.tokens = { access: null, refresh: null };
+      
+      // Limpa ambos os storages
       localStorage.removeItem('auth_state');
+      localStorage.removeItem('remember_me');
+      sessionStorage.removeItem('auth_state');
+      
       window.location.href = '/login.html';
     }
   }
@@ -330,7 +341,12 @@ class AuthService {
   }
 
   static isAuthenticated() {
-    const savedState = localStorage.getItem('auth_state');
+    // Verifica primeiro localStorage (remember_me), depois sessionStorage
+    let savedState = localStorage.getItem('auth_state');
+    if (!savedState) {
+      savedState = sessionStorage.getItem('auth_state');
+    }
+    
     if (savedState) {
       Object.assign(AUTH_STATE, JSON.parse(savedState));
       return AUTH_STATE.isAuthenticated;
@@ -352,7 +368,8 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const email = document.getElementById('login-email').value;
       const password = document.getElementById('login-password').value;
-      await AuthService.login(email, password);
+      const rememberMe = document.getElementById('remember-me')?.checked || false;
+      await AuthService.login(email, password, rememberMe);
     });
   }
 

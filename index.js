@@ -69,18 +69,25 @@ class APIClient {
     }
   }
 
-  async login(email, password) {
+  async login(email, password, rememberMe = false) {
     try {
       const response = await this.client.post('/auth/login', {
         email,
         password,
+        remember_me: rememberMe,
       });
 
       this.accessToken = response.data.access_token;
       this.refreshToken = response.data.refresh_token;
 
-      localStorage.setItem('accessToken', this.accessToken);
-      localStorage.setItem('refreshToken', this.refreshToken);
+      // Salva tokens no localStorage ou sessionStorage dependendo do "lembre de mim"
+      if (rememberMe) {
+        localStorage.setItem('accessToken', this.accessToken);
+        localStorage.setItem('refreshToken', this.refreshToken);
+      } else {
+        sessionStorage.setItem('accessToken', this.accessToken);
+        sessionStorage.setItem('refreshToken', this.refreshToken);
+      }
 
       console.log('✅ Login bem-sucedido');
       return response.data;
