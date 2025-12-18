@@ -886,6 +886,73 @@
     <script>
         console.log('🚀 PÁGINA CARREGADA - Iniciando debug');
         console.log('Body carregado em:', new Date().toLocaleTimeString());
+        
+        // ========== FUNÇÃO DE LOGIN DIRETA ==========
+        function doLogin() {
+            console.log('🚀 ========== doLogin() CHAMADO ========== ');
+            
+            try {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                const rememberMe = document.getElementById('rememberMe')?.checked || false;
+                const btn = document.getElementById('loginBtn');
+                
+                console.log('📧 Email:', email);
+                console.log('🔒 Senha:', password ? '***' : '(vazia)');
+                console.log('💾 Lembrar:', rememberMe);
+                
+                if (!email || !password) {
+                    alert('Por favor, preencha email e senha!');
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.innerHTML = 'Entrando...';
+                
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                console.log('👥 Usuários cadastrados:', users.length);
+                
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    console.log('✅ LOGIN BEM-SUCEDIDO!', user.name);
+                    
+                    window.currentUser = user;
+                    window.authToken = 'token_' + Date.now();
+                    
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem('token', window.authToken);
+                    storage.setItem('user', JSON.stringify(user));
+                    
+                    console.log('💾 Salvou em:', rememberMe ? 'localStorage' : 'sessionStorage');
+                    
+                    const authPage = document.getElementById('authPage');
+                    const mainApp = document.getElementById('mainApp');
+                    
+                    console.log('🔄 Alternando telas...');
+                    authPage.style.display = 'none';
+                    mainApp.style.display = 'flex';
+                    console.log('✅ TELAS ALTERNADAS!');
+                    
+                    setTimeout(() => {
+                        const userName = document.getElementById('userName');
+                        const userAvatar = document.getElementById('userAvatar');
+                        if (userName) userName.textContent = user.name;
+                        if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
+                        console.log('✅ UI atualizada!');
+                    }, 100);
+                } else {
+                    console.log('❌ Credenciais inválidas');
+                    alert('Email ou senha incorretos!');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Entrar';
+                }
+            } catch (error) {
+                console.error('❌ ERRO:', error);
+                alert('ERRO: ' + error.message);
+                document.getElementById('loginBtn').innerHTML = 'Entrar';
+            }
+        }
     </script>
     
     <!-- Mobile Menu Button -->
@@ -928,7 +995,7 @@
                         <span style="font-size: 15px; font-weight: 600; color: white;">🔒 Lembre de mim (ficar conectado por 30 dias)</span>
                     </label>
                 </div>
-                <button type="submit" class="btn-primary" id="loginBtn">
+                <button type="button" class="btn-primary" id="loginBtn" onclick="console.log('Botão clicado!'); doLogin(); return false;">
                     Entrar
                 </button>
             </form>
