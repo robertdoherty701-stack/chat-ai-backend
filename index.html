@@ -887,6 +887,138 @@
     </style>
 </head>
 <body>
+    <script>
+        // ========== FUNÇÕES GLOBAIS DEFINIDAS ANTES DO HTML ==========
+        // Estas funções precisam estar disponíveis para os onclick
+        
+        window.doLogin = function() {
+            console.log('🔐 doLogin chamado');
+            
+            try {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                const rememberMe = document.getElementById('rememberMe')?.checked || false;
+                const btn = document.getElementById('loginBtn');
+                
+                if (!email || !password) {
+                    alert('Preencha email e senha!');
+                    return;
+                }
+                
+                btn.disabled = true;
+                btn.innerHTML = 'Entrando...';
+                
+                const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
+                    window.currentUser = user;
+                    window.authToken = 'token_' + Date.now();
+                    
+                    const storage = rememberMe ? localStorage : sessionStorage;
+                    storage.setItem('token', window.authToken);
+                    storage.setItem('user', JSON.stringify(user));
+                    
+                    document.getElementById('authPage').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        const userName = document.getElementById('userName');
+                        const userAvatar = document.getElementById('userAvatar');
+                        if (userName) userName.textContent = user.name;
+                        if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
+                        
+                        if (user.role === 'admin') {
+                            const adminSection = document.getElementById('adminSection');
+                            if (adminSection) {
+                                adminSection.style.display = 'block';
+                                console.log('✅ Menu admin ativado');
+                            }
+                        }
+                        
+                        // Carregar dados do Google Sheets
+                        setTimeout(() => {
+                            if (typeof carregarDadosDoSheets === 'function') {
+                                carregarDadosDoSheets();
+                            }
+                        }, 1000);
+                    }, 100);
+                    
+                    console.log('✅ Login OK');
+                } else {
+                    alert('Email ou senha incorretos!');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Entrar';
+                }
+            } catch (error) {
+                console.error('❌ Erro no login:', error);
+                alert('Erro: ' + error.message);
+                const btn = document.getElementById('loginBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Entrar';
+                }
+            }
+        };
+        
+        window.toggleMobileMenu = function() {
+            try {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                const menuBtn = document.getElementById('mobileMenuBtn');
+                const menuIcon = document.getElementById('menuIcon');
+                
+                if (!sidebar) return;
+                
+                const isOpen = sidebar.classList.contains('mobile-open');
+                
+                if (isOpen) {
+                    sidebar.classList.remove('mobile-open');
+                    if (overlay) overlay.classList.remove('active');
+                    if (menuBtn) menuBtn.classList.remove('open');
+                    if (menuIcon) menuIcon.textContent = '☰';
+                    document.body.style.overflow = '';
+                } else {
+                    sidebar.classList.add('mobile-open');
+                    if (overlay) overlay.classList.add('active');
+                    if (menuBtn) menuBtn.classList.add('open');
+                    if (menuIcon) menuIcon.textContent = '×';
+                    document.body.style.overflow = 'hidden';
+                }
+            } catch (error) {
+                console.error('❌ Erro menu:', error);
+            }
+        };
+        
+        window.closeMobileMenu = function() {
+            try {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                const menuBtn = document.getElementById('mobileMenuBtn');
+                const menuIcon = document.getElementById('menuIcon');
+                
+                if (sidebar) sidebar.classList.remove('mobile-open');
+                if (overlay) overlay.classList.remove('active');
+                if (menuBtn) menuBtn.classList.remove('open');
+                if (menuIcon) menuIcon.textContent = '☰';
+                document.body.style.overflow = '';
+            } catch (error) {
+                console.error('❌ Erro:', error);
+            }
+        };
+        
+        window.showRegisterForm = function() {
+            document.getElementById('loginForm')?.classList.add('hidden');
+            document.getElementById('registerForm')?.classList.remove('hidden');
+        };
+        
+        window.showLoginForm = function() {
+            document.getElementById('registerForm')?.classList.add('hidden');
+            document.getElementById('loginForm')?.classList.remove('hidden');
+        };
+        
+        console.log('✅ Funções globais carregadas');
+    </script>
     
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Menu">
