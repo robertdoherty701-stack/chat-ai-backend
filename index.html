@@ -1005,6 +1005,44 @@
             if (menuIcon) menuIcon.textContent = '☰';
             document.body.style.overflow = '';
         }
+        
+        // ========== FUNÇÃO DE NAVEGAÇÃO ==========
+        function navigateTo(e, section) {
+            console.log('🔄 Navegando para:', section);
+            
+            if (e) e.preventDefault();
+
+            // Verificar permissões para seções restritas
+            if ((section === 'dashboard' || section === 'arquivos') && window.currentUser && window.currentUser.role !== 'admin') {
+                alert('Acesso restrito. Apenas administradores podem acessar esta seção.');
+                return;
+            }
+
+            // Atualizar links ativos
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            if (e && e.currentTarget) {
+                e.currentTarget.classList.add('active');
+            }
+
+            // Esconder todas as seções
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            // Mostrar seção selecionada
+            const targetSection = document.getElementById(section + 'Section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                console.log('✅ Seção mostrada:', section);
+            } else {
+                console.error('❌ Seção não encontrada:', section + 'Section');
+            }
+            
+            // Fechar menu mobile
+            closeMobileMenu();
+        }
     </script>
     
     <!-- Mobile Menu Button -->
@@ -2082,42 +2120,7 @@
         }
 
         // Navegação
-        function navigateTo(e, section) {
-            e.preventDefault();
-
-            // Verificar permissões para seções restritas
-            if ((section === 'dashboard' || section === 'arquivos') && currentUser.role !== 'admin') {
-                showNotification('Acesso restrito. Apenas administradores podem acessar esta seção.', 'error');
-                return;
-            }
-
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            e.currentTarget.classList.add('active');
-
-            document.querySelectorAll('.content-section').forEach(sec => {
-                sec.classList.add('hidden');
-            });
-
-            document.getElementById(section + 'Section').classList.remove('hidden');
-            
-            // Fechar menu mobile ao navegar
-            closeMobileMenu();
-            
-            // Carregar dados específicos da seção
-            if (section === 'usuarios') {
-                loadUsersList();
-            } else if (section === 'analytics') {
-                updateAnalytics();
-            } else if (section === 'database') {
-                loadDatabaseTable();
-            } else if (section === 'arquivos') {
-                loadUserFiles();
-            } else if (section === 'relatorios') {
-                updateReportsList();
-            }
-        }
+        // === FUNÇÃO navigateTo REMOVIDA - Agora está no topo do arquivo ===
 
         // Rastreamento de uso
         function initializeUsageTracking() {
