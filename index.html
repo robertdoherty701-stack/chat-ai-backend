@@ -883,6 +883,11 @@
     </style>
 </head>
 <body>
+    <script>
+        console.log('🚀 PÁGINA CARREGADA - Iniciando debug');
+        console.log('Body carregado em:', new Date().toLocaleTimeString());
+    </script>
+    
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()" aria-label="Menu">
         <span id="menuIcon">☰</span>
@@ -917,10 +922,10 @@
                     <label class="form-label">Senha</label>
                     <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 20px; margin-top: 15px;">
-                    <label style="display: flex !important; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.95); background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                        <input type="checkbox" id="rememberMe" style="margin-right: 12px; width: 20px; height: 20px; cursor: pointer; accent-color: #DC2626;">
-                        <span style="font-size: 15px; font-weight: 500;">🔒 Lembre de mim (ficar conectado por 30 dias)</span>
+                <div class="form-group" style="margin-bottom: 20px !important; margin-top: 15px !important; display: block !important; visibility: visible !important; opacity: 1 !important;">
+                    <label style="display: flex !important; visibility: visible !important; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.95); background: rgba(220, 38, 38, 0.2); padding: 14px; border-radius: 8px; transition: all 0.3s; border: 2px solid rgba(220, 38, 38, 0.4);" onmouseover="this.style.background='rgba(220, 38, 38, 0.3)'; this.style.borderColor='rgba(220, 38, 38, 0.6)'" onmouseout="this.style.background='rgba(220, 38, 38, 0.2)'; this.style.borderColor='rgba(220, 38, 38, 0.4)'">
+                        <input type="checkbox" id="rememberMe" style="margin-right: 12px; width: 22px; height: 22px; cursor: pointer; accent-color: #DC2626; flex-shrink: 0;">
+                        <span style="font-size: 15px; font-weight: 600; color: white;">🔒 Lembre de mim (ficar conectado por 30 dias)</span>
                     </label>
                 </div>
                 <button type="submit" class="btn-primary" id="loginBtn">
@@ -1840,14 +1845,46 @@
             
             if (!authPage || !mainApp) {
                 console.error('❌ ERRO: Elementos não encontrados!');
-                alert('ERRO CRÍTICO: Elementos do DOM não encontrados!\nauth: ' + !!authPage + '\napp: ' + !!mainApp);
                 return;
             }
 
             if (!currentUser) {
                 console.error('❌ ERRO: currentUser não definido!');
-                alert('ERRO: Usuário não está definido!');
                 return;
+            }
+
+            console.log('👤 Usuário:', currentUser.name);
+            console.log('🔄 Forçando transição...');
+            
+            // Método DEFINITIVO - Forçar com setAttribute
+            authPage.setAttribute('style', 'display: none !important;');
+            mainApp.setAttribute('style', 'display: flex !important;');
+            
+            // Remover classes hidden se existirem
+            authPage.classList.add('hidden');
+            mainApp.classList.remove('hidden');
+            
+            console.log('✅ Transição aplicada');
+            console.log('authPage display:', window.getComputedStyle(authPage).display);
+            console.log('mainApp display:', window.getComputedStyle(mainApp).display);
+
+            setTimeout(() => {
+                try {
+                    const userAvatar = document.getElementById('userAvatar');
+                    const userName = document.getElementById('userName');
+                    const userRole = document.getElementById('userRole');
+
+                    if (userAvatar && userName && userRole) {
+                        userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
+                        userName.textContent = currentUser.name;
+                        userRole.textContent = currentUser.role || 'Usuário';
+                        console.log('✅ Interface do usuário atualizada');
+                    }
+                } catch (error) {
+                    console.error('⚠️ Erro ao atualizar interface:', error);
+                }
+            }, 100);
+        }
             }
 
             console.log('👤 Usuário:', currentUser.name);
