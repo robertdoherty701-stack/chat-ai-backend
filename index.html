@@ -884,12 +884,15 @@
 </head>
 <body>
     <script>
-        console.log('🚀 PÁGINA CARREGADA - Iniciando debug');
-        console.log('Body carregado em:', new Date().toLocaleTimeString());
+        console.log('🚀 PÁGINA CARREGADA');
         
-        // ========== FUNÇÃO DE LOGIN DIRETA ==========
+        // ========== VARIÁVEIS GLOBAIS ==========
+        window.currentUser = null;
+        window.authToken = null;
+        
+        // ========== LOGIN ==========
         function doLogin() {
-            console.log('🚀 ========== doLogin() CHAMADO ========== ');
+            console.log('🔐 Login iniciado');
             
             try {
                 const email = document.getElementById('loginEmail').value.trim();
@@ -897,12 +900,8 @@
                 const rememberMe = document.getElementById('rememberMe')?.checked || false;
                 const btn = document.getElementById('loginBtn');
                 
-                console.log('📧 Email:', email);
-                console.log('🔒 Senha:', password ? '***' : '(vazia)');
-                console.log('💾 Lembrar:', rememberMe);
-                
                 if (!email || !password) {
-                    alert('Por favor, preencha email e senha!');
+                    alert('Preencha email e senha!');
                     return;
                 }
                 
@@ -910,13 +909,9 @@
                 btn.innerHTML = 'Entrando...';
                 
                 const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-                console.log('👥 Usuários cadastrados:', users.length);
-                
                 const user = users.find(u => u.email === email && u.password === password);
                 
                 if (user) {
-                    console.log('✅ LOGIN BEM-SUCEDIDO!', user.name);
-                    
                     window.currentUser = user;
                     window.authToken = 'token_' + Date.now();
                     
@@ -924,124 +919,119 @@
                     storage.setItem('token', window.authToken);
                     storage.setItem('user', JSON.stringify(user));
                     
-                    console.log('💾 Salvou em:', rememberMe ? 'localStorage' : 'sessionStorage');
-                    
-                    const authPage = document.getElementById('authPage');
-                    const mainApp = document.getElementById('mainApp');
-                    
-                    console.log('🔄 Alternando telas...');
-                    authPage.style.display = 'none';
-                    mainApp.style.display = 'flex';
-                    console.log('✅ TELAS ALTERNADAS!');
+                    document.getElementById('authPage').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'flex';
                     
                     setTimeout(() => {
                         const userName = document.getElementById('userName');
                         const userAvatar = document.getElementById('userAvatar');
                         if (userName) userName.textContent = user.name;
                         if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
-                        console.log('✅ UI atualizada!');
                     }, 100);
+                    
+                    console.log('✅ Login OK');
                 } else {
-                    console.log('❌ Credenciais inválidas');
                     alert('Email ou senha incorretos!');
                     btn.disabled = false;
                     btn.innerHTML = 'Entrar';
                 }
             } catch (error) {
-                console.error('❌ ERRO:', error);
+                console.error('❌ Erro login:', error);
                 alert('ERRO: ' + error.message);
-                document.getElementById('loginBtn').innerHTML = 'Entrar';
             }
         }
         
-        // ========== FUNÇÃO DO MENU MOBILE ==========
+        // ========== MENU MOBILE ==========
         function toggleMobileMenu() {
-            console.log('🍔 toggleMobileMenu chamado');
-            
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            const menuBtn = document.getElementById('mobileMenuBtn');
-            const menuIcon = document.getElementById('menuIcon');
-            
-            console.log('Sidebar:', !!sidebar);
-            console.log('Overlay:', !!overlay);
-            console.log('MenuBtn:', !!menuBtn);
-            
-            if (!sidebar || !overlay) {
-                console.error('❌ ERRO: Elementos do menu não encontrados!');
-                alert('ERRO: Sidebar ou overlay não encontrado!');
-                return;
-            }
-            
-            const isOpen = sidebar.classList.contains('mobile-open');
-            console.log('Menu está aberto?', isOpen);
-            
-            if (isOpen) {
-                sidebar.classList.remove('mobile-open');
-                overlay.classList.remove('active');
-                if (menuBtn) menuBtn.classList.remove('open');
-                if (menuIcon) menuIcon.textContent = '☰';
-                document.body.style.overflow = '';
-                console.log('✅ Menu fechado');
-            } else {
-                sidebar.classList.add('mobile-open');
-                overlay.classList.add('active');
-                if (menuBtn) menuBtn.classList.add('open');
-                if (menuIcon) menuIcon.textContent = '×';
-                document.body.style.overflow = 'hidden';
-                console.log('✅ Menu aberto');
+            try {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                const menuBtn = document.getElementById('mobileMenuBtn');
+                const menuIcon = document.getElementById('menuIcon');
+                
+                if (!sidebar) {
+                    console.error('Sidebar não encontrado');
+                    return;
+                }
+                
+                const isOpen = sidebar.classList.contains('mobile-open');
+                
+                if (isOpen) {
+                    sidebar.classList.remove('mobile-open');
+                    if (overlay) overlay.classList.remove('active');
+                    if (menuBtn) menuBtn.classList.remove('open');
+                    if (menuIcon) menuIcon.textContent = '☰';
+                    document.body.style.overflow = '';
+                } else {
+                    sidebar.classList.add('mobile-open');
+                    if (overlay) overlay.classList.add('active');
+                    if (menuBtn) menuBtn.classList.add('open');
+                    if (menuIcon) menuIcon.textContent = '×';
+                    document.body.style.overflow = 'hidden';
+                }
+                
+                console.log('Menu:', isOpen ? 'fechado' : 'aberto');
+            } catch (error) {
+                console.error('❌ Erro menu:', error);
             }
         }
         
         function closeMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobileOverlay');
-            const menuBtn = document.getElementById('mobileMenuBtn');
-            const menuIcon = document.getElementById('menuIcon');
-            
-            if (sidebar) sidebar.classList.remove('mobile-open');
-            if (overlay) overlay.classList.remove('active');
-            if (menuBtn) menuBtn.classList.remove('open');
-            if (menuIcon) menuIcon.textContent = '☰';
-            document.body.style.overflow = '';
+            try {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobileOverlay');
+                const menuBtn = document.getElementById('mobileMenuBtn');
+                const menuIcon = document.getElementById('menuIcon');
+                
+                if (sidebar) sidebar.classList.remove('mobile-open');
+                if (overlay) overlay.classList.remove('active');
+                if (menuBtn) menuBtn.classList.remove('open');
+                if (menuIcon) menuIcon.textContent = '☰';
+                document.body.style.overflow = '';
+            } catch (error) {
+                console.error('❌ Erro fechar menu:', error);
+            }
         }
         
-        // ========== FUNÇÃO DE NAVEGAÇÃO ==========
+        // ========== NAVEGAÇÃO ==========
         function navigateTo(e, section) {
-            console.log('🔄 Navegando para:', section);
-            
-            if (e) e.preventDefault();
+            try {
+                console.log('→ Navegando:', section);
+                
+                if (e) e.preventDefault();
 
-            // Verificar permissões para seções restritas
-            if ((section === 'dashboard' || section === 'arquivos') && window.currentUser && window.currentUser.role !== 'admin') {
-                alert('Acesso restrito. Apenas administradores podem acessar esta seção.');
-                return;
+                // Verificar permissões
+                if ((section === 'dashboard' || section === 'arquivos') && 
+                    (!window.currentUser || window.currentUser.role !== 'admin')) {
+                    alert('Acesso restrito aos administradores');
+                    return;
+                }
+
+                // Atualizar menu
+                document.querySelectorAll('.sidebar-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                if (e && e.currentTarget) {
+                    e.currentTarget.classList.add('active');
+                }
+
+                // Trocar seções
+                document.querySelectorAll('.content-section').forEach(sec => {
+                    sec.classList.add('hidden');
+                });
+
+                const targetSection = document.getElementById(section + 'Section');
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                    console.log('✅ Seção:', section);
+                } else {
+                    console.error('❌ Seção não existe:', section);
+                }
+                
+                closeMobileMenu();
+            } catch (error) {
+                console.error('❌ Erro navegação:', error);
             }
-
-            // Atualizar links ativos
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            if (e && e.currentTarget) {
-                e.currentTarget.classList.add('active');
-            }
-
-            // Esconder todas as seções
-            document.querySelectorAll('.content-section').forEach(sec => {
-                sec.classList.add('hidden');
-            });
-
-            // Mostrar seção selecionada
-            const targetSection = document.getElementById(section + 'Section');
-            if (targetSection) {
-                targetSection.classList.remove('hidden');
-                console.log('✅ Seção mostrada:', section);
-            } else {
-                console.error('❌ Seção não encontrada:', section + 'Section');
-            }
-            
-            // Fechar menu mobile
-            closeMobileMenu();
         }
     </script>
     
