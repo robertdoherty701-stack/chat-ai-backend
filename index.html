@@ -2711,38 +2711,54 @@
         
         // 1. Não Cobertos - Clientes
         function filterNaoCobertosClientes(data) {
-            const vendorCode = chatContext.vendorCode;
-            const vendorName = chatContext.vendorName;
+            console.log('🔍 Filtrando Não Cobertos Clientes...');
             
+            // FILTRAR APENAS STATUS = "FALTA"
             const filtered = data.filter(row => {
-                const rowVendorCode = String(row['Código do Vendedor'] || row['Codigo do Vendedor'] || row['CodigoVendedor'] || '').trim();
-                const rowVendorName = String(row['Nome do Vendedor'] || row['NomeVendedor'] || row['Vendedor'] || '').trim().toLowerCase();
-                const status = String(row['Status'] || '').trim().toUpperCase();
-                
-                return rowVendorCode === vendorCode &&
-                       rowVendorName.includes(vendorName.toLowerCase()) &&
-                       status === 'FALTA';
+                const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
+                return status === 'FALTA';
             });
             
-            return removeDuplicates(filtered, ['Código do Cliente', 'Fornecedor']);
+            console.log(`✅ Encontrados ${filtered.length} registros com STATUS = FALTA`);
+            
+            // EXTRAIR APENAS AS COLUNAS SOLICITADAS: CODVD, VENDEDOR, CODCLI, CLIENTE, CIDADE, FORNECEDOR, STATUS
+            const result = filtered.map(row => ({
+                'CODVD': String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim(),
+                'VENDEDOR': String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim(),
+                'CODCLI': String(row['CODCLI'] || row['Código do Cliente'] || row['Codigo Cliente'] || '').trim(),
+                'CLIENTE': String(row['CLIENTE'] || row['Cliente'] || row['Nome Cliente'] || '').trim(),
+                'CIDADE': String(row['CIDADE'] || row['Cidade'] || '').trim(),
+                'FORNECEDOR': String(row['FORNECEDOR'] || row['Fornecedor'] || '').trim(),
+                'STATUS': 'FALTA'
+            }));
+            
+            return removeDuplicates(result, ['CODCLI', 'FORNECEDOR']);
         }
 
         // 2. Não Cobertos - Fornecedor
         function filterNaoCobertosFornecedor(data) {
-            const vendorCode = chatContext.vendorCode;
-            const vendorName = chatContext.vendorName;
+            console.log('🔍 Filtrando Não Cobertos Fornecedor...');
             
+            // FILTRAR APENAS STATUS = "FALTA"
             const filtered = data.filter(row => {
-                const rowVendorCode = String(row['Código do Vendedor'] || row['Codigo do Vendedor'] || row['CodigoVendedor'] || '').trim();
-                const rowVendorName = String(row['Nome do Vendedor'] || row['NomeVendedor'] || row['Vendedor'] || '').trim().toLowerCase();
-                const status = String(row['Status'] || '').trim().toUpperCase();
-                
-                return rowVendorCode === vendorCode &&
-                       rowVendorName.includes(vendorName.toLowerCase()) &&
-                       status === 'FALTA';
+                const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
+                return status === 'FALTA';
             });
             
-            return removeDuplicates(filtered, ['Código do Cliente', 'Fornecedor']);
+            console.log(`✅ Encontrados ${filtered.length} registros com STATUS = FALTA`);
+            
+            // EXTRAIR APENAS AS COLUNAS SOLICITADAS: CODVD, VENDEDOR, FORNECEDOR, CODCLI, CLIENTE, CIDADE, STATUS
+            const result = filtered.map(row => ({
+                'CODVD': String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim(),
+                'VENDEDOR': String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim(),
+                'FORNECEDOR': String(row['FORNECEDOR'] || row['Fornecedor'] || '').trim(),
+                'CODCLI': String(row['CODCLI'] || row['Código do Cliente'] || row['Codigo Cliente'] || '').trim(),
+                'CLIENTE': String(row['CLIENTE'] || row['Cliente'] || row['Nome Cliente'] || '').trim(),
+                'CIDADE': String(row['CIDADE'] || row['Cidade'] || '').trim(),
+                'STATUS': 'FALTA'
+            }));
+            
+            return removeDuplicates(result, ['CODCLI', 'FORNECEDOR']);
         }
 
         // 3. MSL Super
@@ -2865,63 +2881,71 @@
                 'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
                 'msl_danone': '🥛 MSL Danone',
                 'msl_otg': '🎯 MSL OTG',
-                'msl_min': '🏪 MSL Min',
+                'msl_mini': '🏪 MSL Mini',
                 'msl_super': '🛒 MSL Super'
             };
-
-            // Relatórios que devem ter gráficos
-            const reportsWithCharts = ['novos_clientes', 'nao_cobertos_clientes', 'nao_cobertos_fornecedor', 'msl_danone', 'msl_otg', 'msl_min', 'msl_super'];
 
             let response = `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n`;
             response += `<h3 style="margin: 0 0 16px 0; color: #DC2626;">${reportNames[reportType]}</h3>\n\n`;
             
-            // Informações básicas do arquivo
-            response += `📁 <strong>Arquivo:</strong> ${report.name}\n`;
-            response += `📅 <strong>Enviado:</strong> ${new Date(report.uploadDate).toLocaleDateString('pt-BR')}\n`;
-            response += `💾 <strong>Tamanho:</strong> ${(report.size / 1024).toFixed(2)} KB\n\n`;
-            
             // Dados da planilha
             if (report.data && report.data.length > 0) {
-                response += `📊 <strong>Total de registros:</strong> ${report.data.length}\n\n`;
+                console.log(`📊 Processando ${report.data.length} registros do tipo: ${reportType}`);
                 
-                // Adicionar gráfico se for um dos relatórios selecionados
-                if (reportsWithCharts.includes(reportType)) {
-                    response += generateChart(report.data, reportType);
+                // APLICAR FILTROS ESPECÍFICOS PARA RELATÓRIOS "NÃO COBERTOS"
+                let processedData = report.data;
+                
+                if (reportType === 'nao_cobertos_clientes') {
+                    processedData = filterNaoCobertosClientes(report.data);
+                    response += `🔍 <strong>Filtro aplicado:</strong> Apenas registros com STATUS = FALTA\n`;
+                    response += `📊 <strong>Total encontrado:</strong> ${processedData.length} registros\n\n`;
+                } else if (reportType === 'nao_cobertos_fornecedor') {
+                    processedData = filterNaoCobertosFornecedor(report.data);
+                    response += `🔍 <strong>Filtro aplicado:</strong> Apenas registros com STATUS = FALTA\n`;
+                    response += `📊 <strong>Total encontrado:</strong> ${processedData.length} registros\n\n`;
+                } else {
+                    response += `📊 <strong>Total de registros:</strong> ${processedData.length}\n\n`;
                 }
                 
-                // Mostrar primeiras 5 linhas como preview
-                response += `<strong>Preview dos dados:</strong>\n`;
-                response += `<div style="background: white; padding: 12px; border-radius: 8px; margin-top: 8px; overflow-x: auto;">\n`;
-                response += `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">\n`;
-                
-                // Cabeçalhos
-                if (report.data[0]) {
-                    const headers = Object.keys(report.data[0]);
-                    response += `<tr style="background: #f3f4f6; font-weight: 600;">\n`;
-                    headers.forEach(header => {
-                        response += `<td style="padding: 8px; border: 1px solid #e5e7eb;">${header}</td>\n`;
-                    });
-                    response += `</tr>\n`;
+                if (processedData.length === 0) {
+                    response += `✅ <strong>Nenhum registro com STATUS = FALTA encontrado!</strong>\n`;
+                    response += `Isso significa que não há pendências neste relatório.\n`;
+                } else {
+                    // Mostrar dados em tabela
+                    response += `<strong>Dados encontrados:</strong>\n`;
+                    response += `<div style="background: white; padding: 12px; border-radius: 8px; margin-top: 8px; overflow-x: auto; max-height: 500px; overflow-y: auto;">\n`;
+                    response += `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">\n`;
                     
-                    // Dados (primeiras 5 linhas)
-                    const preview = report.data.slice(0, 5);
-                    preview.forEach(row => {
-                        response += `<tr>\n`;
+                    // Cabeçalhos
+                    if (processedData[0]) {
+                        const headers = Object.keys(processedData[0]);
+                        response += `<tr style="background: #DC2626; color: white; position: sticky; top: 0; z-index: 10;">\n`;
                         headers.forEach(header => {
-                            response += `<td style="padding: 8px; border: 1px solid #e5e7eb;">${row[header] || '-'}</td>\n`;
+                            response += `<td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 700; white-space: nowrap;">${header}</td>\n`;
                         });
                         response += `</tr>\n`;
-                    });
-                }
-                
-                response += `</table>\n`;
-                response += `</div>\n\n`;
-                
-                if (report.data.length > 5) {
-                    response += `<small>... e mais ${report.data.length - 5} registros</small>\n`;
+                        
+                        // Todos os dados (limitado a 100 para não sobrecarregar)
+                        const dataToShow = processedData.slice(0, 100);
+                        dataToShow.forEach((row, index) => {
+                            const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                            response += `<tr style="background: ${bgColor};">\n`;
+                            headers.forEach(header => {
+                                response += `<td style="padding: 8px; border: 1px solid #e5e7eb; white-space: nowrap;">${row[header] || '-'}</td>\n`;
+                            });
+                            response += `</tr>\n`;
+                        });
+                    }
+                    
+                    response += `</table>\n`;
+                    response += `</div>\n\n`;
+                    
+                    if (processedData.length > 100) {
+                        response += `<small>⚠️ Mostrando primeiros 100 registros de ${processedData.length} encontrados</small>\n`;
+                    }
                 }
             } else {
-                response += `⚠️ <em>Dados ainda não foram processados ou planilha vazia.</em>\n`;
+                response += `⚠️ <em>Nenhum dado disponível neste relatório.</em>\n`;
             }
             
             response += `</div>\n\n`;
