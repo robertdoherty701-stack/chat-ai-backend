@@ -1094,63 +1094,92 @@
 
             // Processar comandos especiais
             let response = '';
-            const cmd = message.toLowerCase();
+            const cmd = message.toLowerCase().trim();
             
-            if (cmd === '/help' || cmd === '/ajuda') {
+            if (cmd === 'help' || cmd === 'ajuda' || cmd === 'comandos') {
                 response = `<strong>🤖 IA - Comandos Disponíveis:</strong><br><br>
-                📋 <strong>/help ou /ajuda</strong> - Mostra esta lista de comandos<br>
-                📊 <strong>/relatorios</strong> - Acessa relatórios<br>
-                💾 <strong>/dados</strong> - Informações sobre banco de dados<br>
-                👤 <strong>/perfil</strong> - Mostra seu perfil<br>
-                📈 <strong>/status</strong> - Status do sistema<br>
-                🎯 <strong>/analytics</strong> - Acessa analytics<br>
-                ⚙️ <strong>/config</strong> - Abre configurações<br>
-                🔄 <strong>/limpar</strong> - Limpa o chat<br><br>
-                Digite qualquer mensagem para conversar com a IA!`;
-            } else if (cmd === '/relatorios') {
+                📋 <strong>ajuda</strong> ou <strong>help</strong> - Mostra esta lista<br>
+                📊 <strong>relatorios</strong> - Acessa relatórios do Google Sheets<br>
+                💾 <strong>dados</strong> - Informações sobre banco de dados<br>
+                👤 <strong>perfil</strong> - Mostra seu perfil<br>
+                📈 <strong>status</strong> - Status do sistema<br>
+                🎯 <strong>analytics</strong> - Acessa analytics<br>
+                ⚙️ <strong>config</strong> - Abre configurações<br>
+                🔄 <strong>limpar</strong> - Limpa o chat<br>
+                🥛 <strong>danone</strong> - Relatório MSL Danone<br>
+                🎯 <strong>otg</strong> - Relatório MSL OTG<br>
+                🏪 <strong>mini</strong> - Relatório MSL Mini<br>
+                🛒 <strong>super</strong> - Relatório MSL Super<br>
+                💰 <strong>vendas</strong> - Relatório de Vendas<br>
+                📢 <strong>campanhas</strong> - Relatório de Campanhas<br><br>
+                Digite qualquer comando sem barra para usar!`;
+            } else if (cmd === 'relatorios' || cmd === 'relatórios') {
                 response = `<strong>🤖 IA:</strong> Navegando para Relatórios...`;
                 setTimeout(() => navigateTo(null, 'relatorios'), 1000);
-            } else if (cmd === '/dados') {
+            } else if (cmd === 'danone') {
+                response = `<strong>🤖 IA:</strong> Abrindo relatório MSL Danone do Google Sheets...`;
+                setTimeout(() => { navigateTo(null, 'relatorios'); setTimeout(() => openReport('msl_danone'), 500); }, 1000);
+            } else if (cmd === 'otg') {
+                response = `<strong>🤖 IA:</strong> Abrindo relatório MSL OTG do Google Sheets...`;
+                setTimeout(() => { navigateTo(null, 'relatorios'); setTimeout(() => openReport('msl_otg'), 500); }, 1000);
+            } else if (cmd === 'mini') {
+                response = `<strong>🤖 IA:</strong> Abrindo relatório MSL Mini do Google Sheets...`;
+                setTimeout(() => { navigateTo(null, 'relatorios'); setTimeout(() => openReport('msl_mini'), 500); }, 1000);
+            } else if (cmd === 'super') {
+                response = `<strong>🤖 IA:</strong> Abrindo relatório MSL Super do Google Sheets...`;
+                setTimeout(() => { navigateTo(null, 'relatorios'); setTimeout(() => openReport('msl_super'), 500); }, 1000);
+            } else if (cmd === 'vendas') {
+                response = `<strong>🤖 IA:</strong> Abrindo relatório de Vendas do Google Sheets...`;
+                setTimeout(() => { navigateTo(null, 'relatorios'); setTimeout(() => openReport('vendas'), 500); }, 1000);
+            } else if (cmd === 'campanhas') {
+                response = `<strong>🤖 IA:</strong> Abrindo relatório de Campanhas do Google Sheets...`;
+                setTimeout(() => { navigateTo(null, 'relatorios'); setTimeout(() => openReport('campanhas'), 500); }, 1000);
+            } else if (cmd === 'dados') {
                 const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const sheets = JSON.parse(localStorage.getItem('googleSheetsData') || '[]');
                 response = `<strong>🤖 IA - Status do Banco de Dados:</strong><br><br>
                 👥 Usuários registrados: ${users.length}<br>
                 💬 Mensagens no chat: ${container.children.length}<br>
+                📊 Relatórios Google Sheets: ${sheets.length} carregados<br>
                 📦 Armazenamento usado: ${(JSON.stringify(localStorage).length / 1024).toFixed(2)} KB<br>
                 ✅ Sistema: Operacional`;
-            } else if (cmd === '/perfil') {
+            } else if (cmd === 'perfil') {
                 const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || localStorage.getItem('currentUser') || '{}');
                 response = `<strong>🤖 IA - Seu Perfil:</strong><br><br>
                 👤 Nome: ${currentUser.name || 'N/A'}<br>
                 📧 Email: ${currentUser.email || 'N/A'}<br>
                 🎯 Cargo: ${currentUser.role === 'admin' ? 'Administrador' : 'Usuário'}<br>
                 🕐 Sessão iniciada: ${new Date().toLocaleTimeString('pt-BR')}`;
-            } else if (cmd === '/status') {
+            } else if (cmd === 'status') {
                 const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+                const sheets = JSON.parse(localStorage.getItem('googleSheetsData') || '[]');
                 response = `<strong>🤖 IA - Status do Sistema:</strong><br><br>
                 ✅ Servidor: Online<br>
                 ✅ Database: Conectado<br>
                 ✅ IA: Ativa<br>
                 👥 Usuários: ${users.length} registrados<br>
-                📊 Uptime: 99.9%<br>
+                📊 Google Sheets: ${sheets.length} sincronizados<br>
+                📈 Uptime: 99.9%<br>
                 🔒 Segurança: Ativada`;
-            } else if (cmd === '/analytics') {
+            } else if (cmd === 'analytics') {
                 response = `<strong>🤖 IA:</strong> Abrindo Analytics...`;
                 setTimeout(() => navigateTo(null, 'analytics'), 1000);
-            } else if (cmd === '/config') {
+            } else if (cmd === 'config' || cmd === 'configuracoes' || cmd === 'configurações') {
                 response = `<strong>🤖 IA:</strong> Abrindo Configurações...`;
                 setTimeout(() => navigateTo(null, 'configuracoes'), 1000);
-            } else if (cmd === '/limpar') {
+            } else if (cmd === 'limpar' || cmd === 'clear') {
                 container.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);">
                     <p style="font-size: 48px; margin-bottom: 16px;">🤖</p>
                     <p style="font-size: 16px; font-weight: 600;">Chat limpo! Como posso ajudar você hoje?</p>
+                    <p style="font-size: 14px; margin-top: 8px;">Digite <strong>ajuda</strong> para ver os comandos.</p>
                 </div>`;
                 return;
             } else {
                 // Resposta padrão da IA
                 response = `<strong>🤖 IA:</strong> Olá! Recebi sua mensagem: "${message}"<br><br>
                 🔍 Estou processando sua solicitação...<br>
-                💡 Digite <strong>/help</strong> para ver os comandos disponíveis!<br><br>
-                Em breve terei integração completa de IA para responder suas perguntas!`;
+                💡 Digite <strong>ajuda</strong> para ver os comandos disponíveis!<br><br>
+                Comandos rápidos: <strong>relatorios</strong>, <strong>danone</strong>, <strong>vendas</strong>, <strong>status</strong>`;
             }
 
             // Resposta da IA
@@ -1165,8 +1194,102 @@
         
         // ========== FUNÇÕES DOS RELATÓRIOS ==========
         function openReport(reportName) {
-            console.log('Abrindo relatório:', reportName);
-            alert('Abrindo relatório: ' + reportName + '\nEm breve com integração ao Google Sheets!');
+            console.log('🔍 Abrindo relatório:', reportName);
+            
+            // Buscar relatório no cache do Google Sheets
+            const sheets = JSON.parse(localStorage.getItem('googleSheetsData') || '[]');
+            const report = sheets.find(s => s.id === reportName);
+            
+            if (report && report.data) {
+                console.log('✅ Relatório encontrado no Google Sheets:', report.label);
+                
+                // Mostrar modal com os dados
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
+                
+                const content = document.createElement('div');
+                content.style.cssText = 'background: white; border-radius: 20px; max-width: 1200px; width: 100%; max-height: 90vh; overflow: auto; padding: 32px; position: relative;';
+                
+                const rows = report.data.length;
+                const preview = report.data.slice(0, 10);
+                
+                content.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 24px;">
+                        <div>
+                            <h2 style="font-size: 28px; font-weight: 800; color: #DC2626; margin-bottom: 8px;">
+                                📊 ${report.label}
+                            </h2>
+                            <p style="color: #64748B; font-size: 14px;">Dados do Google Sheets - ${rows} registros</p>
+                        </div>
+                        <button onclick="this.closest('div[style*=\'fixed\']').remove()" style="background: #DC2626; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; cursor: pointer; font-size: 16px;">
+                            ✖ Fechar
+                        </button>
+                    </div>
+                    
+                    <div style="background: #F8FAFC; border-radius: 12px; padding: 20px; overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <thead>
+                                <tr style="background: #DC2626; color: white;">
+                                    ${Object.keys(preview[0] || {}).map(key => 
+                                        `<th style="padding: 12px; text-align: left; font-weight: 700;">${key}</th>`
+                                    ).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${preview.map((row, i) => `
+                                    <tr style="background: ${i % 2 === 0 ? 'white' : '#F8FAFC'}; border-bottom: 1px solid #E2E8F0;">
+                                        ${Object.values(row).map(val => 
+                                            `<td style="padding: 12px;">${val || '-'}</td>`
+                                        ).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ${rows > 10 ? `<p style="text-align: center; margin-top: 16px; color: #64748B; font-size: 13px;">Mostrando 10 de ${rows} registros</p>` : ''}
+                    </div>
+                    
+                    <div style="margin-top: 24px; text-align: right;">
+                        <button onclick="exportReport('${reportName}')" style="background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; border-radius: 12px; padding: 14px 28px; font-weight: 700; cursor: pointer; font-size: 15px; margin-right: 12px;">
+                            📥 Exportar CSV
+                        </button>
+                        <button onclick="this.closest('div[style*=\'fixed\']').remove()" style="background: #E2E8F0; color: #64748B; border: none; border-radius: 12px; padding: 14px 28px; font-weight: 700; cursor: pointer; font-size: 15px;">
+                            Fechar
+                        </button>
+                    </div>
+                `;
+                
+                modal.appendChild(content);
+                document.body.appendChild(modal);
+                
+            } else {
+                console.log('⚠️ Relatório não encontrado ou dados não carregados');
+                alert(`📊 Relatório: ${reportName.toUpperCase()}\n\n` +
+                      `⚠️ Os dados do Google Sheets ainda não foram carregados.\n\n` +
+                      `🔄 Recarregue a página (F5) para carregar os relatórios do Google Sheets.`);
+            }
+        }
+        
+        // Função para exportar relatório
+        function exportReport(reportName) {
+            const sheets = JSON.parse(localStorage.getItem('googleSheetsData') || '[]');
+            const report = sheets.find(s => s.id === reportName);
+            
+            if (report && report.data) {
+                const csv = [Object.keys(report.data[0]).join(',')];
+                report.data.forEach(row => {
+                    csv.push(Object.values(row).map(v => `"${v}"`).join(','));
+                });
+                
+                const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${reportName}_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                alert(`✅ Relatório exportado com sucesso!\n\nArquivo: ${reportName}.csv`);
+            }
         }
         
         // ========== FUNÇÕES DO BANCO DE DADOS ==========
