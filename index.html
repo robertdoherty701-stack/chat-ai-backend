@@ -2028,12 +2028,25 @@
 
         // Mobile menu functions
         function toggleMobileMenu() {
+            console.log('🍔 toggleMobileMenu chamado');
+            
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
             const menuBtn = document.getElementById('mobileMenuBtn');
             const menuIcon = document.getElementById('menuIcon');
             
+            console.log('Sidebar:', !!sidebar);
+            console.log('Overlay:', !!overlay);
+            console.log('MenuBtn:', !!menuBtn);
+            
+            if (!sidebar || !overlay) {
+                console.error('❌ ERRO: Elementos do menu não encontrados!');
+                alert('ERRO: Sidebar ou overlay não encontrado!');
+                return;
+            }
+            
             const isOpen = sidebar.classList.contains('mobile-open');
+            console.log('Menu está aberto?', isOpen);
             
             if (isOpen) {
                 sidebar.classList.remove('mobile-open');
@@ -2041,12 +2054,14 @@
                 menuBtn.classList.remove('open');
                 if (menuIcon) menuIcon.textContent = '☰';
                 document.body.style.overflow = '';
+                console.log('✅ Menu fechado');
             } else {
                 sidebar.classList.add('mobile-open');
                 overlay.classList.add('active');
                 menuBtn.classList.add('open');
                 if (menuIcon) menuIcon.textContent = '×';
                 document.body.style.overflow = 'hidden';
+                console.log('✅ Menu aberto');
             }
         }
 
