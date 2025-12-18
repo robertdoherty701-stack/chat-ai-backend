@@ -1517,6 +1517,13 @@
                 keywords: ['super'],
                 type: 'vendor_status_list',
                 url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2086321744&single=true&output=csv',
+            },
+            {
+                id: 'exp',
+                label: 'EXP',
+                keywords: ['exp', 'expositor'],
+                type: 'vendor_status_list',
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
             }
         ];
 
@@ -2185,39 +2192,31 @@
                 return await handleGeneralQuestions(lowerMessage);
             }
             
-            // ESTADO: ESCOLHA - Aguardando escolha do relatório
+            // ESTADO: ESCOLHA - Aguardando escolha do relatório (Adaptado do Python)
             if (chatContext.estado === 'ESCOLHA') {
                 const reportChoices = {
-                    '1': 'novos_clientes',
-                    '2': 'queijo_reino',
-                    '3': 'nao_cobertos_clientes',
-                    '4': 'nao_cobertos_fornecedor',
-                    '5': 'msl_danone',
-                    '6': 'msl_otg',
-                    '7': 'msl_mini',
-                    '8': 'msl_super'
+                    '1': 'nao_cobertos_clientes',
+                    '2': 'nao_cobertos_fornecedor',
+                    '3': 'msl_super',
+                    '4': 'msl_mini',
+                    '5': 'msl_otg',
+                    '6': 'exp'
                 };
                 
                 const reportNames = {
-                    'novos clientes': 'novos_clientes',
-                    'queijo do reino': 'queijo_reino',
-                    'queijo reino': 'queijo_reino',
                     'não cobertos clientes': 'nao_cobertos_clientes',
                     'nao cobertos clientes': 'nao_cobertos_clientes',
                     'cobertos clientes': 'nao_cobertos_clientes',
-                    'cliente': 'nao_cobertos_clientes',
                     'não cobertos fornecedor': 'nao_cobertos_fornecedor',
                     'nao cobertos fornecedor': 'nao_cobertos_fornecedor',
                     'cobertos fornecedor': 'nao_cobertos_fornecedor',
-                    'fornecedor': 'nao_cobertos_fornecedor',
-                    'msl danone': 'msl_danone',
-                    'danone': 'msl_danone',
+                    'msl super': 'msl_super',
+                    'super': 'msl_super',
+                    'msl mini': 'msl_mini',
+                    'mini': 'msl_mini',
                     'msl otg': 'msl_otg',
                     'otg': 'msl_otg',
-                    'msl min': 'msl_mini',
-                    'mini': 'msl_mini',
-                    'msl super': 'msl_super',
-                    'super': 'msl_super'
+                    'exp': 'exp'
                 };
                 
                 // Verificar escolha por número
@@ -2234,20 +2233,20 @@
                         }
                     }
                     if (!found) {
-                        return `❌ Opção inválida. Por favor, digite o número (1-8) ou o nome do relatório.\n\n${showReportsMenu()}`;
+                        return `❌ Opção inválida.\n\nEscolha uma opção:\n` +
+                               `1 - Não cobertos clientes\n` +
+                               `2 - Não cobertos fornecedor\n` +
+                               `3 - MSL Super\n` +
+                               `4 - MSL Mini\n` +
+                               `5 - MSL OTG\n` +
+                               `6 - EXP`;
                     }
                 }
                 
-                // Verificar se o relatório precisa de filtro por vendedor
-                const relatoriosComFiltro = ['nao_cobertos_clientes', 'nao_cobertos_fornecedor'];
-                
-                if (relatoriosComFiltro.includes(chatContext.activeReport)) {
-                    chatContext.estado = 'CODVD';
-                    return `✅ Relatório selecionado: <strong>${getReportLabel(chatContext.activeReport)}</strong>\n\n` +
-                           `📝 Agora informe o <strong>código do vendedor (CODVD)</strong>:`;
-                } else {
-                    // Relatórios que não precisam de filtro, carregar direto
-                    chatContext.estado = 'INICIAL';
+                // TODOS os relatórios agora precisam de CODVD e VENDEDOR
+                chatContext.estado = 'CODVD';
+                return `✅ Relatório selecionado: <strong>${getReportLabel(chatContext.activeReport)}</strong>\n\n` +
+                       `📝 Agora informe o <strong>código do vendedor (CODVD)</strong>:`;
                     return await loadReportData(chatContext.activeReport);
                 }
             }
@@ -2276,7 +2275,7 @@
                 
                 console.log(`🔍 Processando: CODVD=${chatContext.codvd}, VENDEDOR=${chatContext.vendedor}, RELATÓRIO=${chatContext.activeReport}`);
                 
-                // Processar o relatório com os filtros
+                // Processar o relatório com os filtros (agora inclui MSL)
                 const resultado = await processarRelatorioComFiltros(
                     chatContext.activeReport,
                     chatContext.codvd,
@@ -2286,6 +2285,8 @@
                 // Resetar para o estado inicial
                 chatContext.estado = 'INICIAL';
                 chatContext.activeReport = null;
+                chatContext.codvd = null;
+                chatContext.vendedor = null;
                 
                 return resultado;
             }
@@ -2297,16 +2298,14 @@
         // Obter label do relatório
         function getReportLabel(reportType) {
             const labels = {
-                'novos_clientes': '📊 Novos Clientes',
-                'queijo_reino': '🧀 Queijo do Reino',
                 'nao_cobertos_clientes': '🚫 Não Cobertos Clientes',
                 'nao_cobertos_fornecedor': '🏭 Não Cobertos Fornecedor',
-                'msl_danone': '🥛 MSL Danone',
-                'msl_otg': '🎯 MSL OTG',
+                'msl_super': '🛒 MSL Super',
                 'msl_mini': '🏪 MSL Mini',
-                'msl_super': '🛒 MSL Super'
+                'msl_otg': '🎯 MSL OTG',
+                'exp': '🌟 EXP'
             };
-            return labels[reportType] || reportType;
+            return labels[reportType] || reportType.toUpperCase();
         }
         
         // Processar relatório com filtros de CODVD e VENDEDOR
@@ -2330,6 +2329,10 @@
                 dadosFiltrados = filtrarNaoCobertosClientes(dados, codvd, vendedor);
             } else if (reportType === 'nao_cobertos_fornecedor') {
                 dadosFiltrados = filtrarNaoCobertosFornecedor(dados, codvd, vendedor);
+            } else if (['msl_super', 'msl_mini', 'msl_otg', 'exp'].includes(reportType)) {
+                // Determinar tipo MSL
+                const tipoMSL = reportType === 'exp' ? 'EXP' : reportType.replace('msl_', 'MSL ').toUpperCase();
+                dadosFiltrados = filtrarMSL(dados, codvd, vendedor, tipoMSL);
             }
             
             console.log(`✅ Registros após filtro: ${dadosFiltrados.length}`);
@@ -3013,17 +3016,98 @@
             return removeDuplicates(result, ['CODCLI', 'FORNECEDOR']);
         }
         
+        // =================================================================================
+        // IDENTIFICAÇÃO AUTOMÁTICA DE COLUNA MSL (Adaptado do Python)
+        // =================================================================================
+        
+        function identificarColunaMSL(data) {
+            console.log('🔍 Identificando coluna MSL automaticamente...');
+            
+            const valoresMSL = ['MSL MINI', 'MSL SUPER', 'MSL OTG', 'EXP'];
+            
+            if (!data || data.length === 0) return null;
+            
+            const primeiraLinha = data[0];
+            const colunas = Object.keys(primeiraLinha);
+            
+            for (const coluna of colunas) {
+                // Verificar se alguma linha tem valores MSL nesta coluna
+                for (const row of data.slice(0, 100)) { // Verificar primeiras 100 linhas
+                    const valor = String(row[coluna] || '').toUpperCase().trim();
+                    
+                    if (valoresMSL.some(msl => valor.includes(msl))) {
+                        console.log(`✅ Coluna MSL identificada: "${coluna}"`);
+                        return coluna;
+                    }
+                }
+            }
+            
+            console.log('⚠️ Coluna MSL não encontrada, usando nome padrão');
+            return 'ATIVIDADE'; // Fallback
+        }
+        
+        // =================================================================================
+        // FILTROS MSL (Adaptado do Python)
+        // =================================================================================
+        
+        function filtrarMSL(data, codvd, vendedor, tipoMSL) {
+            console.log(`🔍 Filtrando MSL ${tipoMSL} para CODVD=${codvd}, VENDEDOR=${vendedor}`);
+            
+            const colunaMSL = identificarColunaMSL(data);
+            
+            if (!colunaMSL) {
+                console.error('❌ Coluna MSL não identificada!');
+                return [];
+            }
+            
+            const filtered = data.filter(row => {
+                const rowCodvd = String(row['CODVD'] || row['Código do Vendedor'] || row['Codigo Vendedor'] || '').trim();
+                const rowVendedor = String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim().toUpperCase();
+                const valorMSL = String(row[colunaMSL] || '').trim().toUpperCase();
+                const status = String(row['STATUS'] || row['Status'] || '').trim().toUpperCase();
+                
+                return rowCodvd === codvd &&
+                       rowVendedor.includes(vendedor.toUpperCase()) &&
+                       valorMSL === tipoMSL.toUpperCase() &&
+                       (status === 'OK' || status === 'FALTA');
+            });
+            
+            console.log(`✅ Encontrados ${filtered.length} registros`);
+            
+            const result = filtered.map(row => ({
+                'CODVD': String(row['CODVD'] || row['Código do Vendedor'] || '').trim(),
+                'VENDEDOR': String(row['VENDEDOR'] || row['Nome do Vendedor'] || row['Vendedor'] || '').trim(),
+                'CODCLI': String(row['CODCLI'] || row['Código do Cliente'] || '').trim(),
+                'CLIENTE': String(row['CLIENTE'] || row['Cliente'] || '').trim(),
+                'STATUS': String(row['STATUS'] || row['Status'] || '').trim()
+            }));
+            
+            return removeDuplicates(result, ['CODCLI']);
+        }
+        
         // Formatar resultado filtrado
         function formatarResultadoFiltrado(dados, reportType, codvd, vendedor) {
             let response = `<div style="background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05)); padding: 20px; border-radius: 12px; border-left: 4px solid #DC2626; margin: 12px 0;">\n`;
             response += `<h3 style="margin: 0 0 16px 0; color: #DC2626;">${getReportLabel(reportType)}</h3>\n\n`;
             response += `👤 <strong>Vendedor:</strong> ${vendedor} (Código: ${codvd})\n`;
-            response += `🔍 <strong>Filtro:</strong> STATUS = FALTA\n`;
+            
+            // Determinar filtro aplicado
+            if (['msl_super', 'msl_mini', 'msl_otg', 'exp'].includes(reportType)) {
+                const tipoMSL = reportType === 'exp' ? 'EXP' : reportType.replace('msl_', 'MSL ').toUpperCase();
+                response += `🔍 <strong>Filtro:</strong> ${tipoMSL} (STATUS: OK e FALTA)\n`;
+            } else {
+                response += `🔍 <strong>Filtro:</strong> STATUS = FALTA\n`;
+            }
+            
             response += `📊 <strong>Total encontrado:</strong> ${dados.length} registros\n\n`;
             
             if (dados.length === 0) {
-                response += `✅ <strong>Nenhum registro com STATUS = FALTA encontrado!</strong>\n\n`;
-                response += `Parabéns! Não há pendências para este vendedor.\n`;
+                response += `✅ <strong>Nenhum registro encontrado!</strong>\n\n`;
+                if (['msl_super', 'msl_mini', 'msl_otg', 'exp'].includes(reportType)) {
+                    response += `Nenhum cliente encontrado para este vendedor nesta atividade.\n`;
+                } else {
+                    response += `Parabéns! Não há pendências para este vendedor.\n`;
+                }
             } else {
                 response += `<div style="background: white; padding: 12px; border-radius: 8px; margin-top: 12px; overflow-x: auto; max-height: 500px; overflow-y: auto;">\n`;
                 response += `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">\n`;
