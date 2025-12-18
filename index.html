@@ -929,10 +929,24 @@
                         if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
                         
                         // Mostrar menu admin se for admin
+                        console.log('🔍 Verificando permissões...');
+                        console.log('   User:', user.name);
+                        console.log('   Role:', user.role);
+                        
                         const adminSection = document.getElementById('adminSection');
-                        if (adminSection && user.role === 'admin') {
-                            adminSection.style.display = 'block';
-                            console.log('✅ Menu admin ativado');
+                        console.log('   AdminSection encontrado:', !!adminSection);
+                        
+                        if (adminSection) {
+                            if (user.role === 'admin') {
+                                adminSection.style.display = 'block';
+                                adminSection.style.visibility = 'visible';
+                                adminSection.style.opacity = '1';
+                                console.log('✅ MENU ADMIN ATIVADO!');
+                            } else {
+                                console.log('ℹ️ Usuário não é admin - menu oculto');
+                            }
+                        } else {
+                            console.error('❌ adminSection NÃO encontrado no DOM!');
                         }
                     }, 100);
                     
@@ -4290,10 +4304,20 @@
                     if (userAvatar) userAvatar.textContent = currentUser.name.charAt(0).toUpperCase();
                     
                     // Mostrar menu admin se for admin
+                    console.log('🔍 Verificando admin (sessão)...');
+                    console.log('   User:', currentUser.name);
+                    console.log('   Role:', currentUser.role);
+                    
                     const adminSection = document.getElementById('adminSection');
-                    if (adminSection && currentUser.role === 'admin') {
-                        adminSection.style.display = 'block';
-                        console.log('✅ Menu admin ativado (sessão restaurada)');
+                    console.log('   AdminSection:', !!adminSection);
+                    
+                    if (adminSection) {
+                        if (currentUser.role === 'admin') {
+                            adminSection.style.display = 'block';
+                            adminSection.style.visibility = 'visible';
+                            adminSection.style.opacity = '1';
+                            console.log('✅ MENU ADMIN ATIVADO (sessão)!');
+                        }
                     }
                     
                     console.log('✅ UI atualizada');
