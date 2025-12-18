@@ -913,7 +913,7 @@
                 </p>
             </div>
 
-            <form onsubmit="return handleLogin(event)">
+            <form id="loginFormElement">
                 <div class="form-group">
                     <label class="form-label">Email</label>
                     <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
@@ -1766,16 +1766,40 @@
 
         // Login
         function handleLogin(e) {
-            e.preventDefault();
+            console.log('🎯 ========== HANDLELOGIN CHAMADO ========== ');
+            console.log('Event:', e);
+            
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
             const btn = document.getElementById('loginBtn');
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
+            const rememberMeCheckbox = document.getElementById('rememberMe');
+            
+            console.log('✓ Botão encontrado:', !!btn);
+            console.log('✓ Email input encontrado:', !!emailInput);
+            console.log('✓ Password input encontrado:', !!passwordInput);
+            console.log('✓ RememberMe checkbox encontrado:', !!rememberMeCheckbox);
+            
+            if (!btn || !emailInput || !passwordInput) {
+                console.error('❌ ERRO: Elementos do formulário não encontrados!');
+                alert('ERRO: Elementos do formulário não encontrados!');
+                return false;
+            }
+            
             btn.disabled = true;
             btn.innerHTML = '<span class="loading"></span>';
 
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const rememberMe = document.getElementById('rememberMe')?.checked || false;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const rememberMe = rememberMeCheckbox?.checked || false;
 
-            console.log('Tentando fazer login com:', email, '| Lembre de mim:', rememberMe);
+            console.log('📧 Email:', email);
+            console.log('🔒 Password length:', password.length);
+            console.log('💾 Lembre de mim:', rememberMe);
 
             setTimeout(() => {
                 try {
@@ -4283,26 +4307,52 @@
                 console.log('🔒 Mostrando tela de LOGIN');
             }
             
-            // CONECTAR EVENT LISTENER DO FORMULÁRIO DE LOGIN
-            const loginForm = document.querySelector('#authPage form');
+            // ==================== CONECTAR LOGIN ====================
+            console.log('🔌 Conectando sistema de login...');
+            
+            // Método 1: Formulário por ID
+            const loginFormById = document.getElementById('loginFormElement');
+            // Método 2: Formulário por querySelector
+            const loginFormByQuery = document.querySelector('#authPage form');
+            // Método 3: Botão
             const loginBtn = document.getElementById('loginBtn');
             
+            console.log('Formulário (por ID):', !!loginFormById);
+            console.log('Formulário (por query):', !!loginFormByQuery);
+            console.log('Botão:', !!loginBtn);
+            
+            const loginForm = loginFormById || loginFormByQuery;
+            
             if (loginForm) {
-                console.log('✅ Formulário de login encontrado - conectando event listener');
-                loginForm.addEventListener('submit', handleLogin);
+                console.log('✅ FORMULÁRIO ENCONTRADO!');
+                
+                // Remover listeners antigos (se houver)
+                const newForm = loginForm.cloneNode(true);
+                loginForm.parentNode.replaceChild(newForm, loginForm);
+                
+                // Adicionar listener ao novo formulário
+                newForm.addEventListener('submit', function(e) {
+                    console.log('📨 SUBMIT do formulário detectado!');
+                    handleLogin(e);
+                });
+                
+                console.log('✅ Event listener CONECTADO!');
             } else {
-                console.error('❌ ERRO: Formulário de login NÃO encontrado!');
+                console.error('❌ ERRO CRÍTICO: Formulário NÃO encontrado!');
+                alert('ERRO: Formulário de login não encontrado!');
             }
             
+            // Backup: listener no botão também
             if (loginBtn) {
-                console.log('✅ Botão de login encontrado');
-                // Adicionar listener adicional ao botão direto
-                loginBtn.addEventListener('click', (e) => {
-                    console.log('🖱️ Clique no botão de login detectado');
-                    // O submit do form vai chamar handleLogin
+                loginBtn.addEventListener('click', function(e) {
+                    console.log('🖱️ CLIQUE no botão detectado!');
+                    const form = document.getElementById('loginFormElement') || document.querySelector('#authPage form');
+                    if (form) {
+                        const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
+                        form.dispatchEvent(submitEvent);
+                    }
                 });
-            } else {
-                console.error('❌ ERRO: Botão de login NÃO encontrado!');
+                console.log('✅ Backup: listener no botão também conectado');
             }
             
             // CARREGAR DADOS DO GOOGLE SHEETS
