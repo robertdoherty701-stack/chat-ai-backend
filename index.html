@@ -1056,6 +1056,7 @@
         // ========== FUNÇÕES GLOBAIS DEFINIDAS ANTES DO HTML ==========
         // Estas funções precisam estar disponíveis para os onclick
         
+        // LOGIN LOCAL (padrão - sem backend)
         window.doLogin = function() {
             console.log('🔐 doLogin chamado');
             
@@ -1084,14 +1085,38 @@
                     storage.setItem('token', window.authToken);
                     storage.setItem('user', JSON.stringify(user));
                     
-                    document.getElementById('authPage').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'flex';
+                    showMainApp();
                     
-                    setTimeout(() => {
-                        const userName = document.getElementById('userName');
-                        const userAvatar = document.getElementById('userAvatar');
-                        if (userName) userName.textContent = user.name;
-                        if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
+                } else {
+                    alert('❌ Credenciais inválidas!');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Entrar';
+                }
+                
+            } catch (error) {
+                console.error('Erro no login:', error);
+                alert('Erro ao fazer login: ' + error.message);
+                const btn = document.getElementById('loginBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Entrar';
+                }
+            }
+        };
+        
+        // Função auxiliar para mostrar app principal
+        function showMainApp() {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+            
+            setTimeout(() => {
+                const user = window.currentUser;
+                if (!user) return;
+                
+                const userName = document.getElementById('userName');
+                const userAvatar = document.getElementById('userAvatar');
+                if (userName) userName.textContent = user.name;
+                if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
                         
                         if (user.role === 'admin') {
                             const adminSection = document.getElementById('adminSection');
