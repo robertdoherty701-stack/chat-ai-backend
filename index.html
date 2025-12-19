@@ -1234,7 +1234,7 @@
         };
         
         // CHAT - Enviar mensagem
-        window.sendChatMessage = function() {
+        window.sendChatMessage = async function() {
             const input = document.getElementById('chatInput');
             const message = input?.value.trim();
             if (!message) return;
