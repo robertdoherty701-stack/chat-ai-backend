@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="admin-dashboard.js"></script>
     <style>
         * {
             margin: 0;
@@ -4928,6 +4929,11 @@
         // Verificar sessão ao carregar
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 === DOMContentLoaded iniciado ===');
+            
+            // Inicializar admin dashboard
+            if (window.adminDashboard) {
+                await window.adminDashboard.init();
+            }
             
             // Garantir que todos os elementos existam
             const authPage = document.getElementById('authPage');

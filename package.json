@@ -1,0 +1,24 @@
+{
+  "name": "chat-ai-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Chat AI Sistema Enterprise com Backend FastAPI",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "build": "tailwindcss -i ./src/index.css -o ./dist/output.css --minify",
+    "watch": "tailwindcss -i ./src/index.css -o ./dist/output.css --watch"
+  },
+  "keywords": ["chat", "ai", "fastapi", "backend"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.294.0",
+    "recharts": "^2.10.3"
+  }
+}
