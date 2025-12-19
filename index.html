@@ -900,6 +900,159 @@
 </head>
 <body>
     <script>
+        // ========== CONFIGURAÇÃO DA API BACKEND ==========
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8000' 
+            : 'https://sua-api.render.com';  // Alterar para URL de produção
+        
+        let authToken = localStorage.getItem('api_token');
+        let useBackend = localStorage.getItem('use_backend') === 'true';
+        
+        // Função helper para requisições à API
+        window.apiRequest = async function(endpoint, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                }
+            };
+            
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers
+                }
+            });
+            
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error || 'Erro na requisição');
+            }
+            
+            return response.json();
+        };
+        
+        // Login com backend API
+        window.doLoginAPI = async function() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            
+            if (!email || !password) {
+                alert('Preencha email e senha!');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Autenticando...';
+            
+            try {
+                const data = await apiRequest('/api/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+                
+                authToken = data.token;
+                localStorage.setItem('api_token', authToken);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('use_backend', 'true');
+                useBackend = true;
+                
+                window.currentUser = data.user;
+                showMainApp();
+                
+            } catch (error) {
+                alert('❌ Erro no login: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Entrar';
+            }
+        };
+        
+        // Exportar relatório (PDF/Excel)
+        window.exportarRelatorio = async function(tipo, codvd, vendedor, formato = 'excel') {
+            if (!authToken) {
+                alert('⚠️ Faça login com backend para usar esta funcionalidade');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/relatorios/gerar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        tipo,
+                        codvd: codvd || '123',
+                        vendedor: vendedor || '',
+                        exportar: formato
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Erro ao gerar relatório');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `relatorio_${tipo}_${Date.now()}.${formato === 'pdf' ? 'pdf' : 'xlsx'}`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                alert('✅ Relatório exportado com sucesso!');
+                
+            } catch (error) {
+                alert('❌ Erro ao exportar: ' + error.message);
+            }
+        };
+        
+        // Carregar histórico do backend
+        window.carregarHistorico = async function() {
+            if (!authToken) return;
+            
+            try {
+                const data = await apiRequest('/api/historico');
+                const historico = data.historico || [];
+                
+                if (historico.length === 0) {
+                    return '<p style="color: #64748B; text-align: center; padding: 20px;">Nenhum histórico disponível</p>';
+                }
+                
+                let html = '<div style="background: white; border-radius: 12px; padding: 20px; margin: 20px 0;">';
+                html += '<h3 style="margin-bottom: 15px; color: #DC2626;">📊 Histórico de Consultas</h3>';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<tr style="background: #F8FAFC; border-bottom: 2px solid #DC2626;">';
+                html += '<th style="padding: 12px; text-align: left;">Data/Hora</th>';
+                html += '<th style="padding: 12px; text-align: left;">Tipo</th>';
+                html += '<th style="padding: 12px; text-align: left;">CODVD</th>';
+                html += '<th style="padding: 12px; text-align: left;">Vendedor</th>';
+                html += '<th style="padding: 12px; text-align: center;">Registros</th>';
+                html += '</tr>';
+                
+                historico.slice(-20).reverse().forEach((item, index) => {
+                    const bgColor = index % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
+                    const date = new Date(item.timestamp).toLocaleString('pt-BR');
+                    html += `<tr style="background: ${bgColor}; border-bottom: 1px solid #E2E8F0;">`;
+                    html += `<td style="padding: 10px;">${date}</td>`;
+                    html += `<td style="padding: 10px;">${item.tipo}</td>`;
+                    html += `<td style="padding: 10px;">${item.codvd}</td>`;
+                    html += `<td style="padding: 10px;">${item.vendedor || '-'}</td>`;
+                    html += `<td style="padding: 10px; text-align: center; font-weight: 600; color: #DC2626;">${item.registros}</td>`;
+                    html += '</tr>';
+                });
+                
+                html += '</table></div>';
+                return html;
+                
+            } catch (error) {
+                console.error('Erro ao carregar histórico:', error);
+                return '';
+            }
+        };
+        
         // ========== FUNÇÕES GLOBAIS DEFINIDAS ANTES DO HTML ==========
         // Estas funções precisam estar disponíveis para os onclick
         
@@ -1100,7 +1253,8 @@
                 📈 <strong>status</strong> - Status do sistema<br>
                 🎯 <strong>analytics</strong> - Abre analytics<br>
                 ⚙️ <strong>config</strong> - Abre configurações<br>
-                🧹 <strong>limpar</strong> - Limpa o chat<br><br>
+                🧹 <strong>limpar</strong> - Limpa o chat<br>
+                📜 <strong>historico</strong> - Ver histórico de consultas (backend)<br><br>
                 <strong>📊 Relatórios Diretos:</strong><br>
                 🥛 <strong>danone</strong> - MSL Danone<br>
                 🎯 <strong>otg</strong> - MSL OTG<br>
@@ -1150,7 +1304,16 @@
                 💬 Mensagens no chat: ${container.children.length}<br>
                 📊 Relatórios carregados: ${Object.keys(window.reportDataCache || {}).length}<br>
                 📦 Armazenamento usado: ${(JSON.stringify(localStorage).length / 1024).toFixed(2)} KB<br>
+                🔌 Backend: ${authToken ? '✅ Conectado' : '❌ Desconectado'}<br>
                 ✅ Sistema: Operacional`;
+                
+            } else if (cmd === 'historico' || cmd === 'histórico' || cmd === 'history') {
+                if (authToken) {
+                    const historico = await window.carregarHistorico();
+                    response = `<strong>🤖 IA:</strong><br>${historico}`;
+                } else {
+                    response = `<strong>🤖 IA:</strong> ⚠️ Para acessar o histórico, faça login com o backend.`;
+                }
                 
             } else if (cmd === 'perfil') {
                 response = `<strong>🤖 IA - Seu Perfil:</strong><br><br>
@@ -1282,6 +1445,34 @@
                             </p>
                         </div>
                         <div style="display: flex; gap: 12px;">
+                            ${authToken ? `
+                            <button onclick="exportarRelatorio('${reportId}', '', '', 'excel')" style="
+                                padding: 10px 20px;
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'" title="Exportar Excel via Backend (com formatação)">
+                                📊 Excel
+                            </button>
+                            <button onclick="exportarRelatorio('${reportId}', '', '', 'pdf')" style="
+                                padding: 10px 20px;
+                                background: #DC2626;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#B91C1C'" onmouseout="this.style.background='#DC2626'" title="Exportar PDF via Backend">
+                                📄 PDF
+                            </button>
+                            ` : ''}
                             <button onclick="exportReportToCSV('${reportId}')" style="
                                 padding: 10px 20px;
                                 background: #10B981;
@@ -1292,8 +1483,8 @@
                                 cursor: pointer;
                                 font-size: 14px;
                                 transition: all 0.2s;
-                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
-                                📥 Exportar CSV
+                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" title="Exportar CSV (local)">
+                                📥 CSV
                             </button>
                             <button onclick="closeReportModal()" style="
                                 padding: 10px 20px;

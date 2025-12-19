@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: chat-ia-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./backend/data:/app/data
+    environment:
+      - SECRET_KEY=SECRET_EMPRESA_CHAT_AI_2025
+      - TOKEN_EXPIRE_MIN=60
+    restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    container_name: chat-ia-frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
