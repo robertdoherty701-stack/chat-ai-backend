@@ -884,6 +884,18 @@
         .mobile-overlay {
             display: none;
         }
+        
+        /* Animação fade in para modal */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1188,15 +1200,222 @@
             }, 500);
         };
         
-        // RELATÓRIOS - Abrir
-        window.openReport = function(reportId) {
-            console.log('📊 Abrindo relatório:', reportId);
+        // RELATÓRIOS - Abrir do cache
+        window.openReportFromCache = function(reportId) {
+            console.log('📊 Abrindo relatório do cache:', reportId);
             
-            if (typeof openReportFromCache === 'function') {
-                openReportFromCache(reportId);
-            } else {
-                alert('⚠️ Função de relatórios ainda não carregada. Aguarde...');
+            // Verificar se o cache de relatórios existe
+            if (!window.reportDataCache || !window.reportDataCache[reportId]) {
+                alert(`⚠️ Relatório "${reportId}" ainda não carregado. Por favor, aguarde o carregamento dos dados do Google Sheets.`);
+                console.error('Cache de relatórios não disponível:', reportId);
+                return;
             }
+            
+            // Obter dados do cache
+            const reportData = window.reportDataCache[reportId];
+            
+            if (!reportData || reportData.length === 0) {
+                alert(`⚠️ Relatório "${reportId}" não possui dados.`);
+                return;
+            }
+            
+            // Nomes dos relatórios
+            const reportNames = {
+                'novos_clientes': '👥 Novos Clientes',
+                'queijo_reino': '🧀 Queijo do Reino',
+                'nao_cobertos_clientes': '⚠️ Não Cobertos (Clientes)',
+                'nao_cobertos_fornecedor': '⚠️ Não Cobertos (Fornecedor)',
+                'msl_danone': '🥛 MSL Danone',
+                'msl_otg': '🎯 MSL OTG',
+                'msl_mini': '🏪 MSL Mini',
+                'msl_super': '🛒 MSL Super',
+                'exp': '📦 EXP (Expositor)'
+            };
+            
+            const reportTitle = reportNames[reportId] || reportId.toUpperCase();
+            
+            // Criar modal de visualização
+            const modal = document.createElement('div');
+            modal.id = 'reportModal';
+            modal.style.cssText = `
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 99999;
+                padding: 20px;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            // Preparar headers e dados para exibição
+            const headers = reportData.length > 0 ? Object.keys(reportData[0]) : [];
+            const maxRows = 100; // Limitar exibição para performance
+            const displayData = reportData.slice(0, maxRows);
+            
+            // Criar tabela HTML
+            let tableHTML = `
+                <div style="
+                    background: white;
+                    border-radius: 16px;
+                    max-width: 95%;
+                    max-height: 90vh;
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                ">
+                    <!-- Header -->
+                    <div style="
+                        padding: 24px;
+                        border-bottom: 2px solid #E5E7EB;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    ">
+                        <div>
+                            <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #1F2937;">
+                                ${reportTitle}
+                            </h2>
+                            <p style="margin: 8px 0 0; color: #6B7280; font-size: 14px;">
+                                ${reportData.length} registros total${reportData.length > maxRows ? ` (mostrando ${maxRows})` : ''}
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button onclick="exportReportToCSV('${reportId}')" style="
+                                padding: 10px 20px;
+                                background: #10B981;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'">
+                                📥 Exportar CSV
+                            </button>
+                            <button onclick="closeReportModal()" style="
+                                padding: 10px 20px;
+                                background: #EF4444;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">
+                                ✕ Fechar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Table Container -->
+                    <div style="
+                        overflow: auto;
+                        flex: 1;
+                        padding: 24px;
+                    ">
+                        <table style="
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 13px;
+                        ">
+                            <thead>
+                                <tr style="background: #F9FAFB;">
+                                    ${headers.map(h => `<th style="
+                                        padding: 12px;
+                                        text-align: left;
+                                        font-weight: 700;
+                                        color: #374151;
+                                        border-bottom: 2px solid #E5E7EB;
+                                        white-space: nowrap;
+                                        position: sticky;
+                                        top: 0;
+                                        background: #F9FAFB;
+                                        z-index: 10;
+                                    ">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${displayData.map((row, idx) => `
+                                    <tr style="background: ${idx % 2 === 0 ? 'white' : '#F9FAFB'}; transition: background 0.2s;" 
+                                        onmouseover="this.style.background='#FEE2E2'" 
+                                        onmouseout="this.style.background='${idx % 2 === 0 ? 'white' : '#F9FAFB'}'">
+                                        ${headers.map(h => `<td style="
+                                            padding: 12px;
+                                            border-bottom: 1px solid #E5E7EB;
+                                            color: #1F2937;
+                                        ">${row[h] || '-'}</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            modal.innerHTML = tableHTML;
+            document.body.appendChild(modal);
+            
+            console.log(`✅ Modal de relatório "${reportId}" aberto com ${reportData.length} registros`);
+        };
+        
+        // Função para fechar modal de relatório
+        window.closeReportModal = function() {
+            const modal = document.getElementById('reportModal');
+            if (modal) {
+                modal.remove();
+            }
+        };
+        
+        // Função para exportar relatório como CSV
+        window.exportReportToCSV = function(reportId) {
+            if (!window.reportDataCache || !window.reportDataCache[reportId]) {
+                alert('Erro: Dados do relatório não encontrados');
+                return;
+            }
+            
+            const data = window.reportDataCache[reportId];
+            if (data.length === 0) {
+                alert('Nenhum dado para exportar');
+                return;
+            }
+            
+            // Criar CSV
+            const headers = Object.keys(data[0]);
+            let csv = headers.join(',') + '\n';
+            
+            data.forEach(row => {
+                const values = headers.map(h => {
+                    const value = String(row[h] || '');
+                    // Escapar vírgulas e aspas
+                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                        return '"' + value.replace(/"/g, '""') + '"';
+                    }
+                    return value;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `${reportId}_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`✅ Relatório "${reportId}" exportado com ${data.length} registros`);
+        };
+        
+        // RELATÓRIOS - Abrir (wrapper para compatibilidade)
+        window.openReport = function(reportId) {
+            window.openReportFromCache(reportId);
         };
         
         console.log('✅ Funções globais carregadas');
