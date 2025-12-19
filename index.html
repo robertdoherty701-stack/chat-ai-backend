@@ -1117,38 +1117,24 @@
                 const userAvatar = document.getElementById('userAvatar');
                 if (userName) userName.textContent = user.name;
                 if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
-                        
-                        if (user.role === 'admin') {
-                            const adminSection = document.getElementById('adminSection');
-                            if (adminSection) {
-                                adminSection.style.display = 'block';
-                                console.log('✅ Menu admin ativado');
-                            }
-                        }
-                        
-                        // Carregar dados do Google Sheets
-                        setTimeout(() => {
-                            if (typeof window.carregarDadosDoSheets === 'function') {
-                                window.carregarDadosDoSheets();
-                            }
-                        }, 1000);
-                    }, 100);
-                    
-                    console.log('✅ Login OK');
-                } else {
-                    alert('Email ou senha incorretos!');
-                    btn.disabled = false;
-                    btn.innerHTML = 'Entrar';
+                
+                if (user.role === 'admin') {
+                    const adminSection = document.getElementById('adminSection');
+                    if (adminSection) {
+                        adminSection.style.display = 'block';
+                        console.log('✅ Menu admin ativado');
+                    }
                 }
-            } catch (error) {
-                console.error('❌ Erro no login:', error);
-                alert('Erro: ' + error.message);
-                const btn = document.getElementById('loginBtn');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = 'Entrar';
-                }
-            }
+                
+                // Carregar dados do Google Sheets
+                setTimeout(() => {
+                    if (typeof window.carregarDadosDoSheets === 'function') {
+                        window.carregarDadosDoSheets();
+                    }
+                }, 1000);
+            }, 100);
+            
+            console.log('✅ Login OK');
         };
         
         window.toggleMobileMenu = function() {
