@@ -950,8 +950,8 @@
                         
                         // Carregar dados do Google Sheets
                         setTimeout(() => {
-                            if (typeof carregarDadosDoSheets === 'function') {
-                                carregarDadosDoSheets();
+                            if (typeof window.carregarDadosDoSheets === 'function') {
+                                window.carregarDadosDoSheets();
                             }
                         }, 1000);
                     }, 100);
@@ -2080,7 +2080,7 @@
                         }
                         
                         // Carregar dados do Google Sheets
-                        setTimeout(() => carregarDadosDoSheets(), 1000);
+                        setTimeout(() => window.carregarDadosDoSheets(), 1000);
                     }, 100);
                     
                     console.log('✅ Login OK');
@@ -2213,9 +2213,9 @@
         }
 
         // =================================================================================
-        // 3. FUNÇÃO PRINCIPAL DE REQUISIÇÃO (FETCH)
+        // 3. FUNÇÃO PRINCIPAL DE REQUISIÇÃO (FETCH) - GLOBAL
         // =================================================================================
-        async function carregarDadosDoSheets() {
+        window.carregarDadosDoSheets = async function() {
             console.log("📥 Iniciando download das planilhas do Google Sheets...");
             
             // Mostrar indicador de carregamento no chat
@@ -2292,7 +2292,7 @@
             console.log("✅ Todos os dados foram carregados e estão em 'window.reportDataCache'.");
             console.log("📊 Total de relatórios:", Object.keys(window.reportDataCache).length);
             return window.reportDataCache;
-        }
+        };
 
         // =================================================================================
         // VARIÁVEIS GLOBAIS
@@ -4815,14 +4815,9 @@
             // CARREGAR DADOS DO GOOGLE SHEETS
             console.log('📥 Iniciando carregamento dos relatórios do Google Sheets...');
             try {
-                await carregarDadosDoSheets();
+                await window.carregarDadosDoSheets();
                 console.log('✅ Relatórios carregados com sucesso!');
             } catch (error) {
-                console.error('❌ Erro ao carregar relatórios:', error);
-            }
-            
-            console.log('=== DOMContentLoaded concluído ===');
-        });
                 console.error('❌ Erro ao carregar relatórios:', error);
             }
             
