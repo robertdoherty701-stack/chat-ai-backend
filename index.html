@@ -2187,9 +2187,9 @@
         }
 
         // =================================================================================
-        // 2. FUNÇÃO UTILITÁRIA: PARSER DE CSV (Converte texto em objeto JSON)
+        // 2. FUNÇÃO UTILITÁRIA: PARSER DE CSV (Converte texto em objeto JSON) - GLOBAL
         // =================================================================================
-        function parseRobustCSV(text) {
+        window.parseRobustCSV = function(text) {
             const rows = text.trim().replace(/^\uFEFF/, '').match(/(?:[^\r\n"]+|"[^"]*")+/g);
             if (!rows || rows.length < 2) return [];
             
@@ -2210,7 +2210,7 @@
                 res.push(obj);
             }
             return res;
-        }
+        };
 
         // =================================================================================
         // 3. FUNÇÃO PRINCIPAL DE REQUISIÇÃO (FETCH) - GLOBAL
@@ -2247,7 +2247,7 @@
                     if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
                     
                     const text = await response.text();
-                    window.reportDataCache[config.id] = parseRobustCSV(text);
+                    window.reportDataCache[config.id] = window.parseRobustCSV(text);
                     
                     console.log(`✅ Sucesso: ${config.label} (${window.reportDataCache[config.id].length} linhas)`);
                 } catch (err) {
