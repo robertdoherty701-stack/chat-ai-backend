@@ -2172,15 +2172,15 @@
             }
         ];
 
-        // Variável onde os dados ficam salvos na memória
-        var reportDataCache = {};
+        // Variável GLOBAL onde os dados ficam salvos na memória
+        window.reportDataCache = {};
         
         // Carregar dados do localStorage se existir
         try {
             const savedData = localStorage.getItem('googleSheetsCache');
             if (savedData) {
-                reportDataCache = JSON.parse(savedData);
-                console.log('📦 Dados carregados do cache local:', Object.keys(reportDataCache).length, 'relatórios');
+                window.reportDataCache = JSON.parse(savedData);
+                console.log('📦 Dados carregados do cache local:', Object.keys(window.reportDataCache).length, 'relatórios');
             }
         } catch (e) {
             console.warn('⚠️ Erro ao carregar cache:', e);
@@ -2247,12 +2247,12 @@
                     if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
                     
                     const text = await response.text();
-                    reportDataCache[config.id] = parseRobustCSV(text);
+                    window.reportDataCache[config.id] = parseRobustCSV(text);
                     
-                    console.log(`✅ Sucesso: ${config.label} (${reportDataCache[config.id].length} linhas)`);
+                    console.log(`✅ Sucesso: ${config.label} (${window.reportDataCache[config.id].length} linhas)`);
                 } catch (err) {
                     console.error(`❌ Erro em ${config.label}:`, err);
-                    reportDataCache[config.id] = [];
+                    window.reportDataCache[config.id] = [];
                 }
             });
 
@@ -2260,7 +2260,7 @@
             
             // SALVAR no localStorage para persistência
             try {
-                localStorage.setItem('googleSheetsCache', JSON.stringify(reportDataCache));
+                localStorage.setItem('googleSheetsCache', JSON.stringify(window.reportDataCache));
                 localStorage.setItem('googleSheetsLastUpdate', new Date().toISOString());
                 console.log('💾 Dados salvos no localStorage');
             } catch (e) {
@@ -2281,7 +2281,7 @@
                     <div class="message-content">
                         <div class="message-avatar">🤖</div>
                         <div class="message-text">
-                            ✅ ${Object.keys(reportDataCache).length} relatórios carregados! Digite <strong>ajuda</strong> para comandos.
+                            ✅ ${Object.keys(window.reportDataCache).length} relatórios carregados! Digite <strong>ajuda</strong> para comandos.
                         </div>
                     </div>
                 `;
@@ -2289,9 +2289,9 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
             
-            console.log("✅ Todos os dados foram carregados e estão em 'reportDataCache'.");
-            console.log("📊 Total de relatórios:", Object.keys(reportDataCache).length);
-            return reportDataCache;
+            console.log("✅ Todos os dados foram carregados e estão em 'window.reportDataCache'.");
+            console.log("📊 Total de relatórios:", Object.keys(window.reportDataCache).length);
+            return window.reportDataCache;
         }
 
         // =================================================================================
@@ -2950,13 +2950,13 @@
             console.log(`📊 Carregando relatório ${reportType} com filtros...`);
             
             // Verificar se os dados do Google Sheets estão carregados
-            if (!reportDataCache[reportType] || reportDataCache[reportType].length === 0) {
+            if (!window.reportDataCache[reportType] || window.reportDataCache[reportType].length === 0) {
                 return `❌ <strong>Relatório não disponível</strong>\n\n` +
                        `O relatório <strong>${getReportLabel(reportType)}</strong> não está carregado.\n` +
                        `🔄 Recarregue a página e aguarde o carregamento dos dados.`;
             }
             
-            const dados = reportDataCache[reportType];
+            const dados = window.reportDataCache[reportType];
             console.log(`📥 Total de registros brutos: ${dados.length}`);
             
             // Aplicar filtros
@@ -3469,7 +3469,7 @@
             console.log('📊 Carregando relatório:', reportType);
             
             // Verificar se os dados do Google Sheets estão carregados
-            if (!reportDataCache[reportType] || reportDataCache[reportType].length === 0) {
+            if (!window.reportDataCache[reportType] || window.reportDataCache[reportType].length === 0) {
                 const reportNames = {
                     'novos_clientes': '📊 Novos Clientes',
                     'queijo_reino': '🧀 Queijo do Reino',
@@ -3491,7 +3491,7 @@
                 // Criar objeto simulando estrutura do IndexedDB
                 const report = {
                     reportType: reportType,
-                    data: reportDataCache[reportType],
+                    data: window.reportDataCache[reportType],
                     uploadedAt: new Date().toISOString(),
                     fileName: `${reportType}_google_sheets.csv`
                 };
@@ -3510,10 +3510,10 @@
         // Buscar relatório do Google Sheets Cache (mantendo compatibilidade com IndexedDB legado)
         async function getReportFromDB(reportType) {
             // Primeiro tentar pegar do cache do Google Sheets
-            if (reportDataCache[reportType] && reportDataCache[reportType].length > 0) {
+            if (window.reportDataCache[reportType] && window.reportDataCache[reportType].length > 0) {
                 return {
                     reportType: reportType,
-                    data: reportDataCache[reportType],
+                    data: window.reportDataCache[reportType],
                     uploadedAt: new Date().toISOString(),
                     fileName: `${reportType}_google_sheets.csv`
                 };
