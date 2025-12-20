@@ -21,6 +21,7 @@ class AdminDashboard {
             const token = localStorage.getItem('api_token');
             if (!token) return;
 
+            // Carregar métricas da API
             const response = await fetch(`${this.API_URL}/api/metrics`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -28,8 +29,119 @@ class AdminDashboard {
             if (response.ok) {
                 this.metrics = await response.json();
             }
+
+            // NOVO: Carregar dados do Google Sheets
+            await this.loadSheetsData();
         } catch (error) {
             console.error('Erro ao carregar métricas:', error);
+        }
+    }
+
+    async loadSheetsData() {
+        try {
+            const token = localStorage.getItem('api_token');
+            if (!token) return;
+
+            const response = await fetch(`${this.API_URL}/api/sheets`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (response.ok) {
+                this.sheetsData = await response.json();
+                console.log('✅ Dados Google Sheets carregados:', this.sheetsData);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados sheets:', error);
+            this.sheetsData = null;
+        }
+    }
+
+    async reloadSheets() {
+        try {
+            const token = localStorage.getItem('api_token');
+            if (!token) {
+                alert('⚠️ Faça login com backend');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '🔄 Recarregando...';
+
+            const response = await fetch(`${this.API_URL}/api/sheets/reload`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert(`✅ Planilhas recarregadas!\n\n${JSON.stringify(data.data, null, 2)}`);
+                await this.loadSheetsData();
+                this.render();
+            } else {
+                throw new Error('Erro ao recarregar');
+            }
+        } catch (error) {
+            alert('❌ Erro: ' + error.message);
+        } finally {
+            const btn = event.target;
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '🔄 Recarregar Planilhas';
+            }
+        }
+    }
+
+    async viewSheetData(reportId) {
+        try {
+            const token = localStorage.getItem('api_token');
+            if (!token) {
+                alert('⚠️ Faça login com backend');
+                return;
+            }
+
+            const response = await fetch(`${this.API_URL}/api/sheets/${reportId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Exibir em modal ou nova janela
+                const preview = data.data.slice(0, 10);
+                const headers = Object.keys(preview[0] || {});
+                
+                let html = `
+                    <div style="max-width: 900px; margin: 20px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                        <h2 style="margin-bottom: 20px; color: #1F2937;">${data.label}</h2>
+                        <p style="color: #64748B; margin-bottom: 20px;">Total: ${data.rows} registros</p>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="background: #F3F4F6;">
+                                        ${headers.map(h => `<th style="padding: 12px; text-align: left; border: 1px solid #E5E7EB;">${h}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${preview.map(row => `
+                                        <tr style="border-bottom: 1px solid #E5E7EB;">
+                                            ${headers.map(h => `<td style="padding: 12px; border: 1px solid #E5E7EB;">${row[h] || '-'}</td>`).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        <p style="color: #64748B; margin-top: 15px; font-size: 12px;">Exibindo primeiros 10 registros</p>
+                        <button onclick="this.parentElement.remove()" style="margin-top: 20px; background: #DC2626; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Fechar</button>
+                    </div>
+                `;
+                
+                const modal = document.createElement('div');
+                modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 10000; overflow: auto; padding: 20px;';
+                modal.innerHTML = html;
+                document.body.appendChild(modal);
+            }
+        } catch (error) {
+            alert('❌ Erro ao visualizar: ' + error.message);
         }
     }
 
@@ -211,6 +323,75 @@ class AdminDashboard {
                         </div>
                     </div>
                 </div>
+
+                <!-- Google Sheets Cards -->
+                ${this.sheetsData ? `
+                <div style="margin-bottom: 32px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h2 style="font-size: 20px; font-weight: 700; color: #1F2937;">
+                            📊 Google Sheets
+                        </h2>
+                        <button onclick="window.adminDashboard.reloadSheets()" 
+                            style="background: #2563EB; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                            🔄 Recarregar Planilhas
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        ${this.sheetsData.sheets.map(sheet => `
+                            <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #E5E7EB; transition: transform 0.2s; cursor: pointer;" 
+                                onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)';"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+                                onclick="window.adminDashboard.viewSheetData('${sheet.id}')">
+                                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                                    <div style="background: ${sheet.has_data ? '#D1FAE5' : '#FEE2E2'}; padding: 12px; border-radius: 10px;">
+                                        <svg width="24" height="24" fill="${sheet.has_data ? '#059669' : '#DC2626'}" viewBox="0 0 24 24">
+                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                        </svg>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h3 style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">${sheet.label}</h3>
+                                        <p style="font-size: 12px; color: #64748B;">ID: ${sheet.id}</p>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid #E5E7EB;">
+                                    <div>
+                                        <p style="font-size: 13px; color: #64748B; margin-bottom: 4px;">Registros</p>
+                                        <p style="font-size: 24px; font-weight: 700; color: ${sheet.has_data ? '#059669' : '#DC2626'};">${sheet.rows}</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="font-size: 13px; color: #64748B; margin-bottom: 4px;">Tipo</p>
+                                        <p style="font-size: 12px; font-weight: 600; color: #1F2937;">${sheet.type}</p>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 12px;">
+                                    <p style="font-size: 11px; color: #64748B; margin-bottom: 6px;">Keywords:</p>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        ${sheet.keywords.map(kw => `
+                                            <span style="background: #F3F4F6; color: #4B5563; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">
+                                                ${kw}
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 16px;">
+                                    <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: ${sheet.has_data ? '#D1FAE5' : '#FEE2E2'}; border-radius: 6px;">
+                                        <span style="font-size: 16px;">${sheet.has_data ? '✅' : '⚠️'}</span>
+                                        <span style="font-size: 12px; font-weight: 600; color: ${sheet.has_data ? '#059669' : '#DC2626'};">
+                                            ${sheet.has_data ? 'Dados carregados' : 'Sem dados'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
 
                 <!-- Chart Card -->
                 <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #E5E7EB;">
