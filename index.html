@@ -1315,6 +1315,13 @@
                 if (targetSection) {
                     targetSection.classList.remove('hidden');
                     console.log('✅ Navegou para:', section);
+                    
+                    // NOVO: Reinicializar dashboard quando navegar para ele
+                    if (section === 'dashboard' && window.adminDashboard) {
+                        setTimeout(() => {
+                            window.adminDashboard.init();
+                        }, 100);
+                    }
                 } else {
                     alert('❌ Seção não encontrada: ' + section);
                 }
