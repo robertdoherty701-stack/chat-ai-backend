@@ -1054,6 +1054,98 @@
             }
         };
         
+        // ========== GOOGLE SHEETS API FUNCTIONS ==========
+        
+        // Buscar lista de planilhas disponíveis
+        window.buscarPlanilhas = async function() {
+            try {
+                const data = await window.apiRequest('/api/sheets');
+                return data.sheets || [];
+            } catch (error) {
+                console.error('Erro ao buscar planilhas:', error);
+                return [];
+            }
+        };
+        
+        // Buscar dados de uma planilha específica
+        window.buscarDadosSheet = async function(reportId) {
+            try {
+                const data = await window.apiRequest(`/api/sheets/${reportId}`);
+                return data;
+            } catch (error) {
+                console.error(`Erro ao buscar dados da planilha ${reportId}:`, error);
+                throw error;
+            }
+        };
+        
+        // Recarregar todas as planilhas do Google Sheets
+        window.recarregarSheets = async function() {
+            try {
+                const data = await window.apiRequest('/api/sheets/reload');
+                console.log('✅ Planilhas recarregadas:', data);
+                return data;
+            } catch (error) {
+                console.error('Erro ao recarregar planilhas:', error);
+                throw error;
+            }
+        };
+        
+        // Buscar dados por palavras-chave (busca em novos clientes ou queijo)
+        window.buscarPorPalavraChave = async function(query) {
+            const queryLower = query.toLowerCase();
+            const planilhas = await window.buscarPlanilhas();
+            
+            // Encontra planilha que corresponde às keywords
+            const planilhaMatch = planilhas.find(p => 
+                p.keywords.some(kw => queryLower.includes(kw))
+            );
+            
+            if (planilhaMatch && planilhaMatch.has_data) {
+                return await window.buscarDadosSheet(planilhaMatch.id);
+            }
+            
+            return null;
+        };
+        
+        // Exibir dados de planilha no chat
+        window.exibirDadosSheet = function(data, containerId = 'chatMessages') {
+            if (!data || !data.data || data.data.length === 0) {
+                return '<p class="text-gray-500">Nenhum dado encontrado.</p>';
+            }
+            
+            const headers = Object.keys(data.data[0]);
+            const maxRows = 50; // Limitar exibição
+            const displayData = data.data.slice(0, maxRows);
+            
+            let html = `
+                <div class="bg-white rounded-lg shadow-lg p-4 my-3">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">${data.label}</h3>
+                    <p class="text-sm text-gray-600 mb-3">
+                        Total: ${data.rows} registros | Exibindo: ${displayData.length}
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse border border-gray-300 text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    ${headers.map(h => `<th class="border border-gray-300 px-3 py-2 text-left">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${displayData.map(row => `
+                                    <tr class="hover:bg-gray-50">
+                                        ${headers.map(h => `<td class="border border-gray-300 px-3 py-2">${row[h] || '-'}</td>`).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    ${data.rows > maxRows ? `<p class="text-xs text-gray-500 mt-2">+ ${data.rows - maxRows} registros não exibidos</p>` : ''}
+                </div>
+            `;
+            
+            return html;
+        };
+        
         // ========== FUNÇÕES GLOBAIS DEFINIDAS ANTES DO HTML ==========
         // Estas funções precisam estar disponíveis para os onclick
         
@@ -3134,6 +3226,21 @@
         
         // Perguntas gerais (quando não está em fluxo de relatório)
         async function handleGeneralQuestions(lowerMessage) {
+            // NOVO: Verificar se a pergunta é sobre dados do Google Sheets
+            const sheetsKeywords = ['novos', 'clientes', 'leads', 'cidade', 'queijo', 'reino'];
+            const hasSheetKeyword = sheetsKeywords.some(kw => lowerMessage.includes(kw));
+            
+            if (hasSheetKeyword && useBackend && authToken) {
+                try {
+                    const sheetData = await window.buscarPorPalavraChave(lowerMessage);
+                    if (sheetData) {
+                        return window.exibirDadosSheet(sheetData);
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar dados do sheet:', error);
+                }
+            }
+            
             if (lowerMessage.includes('relatório') || lowerMessage.includes('relatorio') || lowerMessage === 'relatórios' || lowerMessage === 'relatorios') {
                 resetChatContext();
                 return showReportsMenu();

@@ -1,6 +1,6 @@
 # app.py
 # SISTEMA COMPLETO ENTERPRISE
-# Inclui: JWT, Histórico, Exportação (PDF/Excel) e WhatsApp
+# Inclui: JWT, Histórico, Exportação (PDF/Excel), WhatsApp e Google Sheets
 
 from fastapi import FastAPI, UploadFile, File, Depends, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,8 +17,10 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 import uuid
 import csv
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import os
+import requests
+import io
 
 # =========================
 # CONFIG
@@ -425,6 +427,136 @@ def root():
             "historico": "/api/historico",
             "whatsapp": "/api/whatsapp/enviar"
         }
+    }
+
+
+# =========================
+# GOOGLE SHEETS INTEGRATION
+# =========================
+
+# Configuração dos relatórios do Google Sheets
+REPORTS_CONFIG = [
+    {
+        "id": "leads",
+        "label": "Novos Clientes",
+        "keywords": ["novos", "cidade", "leads"],
+        "type": "city_leads",
+        "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv"
+    },
+    {
+        "id": "queijo",
+        "label": "Queijo do Reino",
+        "keywords": ["queijo", "reino"],
+        "type": "client_code_details",
+        "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv"
+    }
+]
+
+# Cache em memória para os dados das planilhas
+report_data_cache: Dict[str, List[Dict]] = {}
+
+
+def parse_csv_text(text: str) -> List[Dict[str, str]]:
+    """Parser de CSV robusto"""
+    lines = [line for line in text.split('\n') if line.strip()]
+    if not lines:
+        return []
+    
+    reader = csv.DictReader(io.StringIO('\n'.join(lines)))
+    return [row for row in reader]
+
+
+async def carregar_dados_sheets():
+    """Carrega dados de todas as planilhas configuradas"""
+    print("📥 Carregando planilhas do Google Sheets...")
+    
+    for config in REPORTS_CONFIG:
+        try:
+            response = requests.get(config["url"], timeout=10)
+            response.raise_for_status()
+            
+            text = response.text
+            data = parse_csv_text(text)
+            report_data_cache[config["id"]] = data
+            
+            print(f"✅ {config['label']} carregado ({len(data)} linhas)")
+        except Exception as e:
+            print(f"❌ Falha em {config['label']}: {str(e)}")
+            report_data_cache[config["id"]] = []
+    
+    return report_data_cache
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Carrega dados das planilhas ao iniciar o servidor"""
+    await carregar_dados_sheets()
+
+
+@app.get("/api/sheets/reload")
+def reload_sheets(user: dict = Depends(get_user)):
+    """Recarrega dados das planilhas do Google Sheets"""
+    try:
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(carregar_dados_sheets())
+        
+        summary = {
+            config["id"]: {
+                "label": config["label"],
+                "rows": len(report_data_cache.get(config["id"], []))
+            }
+            for config in REPORTS_CONFIG
+        }
+        
+        return {
+            "status": "success",
+            "message": "Dados recarregados com sucesso",
+            "timestamp": datetime.now().isoformat(),
+            "data": summary
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Erro ao recarregar planilhas: {str(e)}")
+
+
+@app.get("/api/sheets/{report_id}")
+def get_sheet_data(report_id: str, user: dict = Depends(get_user)):
+    """Retorna dados de uma planilha específica"""
+    if report_id not in report_data_cache:
+        raise HTTPException(404, f"Relatório '{report_id}' não encontrado")
+    
+    data = report_data_cache[report_id]
+    config = next((c for c in REPORTS_CONFIG if c["id"] == report_id), None)
+    
+    return {
+        "id": report_id,
+        "label": config["label"] if config else report_id,
+        "rows": len(data),
+        "data": data,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/sheets")
+def list_sheets(user: dict = Depends(get_user)):
+    """Lista todas as planilhas disponíveis"""
+    sheets = []
+    for config in REPORTS_CONFIG:
+        data = report_data_cache.get(config["id"], [])
+        sheets.append({
+            "id": config["id"],
+            "label": config["label"],
+            "keywords": config["keywords"],
+            "type": config["type"],
+            "rows": len(data),
+            "has_data": len(data) > 0
+        })
+    
+    return {
+        "sheets": sheets,
+        "total": len(sheets),
+        "timestamp": datetime.now().isoformat()
     }
 
 
