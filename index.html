@@ -1157,6 +1157,7 @@
                 const email = document.getElementById('loginEmail').value.trim();
                 const password = document.getElementById('loginPassword').value;
                 const rememberMe = document.getElementById('rememberMe')?.checked || false;
+                const useBackend = document.getElementById('useBackendApi')?.checked || false;
                 const btn = document.getElementById('loginBtn');
                 
                 if (!email || !password) {
@@ -1167,16 +1168,50 @@
                 btn.disabled = true;
                 btn.innerHTML = 'Entrando...';
                 
+                // NOVO: Se marcou "Usar Backend API", fazer login no backend
+                if (useBackend) {
+                    try {
+                        const response = await fetch(`${API_URL}/api/auth/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            window.authToken = data.token;
+                            window.currentUser = data.user;
+                            window.useBackend = true;
+                            
+                            localStorage.setItem('api_token', data.token);
+                            localStorage.setItem('use_backend', 'true');
+                            localStorage.setItem('user', JSON.stringify(data.user));
+                            
+                            alert(`✅ Login com backend realizado!\nUsuário: ${data.user.name}`);
+                            showMainApp();
+                            return;
+                        } else {
+                            throw new Error('Credenciais inválidas no backend');
+                        }
+                    } catch (error) {
+                        alert(`❌ Erro no login com backend: ${error.message}\n\nTentando login local...`);
+                        // Continua para login local
+                    }
+                }
+                
+                // Login local (padrão)
                 const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
                 const user = users.find(u => u.email === email && u.password === password);
                 
                 if (user) {
                     window.currentUser = user;
                     window.authToken = 'token_' + Date.now();
+                    window.useBackend = false;
                     
                     const storage = rememberMe ? localStorage : sessionStorage;
                     storage.setItem('token', window.authToken);
                     storage.setItem('user', JSON.stringify(user));
+                    storage.setItem('use_backend', 'false');
                     
                     showMainApp();
                     
@@ -1765,6 +1800,15 @@
                         <span style="font-size: 15px; font-weight: 600; color: white;">🔒 Lembre de mim (ficar conectado por 30 dias)</span>
                     </label>
                 </div>
+                
+                <!-- Opção Backend API -->
+                <div class="form-group" style="margin-bottom: 20px !important; display: block !important; visibility: visible !important; opacity: 1 !important;">
+                    <label style="display: flex !important; visibility: visible !important; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.95); background: rgba(37, 99, 235, 0.2); padding: 14px; border-radius: 8px; transition: all 0.3s; border: 2px solid rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='rgba(37, 99, 235, 0.3)'; this.style.borderColor='rgba(37, 99, 235, 0.6)'" onmouseout="this.style.background='rgba(37, 99, 235, 0.2)'; this.style.borderColor='rgba(37, 99, 235, 0.4)'">
+                        <input type="checkbox" id="useBackendApi" style="margin-right: 12px; width: 22px; height: 22px; cursor: pointer; accent-color: #2563EB; flex-shrink: 0;">
+                        <span style="font-size: 15px; font-weight: 600; color: white;">🚀 Usar Backend API (Google Sheets + Relatórios)</span>
+                    </label>
+                </div>
+                
                 <button type="button" class="btn-primary" id="loginBtn" onclick="console.log('Botão clicado!'); doLogin(); return false;">
                     Entrar
                 </button>
