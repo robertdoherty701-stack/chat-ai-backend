@@ -6,7 +6,7 @@ const {
   logUserQuery,
   clearOldCache,
   closeDatabase
-} = require('./database');
+} = require('./database.cjs');
 
 async function runTests() {
   console.log('🧪 Iniciando testes do banco de dados SQLite...\n');
