@@ -449,6 +449,13 @@ REPORTS_CONFIG = [
         "keywords": ["queijo", "reino"],
         "type": "client_code_details",
         "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv"
+    },
+    {
+        "id": "nao_cobertos_fornecedor",
+        "label": "Não Cobertos (Fornecedor)",
+        "keywords": ["não", "cobertos", "fornecedor"],
+        "type": "supplier_coverage",
+        "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1981950621&single=true&output=csv"
     }
 ]
 
