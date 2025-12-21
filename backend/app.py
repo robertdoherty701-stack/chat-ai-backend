@@ -584,6 +584,28 @@ def list_sheets(user: dict = Depends(get_user)):
     }
 
 
+@app.get("/api/health")
+def api_health():
+    """Endpoint de saúde com informações detalhadas dos relatórios"""
+    reports_status = {}
+    
+    for config in REPORTS_CONFIG:
+        data = report_data_cache.get(config["id"], [])
+        reports_status[config["id"]] = {
+            "ok": len(data) > 0,
+            "rows": len(data),
+            "lastUpdate": last_update_time,
+            "label": config["label"]
+        }
+    
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "loading": is_loading_sheets,
+        "reports": reports_status
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
