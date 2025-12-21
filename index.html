@@ -1061,6 +1061,42 @@
         
         // ========== GOOGLE SHEETS API FUNCTIONS ==========
         
+        // Função auxiliar de espera
+        window.esperar = async function(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        };
+        
+        // Buscar relatório com retry automático
+        window.buscarRelatorioComRetry = async function(reportId, maxTentativas = 6, intervaloMs = 3000) {
+            for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
+                console.log(`🔁 Tentativa ${tentativa} para ${reportId}`);
+                
+                // 1. Verifica status
+                const statusRes = await fetch(`${API_URL}/api/status`);
+                const status = await statusRes.json();
+                
+                if (status.loading) {
+                    console.log('⏳ Backend carregando dados...');
+                    await window.esperar(intervaloMs);
+                    continue;
+                }
+                
+                // 2. Busca relatório
+                const res = await fetch(`${API_URL}/api/sheets/${reportId}`);
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('✅ Dados recebidos');
+                    return data;
+                }
+                
+                console.log('⚠️ Relatório ainda não disponível, aguardando...');
+                await window.esperar(intervaloMs);
+            }
+            
+            throw new Error(`❌ Falha ao obter ${reportId} após várias tentativas`);
+        };
+        
         // Buscar lista de planilhas disponíveis
         window.buscarPlanilhas = async function() {
             try {
@@ -1072,10 +1108,10 @@
             }
         };
         
-        // Buscar dados de uma planilha específica
+        // Buscar dados de uma planilha específica (com retry)
         window.buscarDadosSheet = async function(reportId) {
             try {
-                const data = await window.apiRequest(`/api/sheets/${reportId}`);
+                const data = await window.buscarRelatorioComRetry(reportId);
                 return data;
             } catch (error) {
                 console.error(`Erro ao buscar dados da planilha ${reportId}:`, error);

@@ -461,6 +461,8 @@ REPORTS_CONFIG = [
 
 # Cache em memória para os dados das planilhas
 report_data_cache: Dict[str, List[Dict]] = {}
+is_loading_sheets = False
+last_update_time = None
 
 
 def parse_csv_text(text: str) -> List[Dict[str, str]]:
@@ -475,6 +477,8 @@ def parse_csv_text(text: str) -> List[Dict[str, str]]:
 
 async def carregar_dados_sheets():
     """Carrega dados de todas as planilhas configuradas"""
+    global is_loading_sheets, last_update_time
+    is_loading_sheets = True
     print("📥 Carregando planilhas do Google Sheets...")
     
     for config in REPORTS_CONFIG:
@@ -491,6 +495,9 @@ async def carregar_dados_sheets():
             print(f"❌ Falha em {config['label']}: {str(e)}")
             report_data_cache[config["id"]] = []
     
+    is_loading_sheets = False
+    last_update_time = datetime.now().isoformat()
+    print("🟢 Carga finalizada")
     return report_data_cache
 
 
@@ -542,6 +549,16 @@ def get_sheet_data(report_id: str, user: dict = Depends(get_user)):
         "rows": len(data),
         "data": data,
         "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/status")
+def get_status():
+    """Retorna status do carregamento das planilhas"""
+    return {
+        "loading": is_loading_sheets,
+        "lastUpdate": last_update_time,
+        "reports": list(report_data_cache.keys())
     }
 
 
