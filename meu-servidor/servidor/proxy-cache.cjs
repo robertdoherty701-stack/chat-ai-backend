@@ -128,32 +128,6 @@ app.get('/health', async (req, res) => {
   }
 });
 
-/**
- * Proxy genérico para outros endpoints
- */
-app.use('/api/*', async (req, res) => {
-  try {
-    const url = `${PYTHON_BACKEND}${req.originalUrl}`;
-    const response = await axios({
-      method: req.method,
-      url,
-      data: req.body,
-      headers: {
-        'Authorization': req.headers.authorization,
-        'Content-Type': 'application/json'
-      },
-      timeout: 30000
-    });
-    
-    res.status(response.status).json(response.data);
-  } catch (error) {
-    res.status(error.response?.status || 500).json({
-      error: error.message,
-      details: error.response?.data
-    });
-  }
-});
-
 // Inicia servidor
 if (require.main === module) {
   app.listen(PORT, () => {
