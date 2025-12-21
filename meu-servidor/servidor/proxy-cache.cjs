@@ -15,21 +15,101 @@ const {
   logFailure,
   logAccess 
 } = require('../../failure-log.cjs');
+const { carregarDadosDoSheets, reportDataCache, REPORTS_CONFIG } = require('../../sheets-loader.cjs');
 
 const app = express();
 const PORT = process.env.NODE_PORT || 3000;
 const PYTHON_BACKEND = process.env.PYTHON_BACKEND || 'http://localhost:8000';
 
+let dataLoaded = false;
+let lastLoadTime = null;
+
 app.use(cors());
 app.use(express.json());
 
 /**
- * Proxy com cache para Google Sheets
+ * Carrega dados diretamente do Google Sheets (Node.js)
+ * Endpoint direto sem passar pelo Python
+ */
+app.get('/api/sheets-direct/:reportId', async (req, res) => {
+  const { reportId } = req.params;
+  const startTime = Date.now();
+
+  try {
+    // Carrega dados se ainda não carregou
+    if (!dataLoaded || !reportDataCache[reportId]) {
+      console.log(`🔄 Carregando dados do Google Sheets...`);
+      const loadStart = Date.now();
+      await carregarDadosDoSheets();
+      dataLoaded = true;
+      lastLoadTime = new Date().toISOString();
+      const loadDuration = Date.now() - loadStart;
+      console.log(`✅ Dados carregados em ${(loadDuration / 1000).toFixed(2)}s`);
+    }
+
+    const data = reportDataCache[reportId];
+    
+    if (!data) {
+      logFailure(reportId, 'Relatório não encontrado no sheets-loader', {
+        availableReports: REPORTS_CONFIG.map(r => r.id)
+      });
+      return res.status(404).json({
+        error: 'Relatório não encontrado',
+        reportId,
+        available: REPORTS_CONFIG.map(r => r.id)
+      });
+    }
+
+    // Salva no cache SQLite para backup
+    const report = REPORTS_CONFIG.find(r => r.id === reportId);
+    await saveReportCache(reportId, report?.label || reportId, data, { ok: true });
+
+    const latency = Date.now() - startTime;
+    logAccess(reportId, 'sheets_direct', latency);
+
+    res.json({
+      source: 'sheets_direct',
+      id: reportId,
+      label: report?.label || reportId,
+      data: data,
+      count: data.length,
+      lastLoad: lastLoadTime,
+      latency: `${latency}ms`
+    });
+
+  } catch (error) {
+    const latency = Date.now() - startTime;
+    logFailure(reportId, `Erro ao carregar do Google Sheets: ${error.message}`, {
+      stack: error.stack,
+      latency
+    });
+
+    // Fallback para cache SQLite
+    const cached = await getReportCache(reportId);
+    if (cached) {
+      console.log(`📦 Fallback para cache SQLite`);
+      logAccess(reportId, 'sqlite_fallback', latency);
+      return res.json({
+        source: 'sqlite_fallback',
+        warning: 'Erro ao carregar do Google Sheets, usando cache',
+        ...cached,
+        latency: `${latency}ms`
+      });
+    }
+
+    res.status(500).json({
+      error: error.message,
+      reportId
+    });
+  }
+});
+
+/**
+ * Proxy com cache para Google Sheets (Python Backend)
  */
 app.get('/api/sheets/:reportId', async (req, res) => {
   const { reportId } = req.params;
-  const { force } = req.query; // ?force=true ignora cache
-
+  const { force } = req.query; // ?force=true ignora cache  const startTime = Date.now();
   try {
     // Se não forçar, tenta buscar do cache Node.js
     if (!force) {
@@ -52,10 +132,14 @@ app.get('/api/sheets/:reportId', async (req, res) => {
 
     // Busca do backend Python
     console.log(`🔄 Proxy para Python: ${reportId}`);
+    const pythonStart = Date.now();
     const response = await axios.get(
       `${PYTHON_BACKEND}/api/sheets/${reportId}`,
       { timeout: 30000 }
     );
+
+    const pythonLatency = Date.now() - pythonStart;
+    logAccess(reportId, 'python_backend', pythonLatency);
 
     // Salva no cache Node.js
     if (response.data.data) {
@@ -69,19 +153,27 @@ app.get('/api/sheets/:reportId', async (req, res) => {
 
     res.json({
       source: 'python_backend',
+      latency: `${pythonLatency}ms`,
       ...response.data
     });
 
   } catch (error) {
     console.error(`❌ Erro no proxy: ${error.message}`);
+    logFailure(reportId, `Erro no proxy Python: ${error.message}`, {
+      pythonBackend: PYTHON_BACKEND,
+      stack: error.stack
+    });
     
     // Fallback para cache antigo
     const cached = await getReportCache(reportId);
     if (cached) {
       console.log(`📦 Fallback para cache antigo`);
+      const fallbackLatency = Date.now() - startTime;
+      logAccess(reportId, 'node_fallback', fallbackLatency);
       return res.json({
         source: 'node_cache_fallback',
         warning: 'Backend indisponível, usando cache',
+        latency: `${fallbackLatency}ms`,
         ...cached
       });
     }
