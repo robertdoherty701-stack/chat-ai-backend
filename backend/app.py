@@ -461,8 +461,49 @@ REPORTS_CONFIG = [
 
 # Cache em memória para os dados das planilhas
 report_data_cache: Dict[str, List[Dict]] = {}
+report_validation_status: Dict[str, Dict] = {}
 is_loading_sheets = False
 last_update_time = None
+
+# Schemas esperados para validação
+REPORT_SCHEMAS = {
+    "leads": {
+        "version": 1,
+        "columns": ["Cidade", "Novos Clientes", "Data"]
+    },
+    "queijo": {
+        "version": 1,
+        "columns": ["Código Cliente", "Nome", "Detalhes"]
+    },
+    "nao_cobertos_fornecedor": {
+        "version": 1,
+        "columns": ["Fornecedor", "Produto", "Status", "Observações"]
+    }
+}
+
+
+def validate_report_schema(report_id: str, data: List[Dict]) -> Dict:
+    """Valida se os dados correspondem ao schema esperado"""
+    if not data:
+        return {"ok": False, "error": "Dados vazios"}
+    
+    schema = REPORT_SCHEMAS.get(report_id)
+    if not schema:
+        return {"ok": True, "warning": "Schema não definido"}
+    
+    headers = list(data[0].keys())
+    expected_columns = schema["columns"]
+    missing_columns = [col for col in expected_columns if col not in headers]
+    extra_columns = [col for col in headers if col not in expected_columns]
+    
+    return {
+        "ok": len(missing_columns) == 0,
+        "version": schema["version"],
+        "missing_columns": missing_columns,
+        "extra_columns": extra_columns,
+        "expected_columns": expected_columns,
+        "actual_columns": headers
+    }
 
 
 def parse_csv_text(text: str) -> List[Dict[str, str]]:
@@ -488,9 +529,20 @@ async def carregar_dados_sheets():
             
             text = response.text
             data = parse_csv_text(text)
-            report_data_cache[config["id"]] = data
             
-            print(f"✅ {config['label']} carregado ({len(data)} linhas)")
+            # Validar schema
+            validation = validate_report_schema(config["id"], data)
+            report_validation_status[config["id"]] = validation
+            
+            if validation["ok"]:
+                report_data_cache[config["id"]] = data
+                print(f"✅ {config['label']} carregado ({len(data)} linhas) - Schema v{validation['version']} OK")
+            else:
+                report_data_cache[config["id"]] = data  # Carrega mesmo com erro
+                print(f"⚠️ {config['label']} carregado ({len(data)} linhas) - Schema inválido")
+                print(f"   Colunas faltando: {validation.get('missing_columns', [])}")
+                if validation.get('extra_columns'):
+                    print(f"   Colunas extras: {validation['extra_columns']}")
         except Exception as e:
             print(f"❌ Falha em {config['label']}: {str(e)}")
             report_data_cache[config["id"]] = []
@@ -541,6 +593,15 @@ def get_sheet_data(report_id: str, user: dict = Depends(get_user)):
         raise HTTPException(404, f"Relatório '{report_id}' não encontrado")
     
     data = report_data_cache[report_id]
+    validation = report_validation_status.get(report_id, {"ok": True})
+    
+    return {
+        "id": report_id,
+        "data": data,
+        "count": len(data),
+        "validation": validation,
+        "timestamp": last_update_time
+    }
     config = next((c for c in REPORTS_CONFIG if c["id"] == report_id), None)
     
     return {
@@ -564,17 +625,24 @@ def get_status():
 
 @app.get("/api/sheets")
 def list_sheets(user: dict = Depends(get_user)):
-    """Lista todas as planilhas disponíveis"""
+    """Lista todas as planilhas disponíveis com status de validação"""
     sheets = []
     for config in REPORTS_CONFIG:
         data = report_data_cache.get(config["id"], [])
+        validation = report_validation_status.get(config["id"], {"ok": True})
+        
         sheets.append({
             "id": config["id"],
             "label": config["label"],
             "keywords": config["keywords"],
             "type": config["type"],
             "rows": len(data),
-            "has_data": len(data) > 0
+            "has_data": len(data) > 0,
+            "validation": {
+                "ok": validation.get("ok", True),
+                "version": validation.get("version"),
+                "issues": validation.get("missing_columns", [])
+            }
         })
     
     return {
