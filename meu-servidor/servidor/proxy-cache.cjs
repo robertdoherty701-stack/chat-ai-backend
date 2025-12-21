@@ -7,6 +7,14 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const { saveReportCache, getReportCache, listCachedReports } = require('./database.cjs');
+const { 
+  getFailures, 
+  getAccesses, 
+  getFailureStats, 
+  getAccessStats,
+  logFailure,
+  logAccess 
+} = require('../../failure-log.cjs');
 
 const app = express();
 const PORT = process.env.NODE_PORT || 3000;
@@ -125,6 +133,77 @@ app.get('/health', async (req, res) => {
       status: 'unhealthy',
       error: error.message
     });
+  }
+});
+
+/**
+ * Endpoints de Monitoramento de Logs
+ */
+
+// Estatísticas de falhas
+app.get('/api/logs/failures/stats', async (req, res) => {
+  try {
+    const stats = getFailureStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Estatísticas de acessos
+app.get('/api/logs/accesses/stats', async (req, res) => {
+  try {
+    const stats = getAccessStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Últimas falhas
+app.get('/api/logs/failures', async (req, res) => {
+  try {
+    const { reportId, limit } = req.query;
+    const failures = getFailures(reportId, limit ? parseInt(limit) : 50);
+    res.json({ failures, total: failures.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Últimos acessos
+app.get('/api/logs/accesses', async (req, res) => {
+  try {
+    const { reportId, limit } = req.query;
+    const accesses = getAccesses(reportId, limit ? parseInt(limit) : 100);
+    res.json({ accesses, total: accesses.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Dashboard completo
+app.get('/api/logs/dashboard', async (req, res) => {
+  try {
+    const failureStats = getFailureStats();
+    const accessStats = getAccessStats();
+    const recentFailures = getFailures(null, 10);
+    const recentAccesses = getAccesses(null, 20);
+    const cacheReports = await listCachedReports();
+
+    res.json({
+      failures: failureStats,
+      accesses: accessStats,
+      recentFailures,
+      recentAccesses,
+      cache: {
+        reports: cacheReports.length,
+        list: cacheReports
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
