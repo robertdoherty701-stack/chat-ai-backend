@@ -22,6 +22,9 @@ import os
 import requests
 import io
 
+# Serviço de cache SQLite
+from cache_service import cache_service
+
 # =========================
 # CONFIG
 # =========================
@@ -516,11 +519,37 @@ def parse_csv_text(text: str) -> List[Dict[str, str]]:
     return [row for row in reader]
 
 
-async def carregar_dados_sheets():
-    """Carrega dados de todas as planilhas configuradas"""
+async def carregar_dados_sheets(force_refresh: bool = False):
+    """Carrega dados de todas as planilhas configuradas
+    
+    Args:
+        force_refresh: Se True, ignora cache e busca do Google Sheets
+    """
     global is_loading_sheets, last_update_time
     is_loading_sheets = True
     print("📥 Carregando planilhas do Google Sheets...")
+    
+    # Se não forçar, tenta usar cache (24h)
+    if not force_refresh:
+        all_fresh = True
+        for config in REPORTS_CONFIG:
+            if not cache_service.is_cache_fresh(config["id"], max_age_hours=24):
+                all_fresh = False
+                break
+        
+        if all_fresh:
+            print("✅ Usando dados do cache (atualizados nas últimas 24h)")
+            for config in REPORTS_CONFIG:
+                cached = cache_service.get_report_cache(config["id"])
+                if cached:
+                    report_data_cache[config["id"]] = cached["data"]
+                    report_validation_status[config["id"]] = cached.get("validation_status", {"ok": True})
+                    print(f"  📋 {config['label']}: {cached['row_count']} linhas (cache)")
+            
+            is_loading_sheets = False
+            last_update_time = datetime.now().isoformat()
+            print("🟢 Carga concluída via cache")
+            return report_data_cache
     
     for config in REPORTS_CONFIG:
         try:
@@ -543,9 +572,26 @@ async def carregar_dados_sheets():
                 print(f"   Colunas faltando: {validation.get('missing_columns', [])}")
                 if validation.get('extra_columns'):
                     print(f"   Colunas extras: {validation['extra_columns']}")
+            
+            # Salvar no cache SQLite
+            cache_service.save_report_cache(
+                report_id=config["id"],
+                label=config["label"],
+                data=data,
+                validation_status=validation
+            )
+            
         except Exception as e:
             print(f"❌ Falha em {config['label']}: {str(e)}")
-            report_data_cache[config["id"]] = []
+            
+            # Tentar buscar do cache como fallback
+            cached = cache_service.get_report_cache(config["id"])
+            if cached:
+                print(f"   📦 Usando versão em cache ({cached['row_count']} linhas)")
+                report_data_cache[config["id"]] = cached["data"]
+                report_validation_status[config["id"]] = cached.get("validation_status", {"ok": False})
+            else:
+                report_data_cache[config["id"]] = []
     
     is_loading_sheets = False
     last_update_time = datetime.now().isoformat()
@@ -560,13 +606,17 @@ async def startup_event():
 
 
 @app.get("/api/sheets/reload")
-def reload_sheets(user: dict = Depends(get_user)):
-    """Recarrega dados das planilhas do Google Sheets"""
+def reload_sheets(force: bool = True, user: dict = Depends(get_user)):
+    """Recarrega dados das planilhas do Google Sheets
+    
+    Args:
+        force: Se True (padrão), ignora cache e busca do Google Sheets
+    """
     try:
         import asyncio
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(carregar_dados_sheets())
+        result = loop.run_until_complete(carregar_dados_sheets(force_refresh=force))
         
         summary = {
             config["id"]: {
@@ -674,9 +724,47 @@ def api_health():
     }
 
 
+@app.get("/api/cache/info")
+def cache_info(user: dict = Depends(get_user)):
+    """Retorna informações sobre os dados em cache"""
+    try:
+        cached_reports = cache_service.list_cached_reports()
+        history = cache_service.get_update_history(limit=20)
+        
+        return {
+            "status": "success",
+            "timestamp": datetime.now().isoformat(),
+            "cached_reports": cached_reports,
+            "total_cached": len(cached_reports),
+            "recent_updates": history,
+            "database_path": str(cache_service.db_path)
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Erro ao buscar informações do cache: {str(e)}")
+
+
+@app.post("/api/cache/clear")
+def clear_cache(days_old: int = 30, user: dict = Depends(get_user)):
+    """Remove caches mais antigos que X dias
+    
+    Args:
+        days_old: Idade em dias para considerar cache obsoleto (padrão: 30)
+    """
+    try:
+        cache_service.clear_old_cache(days_old)
+        return {
+            "status": "success",
+            "message": f"Caches com mais de {days_old} dias foram removidos",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Erro ao limpar cache: {str(e)}")
+
+
 @app.get("/health")
 def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 
 
 if __name__ == "__main__":
