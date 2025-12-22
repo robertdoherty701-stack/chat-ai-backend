@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { validateReportSchema, formatValidationResult } = require('./report-schemas.cjs');
 
 // =================================================================================
 // 1. CONFIGURAÇÃO DOS LINKS E RELATÓRIOS
@@ -150,24 +151,42 @@ async function fetchWithRetry(url, retries = 3, delay = 5000) {
 }
 
 // =================================================================================
-// CARGA PRINCIPAL
+// CARGA PRINCIPAL COM VALIDAÇÃO
 // =================================================================================
 async function carregarDadosDoSheets() {
     console.log('🚀 Iniciando carga das planilhas...');
+    const validationResults = {};
 
     for (const report of REPORTS_CONFIG) {
         try {
             const csvText = await fetchWithRetry(report.url);
             reportDataCache[report.id] = parseCSV(csvText);
-            console.log(`✅ ${report.label}: ${reportDataCache[report.id].length} linhas`);
+            
+            // Valida schema
+            const validation = validateReportSchema(report.id, reportDataCache[report.id]);
+            validationResults[report.id] = validation;
+            
+            const validationMsg = formatValidationResult(validation);
+            console.log(`✅ ${report.label}: ${reportDataCache[report.id].length} linhas | ${validationMsg}`);
+            
+            if (!validation.valid) {
+                console.warn(`⚠️  Atenção: ${report.label} tem problemas no schema!`);
+            }
         } catch (err) {
             console.error(`❌ Erro em ${report.label}: ${err.message}`);
             reportDataCache[report.id] = [];
+            validationResults[report.id] = { valid: false, error: err.message };
         }
     }
 
     console.log('✔️ Carga finalizada');
-    return reportDataCache;
+    
+    // Resumo de validação
+    const totalReports = Object.keys(validationResults).length;
+    const validReports = Object.values(validationResults).filter(v => v.valid).length;
+    console.log(`📊 Validação: ${validReports}/${totalReports} relatórios com schema válido`);
+    
+    return { cache: reportDataCache, validation: validationResults };
 }
 
 // EXPORTA PARA USAR EM API / IA / CRON
@@ -178,5 +197,7 @@ module.exports = {
     // Helper functions
     getReportsByCategory: (category) => REPORTS_CONFIG.filter(r => r.category === category),
     getCategories: () => [...new Set(REPORTS_CONFIG.map(r => r.category))],
-    getReportById: (id) => REPORTS_CONFIG.find(r => r.id === id)
+    getReportById: (id) => REPORTS_CONFIG.find(r => r.id === id),
+    // Validation
+    validateReportSchema
 };
