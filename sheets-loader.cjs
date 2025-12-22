@@ -4,45 +4,96 @@ const axios = require('axios');
 // 1. CONFIGURAÇÃO DOS LINKS E RELATÓRIOS
 // =================================================================================
 const REPORTS_CONFIG = [
+    // ===== RELATÓRIOS DE CLIENTES =====
     {
         id: 'leads',
         label: 'Novos Clientes',
+        category: 'clientes',
+        description: 'Lista de novos clientes potenciais',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
     },
     {
         id: 'queijo',
         label: 'Queijo do Reino',
+        category: 'produtos',
+        description: 'Vendas de Queijo do Reino por cliente',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv',
     },
+    
+    // ===== RELATÓRIOS DE COBERTURA =====
     {
         id: 'nao_cobertos_cli',
         label: 'Não Cobertos (Cliente)',
+        category: 'cobertura',
+        description: 'Clientes sem cobertura de vendas',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=953923858&single=true&output=csv',
     },
     {
         id: 'nao_cobertos_forn',
         label: 'Não Cobertos (Fornecedor)',
+        category: 'cobertura',
+        description: 'Fornecedores sem cobertura por vendedor',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1981950621&single=true&output=csv',
     },
+    
+    // ===== RELATÓRIOS MSL (Market Share List) =====
     {
         id: 'msl_danone',
         label: 'MSL DANONE',
+        category: 'msl',
+        description: 'Market Share DANONE por região',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=402511992&single=true&output=csv',
     },
     {
         id: 'msl_otg',
         label: 'MSL OTG',
+        category: 'msl',
+        description: 'Market Share OTG (On-The-Go)',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1571578249&single=true&output=csv',
     },
     {
         id: 'msl_mini',
         label: 'MSL MINI',
+        category: 'msl',
+        description: 'Market Share Mini Mercados',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=544996255&single=true&output=csv',
     },
     {
         id: 'msl_super',
         label: 'MSL SUPER',
+        category: 'msl',
+        description: 'Market Share Supermercados',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2086321744&single=true&output=csv',
+    },
+    
+    // ===== NOVOS RELATÓRIOS ADICIONADOS =====
+    {
+        id: 'msl_consolidado',
+        label: 'MSL Consolidado',
+        category: 'msl',
+        description: 'Consolidado de todos os MSL',
+        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
+    },
+    {
+        id: 'vendas_por_vendedor',
+        label: 'Vendas por Vendedor',
+        category: 'vendas',
+        description: 'Performance de vendas por vendedor',
+        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
+    },
+    {
+        id: 'mix_produtos',
+        label: 'Mix de Produtos',
+        category: 'produtos',
+        description: 'Análise de mix de produtos por cliente',
+        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
+    },
+    {
+        id: 'inadimplentes',
+        label: 'Clientes Inadimplentes',
+        category: 'financeiro',
+        description: 'Lista de clientes com pendências financeiras',
+        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv',
     }
 ];
 
@@ -123,5 +174,9 @@ async function carregarDadosDoSheets() {
 module.exports = {
     carregarDadosDoSheets,
     reportDataCache,
-    REPORTS_CONFIG
+    REPORTS_CONFIG,
+    // Helper functions
+    getReportsByCategory: (category) => REPORTS_CONFIG.filter(r => r.category === category),
+    getCategories: () => [...new Set(REPORTS_CONFIG.map(r => r.category))],
+    getReportById: (id) => REPORTS_CONFIG.find(r => r.id === id)
 };

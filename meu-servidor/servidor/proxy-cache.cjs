@@ -202,6 +202,68 @@ app.get('/api/cache/reports', async (req, res) => {
 });
 
 /**
+ * Lista todos os relatórios disponíveis com informações
+ */
+app.get('/api/reports', (req, res) => {
+  const { category } = req.query;
+  const { getReportsByCategory, getCategories } = require('../../sheets-loader.cjs');
+  
+  try {
+    let reports = REPORTS_CONFIG;
+    
+    if (category) {
+      reports = getReportsByCategory(category);
+    }
+    
+    const reportInfo = reports.map(r => ({
+      id: r.id,
+      label: r.label,
+      category: r.category,
+      description: r.description,
+      cached: !!reportDataCache[r.id],
+      rows: reportDataCache[r.id]?.length || 0
+    }));
+    
+    res.json({
+      total: reports.length,
+      categories: getCategories(),
+      reports: reportInfo,
+      lastLoad: lastLoadTime
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Lista relatórios por categoria
+ */
+app.get('/api/reports/categories', (req, res) => {
+  const { getCategories, getReportsByCategory } = require('../../sheets-loader.cjs');
+  
+  try {
+    const categories = getCategories();
+    const categoriesWithReports = categories.map(cat => ({
+      name: cat,
+      reports: getReportsByCategory(cat).map(r => ({
+        id: r.id,
+        label: r.label,
+        description: r.description,
+        cached: !!reportDataCache[r.id],
+        rows: reportDataCache[r.id]?.length || 0
+      }))
+    }));
+    
+    res.json({
+      total: categories.length,
+      categories: categoriesWithReports
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * Health check
  */
 app.get('/health', async (req, res) => {
