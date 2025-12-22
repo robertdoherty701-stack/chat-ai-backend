@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API V2 - Sheets Loader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .endpoint-card {
+            transition: all 0.3s ease;
+        }
+        .endpoint-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .json-viewer {
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success { background: #10b981; color: white; }
+        .badge-error { background: #ef4444; color: white; }
+        .badge-info { background: #3b82f6; color: white; }
+        .badge-warning { background: #f59e0b; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-xl p-8 mb-6 text-white">
+            <h1 class="text-4xl font-bold mb-2">🚀 API V2 Test Suite</h1>
+            <p class="text-blue-100 text-lg">Sheets Loader - Arquitetura V2 com Cache/Meta</p>
+            <div class="mt-4">
+                <div class="flex items-center gap-4 mb-3">
+                    <span class="badge badge-info" id="apiUrlBadge">http://localhost:3000</span>
+                    <button onclick="checkServerStatus()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-blue-50 transition">
+                        🔍 Check Status
+                    </button>
+                    <button onclick="showApiConfig()" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
+                        ⚙️ Configurar API
+                    </button>
+                </div>
+                <div id="apiConfig" class="hidden bg-white/90 p-4 rounded-lg">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">URL da API:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="apiUrlInput" placeholder="http://localhost:3000" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm">
+                        <button onclick="updateApiUrl()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                            Salvar
+                        </button>
+                        <button onclick="resetApiUrl()" class="bg-gray-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div id="quickStats" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"></div>
+
+        <!-- Test Categories -->
+        <div class="space-y-6">
+            <!-- Health & Status -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">🏥 Health & Status</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="testEndpoint('GET', '/health')" class="endpoint-card bg-green-50 border-2 border-green-200 p-4 rounded-lg hover:bg-green-100">
+                        <div class="font-bold text-green-700">GET /health</div>
+                        <div class="text-sm text-gray-600 mt-1">Health check completo</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/status')" class="endpoint-card bg-blue-50 border-2 border-blue-200 p-4 rounded-lg hover:bg-blue-100">
+                        <div class="font-bold text-blue-700">GET /status</div>
+                        <div class="text-sm text-gray-600 mt-1">Status simplificado</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/stats')" class="endpoint-card bg-purple-50 border-2 border-purple-200 p-4 rounded-lg hover:bg-purple-100">
+                        <div class="font-bold text-purple-700">GET /stats</div>
+                        <div class="text-sm text-gray-600 mt-1">Estatísticas do cache</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">📊 Relatórios</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <button onclick="testEndpoint('GET', '/reports')" class="endpoint-card bg-indigo-50 border-2 border-indigo-200 p-4 rounded-lg hover:bg-indigo-100">
+                        <div class="font-bold text-indigo-700">GET /reports</div>
+                        <div class="text-sm text-gray-600 mt-1">Lista todos os relatórios</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/reports?category=lead')" class="endpoint-card bg-indigo-50 border-2 border-indigo-200 p-4 rounded-lg hover:bg-indigo-100">
+                        <div class="font-bold text-indigo-700">GET /reports?category=lead</div>
+                        <div class="text-sm text-gray-600 mt-1">Filtrar por categoria</div>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Testar relatório específico:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="reportId" placeholder="leads" class="flex-1 border border-gray-300 rounded-lg px-4 py-2" value="leads">
+                        <button onclick="testReportEndpoints()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700">
+                            Testar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="testEndpoint('GET', '/reports/leads')" class="endpoint-card bg-teal-50 border-2 border-teal-200 p-4 rounded-lg hover:bg-teal-100">
+                        <div class="font-bold text-teal-700">GET /reports/:id</div>
+                        <div class="text-sm text-gray-600 mt-1">Dados + metadados</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/reports/leads/data')" class="endpoint-card bg-teal-50 border-2 border-teal-200 p-4 rounded-lg hover:bg-teal-100">
+                        <div class="font-bold text-teal-700">GET /reports/:id/data</div>
+                        <div class="text-sm text-gray-600 mt-1">Apenas dados</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/reports/leads/meta')" class="endpoint-card bg-teal-50 border-2 border-teal-200 p-4 rounded-lg hover:bg-teal-100">
+                        <div class="font-bold text-teal-700">GET /reports/:id/meta</div>
+                        <div class="text-sm text-gray-600 mt-1">Apenas metadados</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">📂 Categorias</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="testEndpoint('GET', '/categories')" class="endpoint-card bg-yellow-50 border-2 border-yellow-200 p-4 rounded-lg hover:bg-yellow-100">
+                        <div class="font-bold text-yellow-700">GET /categories</div>
+                        <div class="text-sm text-gray-600 mt-1">Lista todas as categorias</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/categories/lead')" class="endpoint-card bg-yellow-50 border-2 border-yellow-200 p-4 rounded-lg hover:bg-yellow-100">
+                        <div class="font-bold text-yellow-700">GET /categories/:category</div>
+                        <div class="text-sm text-gray-600 mt-1">Relatórios da categoria</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">🔍 Busca</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Busca global:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="globalSearch" placeholder="Digite um termo..." class="flex-1 border border-gray-300 rounded-lg px-4 py-2">
+                        <button onclick="searchGlobal()" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                            🔍 Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Busca em relatório específico:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="searchReportId" placeholder="leads" class="border border-gray-300 rounded-lg px-4 py-2" value="leads">
+                        <input type="text" id="searchTerm" placeholder="Termo de busca" class="flex-1 border border-gray-300 rounded-lg px-4 py-2">
+                        <button onclick="searchInReport()" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700">
+                            🔍 Buscar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">⚙️ Administração</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="testEndpoint('POST', '/reload')" class="endpoint-card bg-red-50 border-2 border-red-200 p-4 rounded-lg hover:bg-red-100">
+                        <div class="font-bold text-red-700">POST /reload</div>
+                        <div class="text-sm text-gray-600 mt-1">Força recarga dos dados</div>
+                    </button>
+                    <button onclick="testEndpoint('GET', '/')" class="endpoint-card bg-gray-50 border-2 border-gray-200 p-4 rounded-lg hover:bg-gray-100">
+                        <div class="font-bold text-gray-700">GET /</div>
+                        <div class="text-sm text-gray-600 mt-1">Documentação da API</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">📋 Resultados</h2>
+                <button onclick="clearResults()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    🗑️ Limpar
+                </button>
+            </div>
+            <div id="results" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Permite configurar a URL da API via parâmetro ou localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const savedApiUrl = localStorage.getItem('apiBaseUrl');
+        const defaultApiUrl = 'http://localhost:3000';
+        
+        let API_BASE = urlParams.get('api') || savedApiUrl || defaultApiUrl;
+        
+        // Salva no localStorage se vier da URL
+        if (urlParams.get('api')) {
+            localStorage.setItem('apiBaseUrl', API_BASE);
+        }
+        
+        let testCount = 0;
+
+        async function checkServerStatus() {
+            showLoading('Verificando servidor...');
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    showSuccess('Servidor online!', data);
+                    loadQuickStats();
+                } else {
+                    showWarning('Servidor em carregamento...', data);
+                }
+            } catch (error) {
+                showError('Servidor offline', { error: 'Não foi possível conectar ao servidor. Execute: node api-server.cjs' });
+            }
+        }
+
+        async function loadQuickStats() {
+            try {
+                const [health, stats] = await Promise.all([
+                    fetch(`${API_BASE}/health`).then(r => r.json()),
+                    fetch(`${API_BASE}/stats`).then(r => r.json())
+                ]);
+
+                const statsHTML = `
+                    <div class="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                        <div class="text-3xl font-bold text-green-700">${health.stats.totalReports}</div>
+                        <div class="text-sm text-gray-600">Relatórios</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                        <div class="text-3xl font-bold text-blue-700">${health.stats.totalRows.toLocaleString()}</div>
+                        <div class="text-sm text-gray-600">Linhas Totais</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                        <div class="text-3xl font-bold text-purple-700">${stats.totalCategories}</div>
+                        <div class="text-sm text-gray-600">Categorias</div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-200">
+                        <div class="text-3xl font-bold ${health.ok ? 'text-green-700' : 'text-red-700'}">
+                            ${health.ok ? '✅' : '⚠️'}
+                        </div>
+                        <div class="text-sm text-gray-600">${health.status.toUpperCase()}</div>
+                    </div>
+                `;
+
+                document.getElementById('quickStats').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('Erro ao carregar stats:', error);
+            }
+        }
+
+        async function testEndpoint(method, endpoint) {
+            testCount++;
+            const startTime = Date.now();
+            
+            showLoading(`${method} ${endpoint}`);
+
+            try {
+                const options = { method };
+                if (method === 'POST') {
+                    options.headers = { 'Content-Type': 'application/json' };
+                }
+
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                const data = await response.json();
+                const duration = Date.now() - startTime;
+
+                if (response.ok) {
+                    showSuccess(`${method} ${endpoint}`, data, duration);
+                } else {
+                    showError(`${method} ${endpoint}`, data, duration);
+                }
+            } catch (error) {
+                const duration = Date.now() - startTime;
+                showError(`${method} ${endpoint}`, { error: error.message }, duration);
+            }
+        }
+
+        function testReportEndpoints() {
+            const reportId = document.getElementById('reportId').value.trim();
+            if (!reportId) {
+                alert('Digite um ID de relatório');
+                return;
+            }
+
+            testEndpoint('GET', `/reports/${reportId}`);
+            setTimeout(() => testEndpoint('GET', `/reports/${reportId}/data`), 500);
+            setTimeout(() => testEndpoint('GET', `/reports/${reportId}/meta`), 1000);
+        }
+
+        function searchGlobal() {
+            const term = document.getElementById('globalSearch').value.trim();
+            if (!term) {
+                alert('Digite um termo para buscar');
+                return;
+            }
+            testEndpoint('GET', `/search?q=${encodeURIComponent(term)}`);
+        }
+
+        function searchInReport() {
+            const reportId = document.getElementById('searchReportId').value.trim();
+            const term = document.getElementById('searchTerm').value.trim();
+            
+            if (!reportId || !term) {
+                alert('Digite o ID do relatório e o termo de busca');
+                return;
+            }
+            
+            testEndpoint('GET', `/reports/${reportId}/search?q=${encodeURIComponent(term)}`);
+        }
+
+        function showLoading(message) {
+            const html = `
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <div class="flex items-center">
+                        <div class="loading-spinner mr-3"></div>
+                        <span class="font-semibold text-blue-700">${message}</span>
+                    </div>
+                </div>
+            `;
+            addResult(html);
+        }
+
+        function showSuccess(message, data, duration) {
+            const size = JSON.stringify(data).length;
+            const html = `
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-bold text-green-700">✅ ${message}</span>
+                        <div class="flex gap-2">
+                            ${duration ? `<span class="badge badge-info">${duration}ms</span>` : ''}
+                            <span class="badge badge-success">${(size / 1024).toFixed(2)} KB</span>
+                        </div>
+                    </div>
+                    <div class="json-viewer bg-white p-3 rounded border border-green-200 mt-2">
+                        <pre class="text-xs">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            addResult(html);
+        }
+
+        function showError(message, data, duration) {
+            const html = `
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-bold text-red-700">❌ ${message}</span>
+                        ${duration ? `<span class="badge badge-error">${duration}ms</span>` : ''}
+                    </div>
+                    <div class="json-viewer bg-white p-3 rounded border border-red-200 mt-2">
+                        <pre class="text-xs">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            addResult(html);
+        }
+
+        function showWarning(message, data) {
+            const html = `
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                    <div class="font-bold text-yellow-700 mb-2">⚠️ ${message}</div>
+                    <div class="json-viewer bg-white p-3 rounded border border-yellow-200 mt-2">
+                        <pre class="text-xs">${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            addResult(html);
+        }
+
+        function addResult(html) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            results.insertBefore(div.firstElementChild, results.firstChild);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testCount = 0;
+        }
+
+        function showApiConfig() {
+            const config = document.getElementById('apiConfig');
+            const input = document.getElementById('apiUrlInput');
+            config.classList.toggle('hidden');
+            input.value = API_BASE;
+        }
+
+        function updateApiUrl() {
+            const input = document.getElementById('apiUrlInput');
+            const newUrl = input.value.trim();
+            
+            if (!newUrl) {
+                alert('Digite uma URL válida');
+                return;
+            }
+            
+            API_BASE = newUrl;
+            localStorage.setItem('apiBaseUrl', newUrl);
+            document.getElementById('apiUrlBadge').textContent = newUrl;
+            document.getElementById('apiConfig').classList.add('hidden');
+            
+            clearResults();
+            checkServerStatus();
+        }
+
+        function resetApiUrl() {
+            API_BASE = 'http://localhost:3000';
+            localStorage.removeItem('apiBaseUrl');
+            document.getElementById('apiUrlBadge').textContent = API_BASE;
+            document.getElementById('apiUrlInput').value = API_BASE;
+            document.getElementById('apiConfig').classList.add('hidden');
+            
+            clearResults();
+            checkServerStatus();
+        }
+
+        // Auto-check status on load
+        window.addEventListener('load', () => {
+            document.getElementById('apiUrlBadge').textContent = API_BASE;
+            document.getElementById('apiUrlInput').value = API_BASE;
+            setTimeout(checkServerStatus, 500);
+        });
+    </script>
+</body>
+</html>
