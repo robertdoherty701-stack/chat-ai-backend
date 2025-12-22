@@ -4,33 +4,57 @@
 
 Este guia mostra como integrar o **sheets-loader.cjs** com o sistema de cache multi-camadas e logging já existente.
 
+**✨ Atualização:** Sistema expandido para **12 relatórios** organizados em **6 categorias** (94,060 linhas totais).
+
+## 📊 Relatórios Disponíveis
+
+### Distribuição por Categoria
+
+| Categoria | Qtd | Relatórios | Linhas Totais |
+|-----------|-----|------------|---------------|
+| 👥 **Clientes** | 1 | Novos Clientes | ~1,562 |
+| 📦 **Produtos** | 2 | Queijo do Reino, Mix de Produtos | ~3,959 |
+| 🗺️ **Cobertura** | 2 | Não Cobertos Cliente/Fornecedor | ~66,661 |
+| 📊 **MSL** | 5 | DANONE, OTG, MINI, SUPER, Consolidado | ~18,754 |
+| 💰 **Vendas** | 1 | Vendas por Vendedor | ~1,562 |
+| 💳 **Financeiro** | 1 | Clientes Inadimplentes | ~1,562 |
+
+**Total: 12 relatórios | 94,060 linhas | Tempo de carga: ~22s**
+
 ## 🏗️ Arquitetura Atual
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    GOOGLE SHEETS (8 relatórios)              │
-│  leads | queijo | nao_cobertos_cli | nao_cobertos_forn |    │
-│  msl_danone | msl_otg | msl_mini | msl_super               │
+│                    GOOGLE SHEETS (12 relatórios)             │
+│  👥 Clientes (1) | 📦 Produtos (2) | 🗺️ Cobertura (2)     │
+│  📊 MSL (5) | 💰 Vendas (1) | 💳 Financeiro (1)           │
+│                     94,060 linhas totais                     │
 └─────────────────────────────────────────────────────────────┘
                             ↓
                    sheets-loader.cjs
               (Retry logic + CSV parser)
+          + Helper functions (getReportsByCategory)
+          + Metadados (categoria, descrição)
                             ↓
-           ┌────────────────────────────────┐
-           │  Cache em Memória (Node.js)    │
-           │  reportDataCache                │
-           └────────────────────────────────┘
+           ┌────────────────────────────────────┐
+           │  Cache em Memória (Node.js)        │
+           │  reportDataCache                   │
+           └────────────────────────────────────┘
                             ↓
               ┌──────────────────────────┐
               │  proxy-cache.cjs         │
               │  (porta 3000)            │
               │  + SQLite cache          │
               │  + failure-log.cjs       │
+              │  + Endpoints de categoria│
+              │    /api/reports          │
+              │    /api/reports/categories│
               └──────────────────────────┘
                             ↓
               ┌──────────────────────────┐
               │  Frontend (porta 8080)   │
               │  + cache-frontend.js     │
+              │  + Filtros de categoria  │
               └──────────────────────────┘
 ```
 
@@ -245,12 +269,96 @@ node cron-sheets-loader.cjs
 
 | Fonte          | Latência | Cache TTL | Linhas    | Uso     |
 |----------------|----------|-----------|-----------|---------|
-| Memory (Node)  | ~1ms     | ∞         | 87,812    | Leitura |
-| SQLite (Node)  | ~50ms    | 1h        | 87,812    | Backup  |
-| Google Sheets  | ~19s     | -         | 87,812    | Origem  |
+| Memory (Node)  | ~1ms     | ∞         | 94,060    | Leitura |
+| SQLite (Node)  | ~50ms    | 1h        | 94,060    | Backup  |
+| Google Sheets  | ~22s     | -         | 94,060    | Origem  |
 | Python Backend | ~200ms   | 24h       | 34,434    | Legacy  |
 
+**Nota:** Performance atualizada após expansão de 8 para 12 relatórios (+6,248 linhas).
+
+## 🆕 Novos Endpoints de Categorias
+
+### GET /api/reports
+Lista todos os relatórios com filtro opcional por categoria.
+
+**Parâmetros de query:**
+- `category` (opcional): Filtra por categoria específica
+
+**Exemplo:**
+```javascript
+// Listar todos
+fetch('http://localhost:3000/api/reports')
+
+// Filtrar por MSL
+fetch('http://localhost:3000/api/reports?category=msl')
+```
+
+**Resposta:**
+```json
+{
+  "total": 12,
+  "categories": ["clientes", "produtos", "cobertura", "msl", "vendas", "financeiro"],
+  "reports": [
+    {
+      "id": "leads",
+      "label": "Novos Clientes",
+      "category": "clientes",
+      "description": "Relatório de novos clientes",
+      "cached": true,
+      "rows": 1562
+    }
+    // ... mais relatórios
+  ],
+  "lastLoad": "2025-12-21T10:30:00.000Z"
+}
+```
+
+### GET /api/reports/categories
+Retorna relatórios agrupados por categoria.
+
+**Exemplo:**
+```javascript
+fetch('http://localhost:3000/api/reports/categories')
+```
+
+**Resposta:**
+```json
+{
+  "total": 6,
+  "categories": [
+    {
+      "name": "clientes",
+      "reports": [
+        {
+          "id": "leads",
+          "label": "Novos Clientes",
+          "description": "Relatório de novos clientes",
+          "cached": true,
+          "rows": 1562
+        }
+      ]
+    },
+    {
+      "name": "msl",
+      "reports": [
+        {
+          "id": "msl_danone",
+          "label": "MSL DANONE",
+          "description": "MSL DANONE completo",
+          "cached": true,
+          "rows": 15668
+        }
+        // ... mais 4 relatórios MSL
+      ]
+    }
+    // ... mais categorias
+  ]
+}
+```
+
 ## 🎯 Recomendação
+
+**✅ IMPLEMENTADO - Opção 2 (Híbrido)** com expansão de categorias
 
 **Use Opção 1** se:
 - ✅ Quer abandonar Python backend
@@ -258,9 +366,10 @@ node cron-sheets-loader.cjs
 - ✅ Quer tudo em Node.js
 
 **Use Opção 2** se:
-- ✅ Quer manter Python para outras APIs
+- ✅ Quer manter Python para outras APIs ← **ATUAL**
 - ✅ Migração gradual
 - ✅ Precisa de compatibilidade
+- ✅ Quer endpoints de categoria ← **NOVO**
 
 **Use Opção 3** se:
 - ✅ Quer recarregamento automático em background
@@ -269,8 +378,13 @@ node cron-sheets-loader.cjs
 
 ## 🚀 Próximos Passos
 
-1. **Escolher opção de integração**
-2. **Atualizar proxy-cache.cjs**
+1. ~~**Escolher opção de integração**~~ ✅ Opção 2 implementada
+2. ~~**Atualizar proxy-cache.cjs**~~ ✅ Endpoints /api/sheets-direct adicionados
+3. ~~**Expandir para 12 relatórios**~~ ✅ 4 novos relatórios adicionados
+4. ~~**Adicionar sistema de categorias**~~ ✅ 6 categorias implementadas
+5. ~~**Criar endpoints de categorias**~~ ✅ /api/reports e /api/reports/categories
+6. **Integrar frontend com filtros de categoria**
+7. **Atualizar dashboard com visualização por categoria**
 3. **Testar com frontend**
 4. **Validar no dashboard de monitoramento**
 5. **Deploy em produção**

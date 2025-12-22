@@ -240,7 +240,17 @@
 
         <div class="controls">
             <button class="refresh-btn" onclick="loadDashboard()">🔄 Atualizar Agora</button>
+            <select class="refresh-btn" id="categoryFilter" onchange="filterByCategory()" style="padding: 10px 15px; cursor: pointer;">
+                <option value="">📂 Todas as Categorias</option>
+                <option value="clientes">👥 Clientes</option>
+                <option value="produtos">📦 Produtos</option>
+                <option value="cobertura">🗺️ Cobertura</option>
+                <option value="msl">📊 MSL</option>
+                <option value="vendas">💰 Vendas</option>
+                <option value="financeiro">💳 Financeiro</option>
+            </select>
             <span class="auto-refresh" id="autoRefreshStatus">⏱️ Auto-refresh: 30s</span>
+            <span class="auto-refresh" id="categoryDisplay"></span>
         </div>
 
         <div id="errorContainer"></div>
@@ -626,6 +636,67 @@
             autoRefreshInterval = setInterval(() => {
                 loadDashboard();
             }, 30000);
+        }
+
+        // Filtrar por categoria
+        let currentCategory = '';
+        let allReportsData = {};
+
+        async function filterByCategory() {
+            const select = document.getElementById('categoryFilter');
+            currentCategory = select.value;
+            
+            try {
+                // Busca relatórios da categoria selecionada
+                const url = currentCategory 
+                    ? `${PROXY_URL}/api/reports?category=${currentCategory}`
+                    : `${PROXY_URL}/api/reports`;
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Erro ao buscar relatórios');
+                
+                const data = await response.json();
+                allReportsData = data;
+                
+                // Atualiza display de categoria
+                const displayEl = document.getElementById('categoryDisplay');
+                if (currentCategory) {
+                    const categoryIcons = {
+                        clientes: '👥',
+                        produtos: '📦',
+                        cobertura: '🗺️',
+                        msl: '📊',
+                        vendas: '💰',
+                        financeiro: '💳'
+                    };
+                    displayEl.textContent = `${categoryIcons[currentCategory]} ${data.total} relatórios`;
+                    displayEl.style.background = 'rgba(76, 175, 80, 0.3)';
+                } else {
+                    displayEl.textContent = '';
+                    displayEl.style.background = '';
+                }
+                
+                // Recarrega dashboard com filtro aplicado
+                loadDashboard();
+                
+            } catch (error) {
+                console.error('Erro ao filtrar:', error);
+                alert('Erro ao filtrar por categoria');
+            }
+        }
+
+        // Carrega lista de categorias disponíveis
+        async function loadCategoriesInfo() {
+            try {
+                const response = await fetch(`${PROXY_URL}/api/reports/categories`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.categories;
+                }
+            } catch (e) {
+                console.warn('Não foi possível carregar categorias:', e);
+            }
+            return [];
         }
 
         // Inicialização

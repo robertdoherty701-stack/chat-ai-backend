@@ -1148,6 +1148,83 @@
             return null;
         };
         
+        // ========== NOVOS ENDPOINTS DE CATEGORIAS ==========
+        
+        // Buscar todos os relatórios disponíveis (com filtro opcional de categoria)
+        window.buscarRelatorios = async function(categoria = null) {
+            try {
+                const url = categoria 
+                    ? `${API_URL}/api/reports?category=${categoria}`
+                    : `${API_URL}/api/reports`;
+                    
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`✅ ${data.total} relatórios carregados${categoria ? ` (categoria: ${categoria})` : ''}`);
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar relatórios:', error);
+                throw error;
+            }
+        };
+        
+        // Buscar categorias disponíveis com relatórios agrupados
+        window.buscarCategorias = async function() {
+            try {
+                const response = await fetch(`${API_URL}/api/reports/categories`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`✅ ${data.total} categorias carregadas:`, data.categories.map(c => c.name).join(', '));
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar categorias:', error);
+                throw error;
+            }
+        };
+        
+        // Buscar relatório específico usando endpoint direto Node.js
+        window.buscarRelatorioDireto = async function(reportId) {
+            try {
+                const response = await fetch(`${API_URL}/api/sheets-direct/${reportId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`✅ Relatório ${reportId} carregado (${data.count} linhas, fonte: ${data.source})`);
+                return data;
+            } catch (error) {
+                console.error(`Erro ao buscar relatório ${reportId}:`, error);
+                throw error;
+            }
+        };
+        
+        // Filtrar relatórios por múltiplas categorias
+        window.buscarRelatoriosPorCategorias = async function(categorias) {
+            try {
+                const promises = categorias.map(cat => window.buscarRelatorios(cat));
+                const results = await Promise.all(promises);
+                
+                // Combina todos os relatórios
+                const todosRelatorios = results.flatMap(r => r.reports);
+                
+                return {
+                    total: todosRelatorios.length,
+                    categories: categorias,
+                    reports: todosRelatorios
+                };
+            } catch (error) {
+                console.error('Erro ao buscar relatórios por categorias:', error);
+                throw error;
+            }
+        };
+        
         // Exibir dados de planilha no chat
         window.exibirDadosSheet = function(data, containerId = 'chatMessages') {
             if (!data || !data.data || data.data.length === 0) {
