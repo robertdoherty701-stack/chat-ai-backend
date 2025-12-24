@@ -4,7 +4,7 @@
 class AdminDashboard {
     constructor() {
         this.API_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:8000' 
+            ? 'http://localhost:3000' 
             : 'https://sua-api.render.com';
         this.metrics = [];
         this.userRole = 'admin';
