@@ -2633,6 +2633,12 @@
         window.carregarDadosDoSheets = async function() {
             console.log("📥 Iniciando carregamento via API...");
             
+            // Garantir que o cache existe
+            if (!window.reportDataCache) {
+                window.reportDataCache = {};
+                console.log('📦 Inicializando reportDataCache');
+            }
+            
             // Mostrar indicador de carregamento no chat
             const chatMessages = document.getElementById('chatMessages');
             if (chatMessages) {
@@ -2721,6 +2727,12 @@
             
             // SALVAR no localStorage para persistência
             try {
+                const reportCount = Object.keys(window.reportDataCache).length;
+                const totalRows = Object.values(window.reportDataCache).reduce((sum, data) => sum + (data?.length || 0), 0);
+                
+                console.log(`📊 Total carregado: ${reportCount} relatórios, ${totalRows} linhas`);
+                console.log('📦 Cache:', Object.keys(window.reportDataCache));
+                
                 localStorage.setItem('googleSheetsCache', JSON.stringify(window.reportDataCache));
                 localStorage.setItem('googleSheetsLastUpdate', new Date().toISOString());
                 console.log('💾 Dados salvos no localStorage');
