@@ -32,14 +32,14 @@ const REPORTS_CONFIG = [
     
     // Cobertura
     { 
-        id: 'nao_cobertos_cli', 
+        id: 'nao_cobertos_clientes', 
         label: 'Não Cobertos (Cliente)',
         category: 'cobertura',
         description: 'Clientes sem cobertura de vendas',
         url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=953923858&single=true&output=csv' 
     },
     { 
-        id: 'nao_cobertos_forn', 
+        id: 'nao_cobertos_fornecedor', 
         label: 'Não Cobertos (Fornecedor)',
         category: 'cobertura',
         description: 'Fornecedores sem cobertura de vendas',
