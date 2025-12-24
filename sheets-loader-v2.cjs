@@ -7,7 +7,7 @@ const { REPORT_SCHEMAS, validateReportSchema, formatValidationResult } = require
 const REPORTS_CONFIG = [
     // Clientes
     { 
-        id: 'leads', 
+        id: 'novos_clientes', 
         label: 'Novos Clientes',
         category: 'clientes',
         description: 'Lista de novos clientes potenciais',
@@ -16,7 +16,7 @@ const REPORTS_CONFIG = [
     
     // Produtos
     { 
-        id: 'queijo', 
+        id: 'queijo_reino', 
         label: 'Queijo do Reino',
         category: 'produtos',
         description: 'Vendas de Queijo do Reino por cliente',
