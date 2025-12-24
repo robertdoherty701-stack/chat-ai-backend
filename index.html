@@ -2658,6 +2658,13 @@
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const API_BASE = isLocalhost ? 'http://localhost:3000' : null;
             
+            console.log('🔍 Ambiente detectado:', {
+                hostname: window.location.hostname,
+                isLocalhost,
+                API_BASE,
+                usarAPI: !!API_BASE
+            });
+            
             if (API_BASE) {
                 // Carregar via API
                 try {
