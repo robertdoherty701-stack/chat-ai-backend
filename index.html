@@ -2679,7 +2679,11 @@
                     
                     if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
                     
-                    const reports = await response.json();
+                    const responseData = await response.json();
+                    
+                    // A API retorna {total, category, reports: Array}
+                    const reports = responseData.reports || responseData;
+                    console.log(`📊 ${reports.length} relatórios encontrados`);
                     
                     // Carregar dados de cada relatório
                     for (const report of reports) {
@@ -2688,6 +2692,7 @@
                             if (dataResponse.ok) {
                                 const data = await dataResponse.json();
                                 window.reportDataCache[report.id] = data;
+                                console.log(`✅ API: ${report.label} (${data.length} linhas)`);
                                 console.log(`✅ API: ${report.label} (${data.length} linhas)`);
                             }
                         } catch (err) {
