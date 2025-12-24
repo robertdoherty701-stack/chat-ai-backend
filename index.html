@@ -909,7 +909,7 @@
         
         const API_URL = isLocal
             ? 'http://localhost:3000' 
-            : 'https://sua-api.render.com';  // Alterar para URL de produção
+            : 'https://chat-ai-backend-1.onrender.com';
         
         let authToken = localStorage.getItem('api_token');
         let useBackend = localStorage.getItem('use_backend') === 'true';
@@ -2660,9 +2660,9 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
             
-            // Usar API local se disponível, senão Google Sheets
+            // Usar API local se disponível, senão API de produção
             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const API_BASE = isLocalhost ? 'http://localhost:3000' : null;
+            const API_BASE = isLocalhost ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
             
             console.log('🔍 Ambiente detectado:', {
                 hostname: window.location.hostname,

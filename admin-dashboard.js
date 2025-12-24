@@ -5,7 +5,7 @@ class AdminDashboard {
     constructor() {
         this.API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000' 
-            : 'https://sua-api.render.com';
+            : 'https://chat-ai-backend-1.onrender.com';
         this.metrics = [];
         this.userRole = 'admin';
     }
