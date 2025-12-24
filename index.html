@@ -2631,7 +2631,7 @@
         // 3. FUNÇÃO PRINCIPAL DE REQUISIÇÃO (FETCH) - GLOBAL
         // =================================================================================
         window.carregarDadosDoSheets = async function() {
-            console.log("📥 Iniciando download das planilhas do Google Sheets...");
+            console.log("📥 Iniciando carregamento via API...");
             
             // Mostrar indicador de carregamento no chat
             const chatMessages = document.getElementById('chatMessages');
@@ -2645,7 +2645,7 @@
                         <div class="message-text">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div class="loading" style="width: 20px; height: 20px;"></div>
-                                <span>Carregando relatórios do Google Sheets...</span>
+                                <span>Carregando relatórios via API...</span>
                             </div>
                         </div>
                     </div>
@@ -2654,24 +2654,63 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
             
-            const promises = REPORTS_CONFIG.map(async (config) => {
+            // Usar API local se disponível, senão Google Sheets
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const API_BASE = isLocalhost ? 'http://localhost:3000' : null;
+            
+            if (API_BASE) {
+                // Carregar via API
                 try {
-                    // cache: "no-store" garante que não pegaremos uma versão velha em cache
-                    const response = await fetch(config.url, { cache: "no-store" });
+                    console.log('🔄 Carregando via API:', API_BASE);
+                    const response = await fetch(`${API_BASE}/reports`, { cache: "no-store" });
                     
                     if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
                     
-                    const text = await response.text();
-                    window.reportDataCache[config.id] = window.parseRobustCSV(text);
+                    const reports = await response.json();
                     
-                    console.log(`✅ Sucesso: ${config.label} (${window.reportDataCache[config.id].length} linhas)`);
+                    // Carregar dados de cada relatório
+                    for (const report of reports) {
+                        try {
+                            const dataResponse = await fetch(`${API_BASE}/reports/${report.id}/data`, { cache: "no-store" });
+                            if (dataResponse.ok) {
+                                const data = await dataResponse.json();
+                                window.reportDataCache[report.id] = data;
+                                console.log(`✅ API: ${report.label} (${data.length} linhas)`);
+                            }
+                        } catch (err) {
+                            console.error(`❌ Erro ao carregar ${report.id}:`, err);
+                            window.reportDataCache[report.id] = [];
+                        }
+                    }
                 } catch (err) {
-                    console.error(`❌ Erro em ${config.label}:`, err);
-                    window.reportDataCache[config.id] = [];
+                    console.error('❌ Erro na API, tentando Google Sheets:', err);
+                    // Fallback para Google Sheets se API falhar
+                    await carregarViaGoogleSheets();
                 }
-            });
+            } else {
+                // Carregar via Google Sheets
+                await carregarViaGoogleSheets();
+            }
+            
+            async function carregarViaGoogleSheets() {
+                const promises = REPORTS_CONFIG.map(async (config) => {
+                    try {
+                        const response = await fetch(config.url, { cache: "no-store" });
+                        
+                        if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+                        
+                        const text = await response.text();
+                        window.reportDataCache[config.id] = window.parseRobustCSV(text);
+                        
+                        console.log(`✅ Sheets: ${config.label} (${window.reportDataCache[config.id].length} linhas)`);
+                    } catch (err) {
+                        console.error(`❌ Erro em ${config.label}:`, err);
+                        window.reportDataCache[config.id] = [];
+                    }
+                });
 
-            await Promise.all(promises);
+                await Promise.all(promises);
+            }
             
             // SALVAR no localStorage para persistência
             try {
