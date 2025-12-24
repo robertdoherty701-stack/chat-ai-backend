@@ -253,10 +253,21 @@ class AdminDashboard {
                                 </svg>
                             </div>
                             <div style="flex: 1;">
-                                <p style="font-size: 14px; color: #64748B; margin-bottom: 8px;">Upload Planilha</p>
+                                <p style="font-size: 14px; color: #64748B; margin-bottom: 8px;">Upload de Arquivo</p>
                                 <input type="file" id="uploadInput" accept=".xlsx,.xls,.csv" 
-                                    style="font-size: 12px; padding: 6px 12px; border: 1px solid #DC2626; border-radius: 6px; cursor: pointer;">
+                                    style="display: none;">
+                                <button onclick="document.getElementById('uploadInput').click()" 
+                                    style="width: 100%; padding: 8px 16px; background: #DC2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                                    📎 Escolher Arquivo
+                                </button>
+                                <p id="fileName" style="font-size: 11px; color: #64748B; margin-top: 6px; min-height: 16px;"></p>
                             </div>
+                            <script>
+                                document.getElementById('uploadInput').addEventListener('change', function(e) {
+                                    const fileName = e.target.files[0]?.name || 'Nenhum arquivo selecionado';
+                                    document.getElementById('fileName').textContent = fileName;
+                                });
+                            </script>
                         </div>
                     </div>
                     ` : ''}
