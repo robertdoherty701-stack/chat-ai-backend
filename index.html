@@ -1374,6 +1374,22 @@
                 
                 // Carregar dados do Google Sheets ou API
                 setTimeout(() => {
+                    // Definir configuração dos relatórios
+                    const reportsConfig = [
+                        { id: 'novos_clientes', label: 'Novos Clientes', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=766085959&single=true&output=csv' },
+                        { id: 'queijo_reino', label: 'Queijo do Reino', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1699572652&single=true&output=csv' },
+                        { id: 'vendas', label: 'Vendas', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=959742330&single=true&output=csv' },
+                        { id: 'cobertura', label: 'Cobertura', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv' },
+                        { id: 'nao_cobertos_clientes', label: 'Não Cobertos (Cliente)', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=953923858&single=true&output=csv' },
+                        { id: 'nao_cobertos_fornecedor', label: 'Não Cobertos (Fornecedor)', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1981950621&single=true&output=csv' },
+                        { id: 'msl_danone', label: 'MSL DANONE', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=402511992&single=true&output=csv' },
+                        { id: 'msl_coca', label: 'MSL COCA', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1869622916&single=true&output=csv' },
+                        { id: 'msl_mondelez', label: 'MSL MONDELEZ', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2060595370&single=true&output=csv' },
+                        { id: 'msl_unilever', label: 'MSL UNILEVER', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2057551418&single=true&output=csv' },
+                        { id: 'msl_nestle', label: 'MSL NESTLE', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1932094050&single=true&output=csv' },
+                        { id: 'exp', label: 'EXP', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv' }
+                    ];
+                    
                     // Adicionar botão de carregamento manual
                     const loadBtn = document.createElement('button');
                     loadBtn.id = 'btnCarregarRelatorios';
@@ -1392,7 +1408,7 @@
                             console.log('🔄 Carregando relatórios do Google Sheets...');
                             
                             // Carrega todos os relatórios em paralelo
-                            const promises = REPORTS_CONFIG.map(async (config) => {
+                            const promises = reportsConfig.map(async (config) => {
                                 try {
                                     const response = await fetch(config.url, { cache: "no-store" });
                                     
