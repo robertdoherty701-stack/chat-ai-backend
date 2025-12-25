@@ -1372,8 +1372,43 @@
                     }
                 }
                 
-                // Carregar dados do Google Sheets
+                // Carregar dados do Google Sheets ou API
                 setTimeout(() => {
+                    // Adicionar botão de carregamento manual
+                    const loadBtn = document.createElement('button');
+                    loadBtn.id = 'btnCarregarRelatorios';
+                    loadBtn.innerHTML = '🔄 CARREGAR RELATÓRIOS';
+                    loadBtn.style.cssText = 'position:fixed;top:70px;right:20px;z-index:9999;padding:12px 24px;background:linear-gradient(135deg,#10B981,#059669);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 12px rgba(16,185,129,0.4);transition:all 0.3s;';
+                    loadBtn.onmouseover = () => { loadBtn.style.transform = 'translateY(-2px)'; loadBtn.style.boxShadow = '0 6px 16px rgba(16,185,129,0.5)'; };
+                    loadBtn.onmouseout = () => { loadBtn.style.transform = 'translateY(0)'; loadBtn.style.boxShadow = '0 4px 12px rgba(16,185,129,0.4)'; };
+                    loadBtn.onclick = async function() {
+                        this.disabled = true;
+                        this.innerHTML = '⏳ Carregando...';
+                        this.style.background = '#6B7280';
+                        try {
+                            window.reportDataCache = {};
+                            const isLocal = window.location.hostname === 'localhost';
+                            const apiUrl = isLocal ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
+                            const res = await fetch(`${apiUrl}/reports`).then(r => r.json());
+                            const reports = res.reports || res;
+                            for(const r of reports) {
+                                const d = await fetch(`${apiUrl}/reports/${r.id}/data`).then(x => x.json());
+                                window.reportDataCache[r.id] = d;
+                            }
+                            this.innerHTML = '✅ CONCLUÍDO!';
+                            this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+                            setTimeout(() => this.remove(), 2000);
+                            alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados! Agora você pode abrir os relatórios.');
+                        } catch(err) {
+                            this.innerHTML = '❌ ERRO - Clique para tentar novamente';
+                            this.style.background = '#EF4444';
+                            this.disabled = false;
+                            console.error('Erro:', err);
+                        }
+                    };
+                    document.body.appendChild(loadBtn);
+                    
+                    // Tentar carregar automaticamente também
                     if (typeof window.carregarDadosDoSheets === 'function') {
                         window.carregarDadosDoSheets();
                     }
