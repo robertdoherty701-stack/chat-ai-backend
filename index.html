@@ -1385,55 +1385,65 @@
                         this.disabled = true;
                         this.innerHTML = '⏳ Carregando...';
                         this.style.background = '#6B7280';
+                        window.reportDataCache = {};
+                        
+                        // Tenta API primeiro, depois fallback para Google Sheets
+                        const isLocal = window.location.hostname === 'localhost';
+                        const apiUrl = isLocal ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
+                        
+                        console.log('🔄 Tentando carregar da API:', apiUrl);
+                        
                         try {
-                            window.reportDataCache = {};
-                            const isLocal = window.location.hostname === 'localhost';
-                            const apiUrl = isLocal ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
-                            
-                            // Se não for local, acorda a API primeiro (Render dorme no plano gratuito)
-                            if (!isLocal) {
-                                console.log('☕ Acordando API do Render...');
-                                this.innerHTML = '☕ Acordando API (30-60s)...';
-                                try {
-                                    await fetch(`${apiUrl}/health`, { signal: AbortSignal.timeout(60000) });
-                                } catch(e) {
-                                    console.log('⚠️ Health check demorou, mas continuando...');
-                                }
-                            }
-                            
-                            this.innerHTML = '⏳ Carregando dados...';
-                            console.log('🔄 Carregando de:', apiUrl);
+                            // Timeout de 10 segundos para a API
+                            const controller = new AbortController();
+                            const timeout = setTimeout(() => controller.abort(), 10000);
                             
                             const res = await fetch(`${apiUrl}/reports`, { 
-                                signal: AbortSignal.timeout(60000) 
+                                signal: controller.signal 
                             }).then(r => {
+                                clearTimeout(timeout);
                                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                                 return r.json();
                             });
                             
                             const reports = res.reports || res;
-                            console.log('📊 Carregando', reports.length, 'relatórios...');
+                            console.log('📊 API OK! Carregando', reports.length, 'relatórios...');
                             
                             for(const r of reports) {
-                                const d = await fetch(`${apiUrl}/reports/${r.id}/data`, {
-                                    signal: AbortSignal.timeout(60000)
-                                }).then(x => x.json());
+                                const d = await fetch(`${apiUrl}/reports/${r.id}/data`).then(x => x.json());
                                 window.reportDataCache[r.id] = d;
                                 console.log(`✅ ${r.id}:`, d.length, 'linhas');
                             }
                             
-                            console.log('🎉 Cache final:', Object.keys(window.reportDataCache));
-                            
                             this.innerHTML = '✅ CONCLUÍDO!';
                             this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
                             setTimeout(() => this.remove(), 2000);
-                            alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados! Agora você pode abrir os relatórios.');
-                        } catch(err) {
-                            console.error('❌ Erro detalhado:', err);
-                            this.innerHTML = '❌ ERRO - Clique novamente';
-                            this.style.background = '#EF4444';
-                            this.disabled = false;
-                            alert('❌ Erro ao carregar: ' + err.message + '\n\nClique no botão novamente para tentar.');
+                            alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados via API! Agora você pode abrir os relatórios.');
+                            
+                        } catch(apiErr) {
+                            console.warn('⚠️ API falhou:', apiErr.message);
+                            console.log('📡 Tentando Google Sheets como fallback...');
+                            this.innerHTML = '📡 Carregando do Google...';
+                            
+                            try {
+                                // Carrega direto do Google Sheets
+                                const sheetsData = await window.carregarDadosSheets();
+                                if (sheetsData && Object.keys(sheetsData).length > 0) {
+                                    window.reportDataCache = sheetsData;
+                                    this.innerHTML = '✅ CONCLUÍDO!';
+                                    this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+                                    setTimeout(() => this.remove(), 2000);
+                                    alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados via Google Sheets! Agora você pode abrir os relatórios.');
+                                } else {
+                                    throw new Error('Google Sheets retornou vazio');
+                                }
+                            } catch(sheetsErr) {
+                                console.error('❌ Fallback também falhou:', sheetsErr);
+                                this.innerHTML = '❌ ERRO - Clique novamente';
+                                this.style.background = '#EF4444';
+                                this.disabled = false;
+                                alert('❌ Erro ao carregar dados:\n\nAPI: ' + apiErr.message + '\nGoogle: ' + sheetsErr.message + '\n\nTente novamente em alguns segundos.');
+                            }
                         }
                     };
                     document.body.appendChild(loadBtn);
