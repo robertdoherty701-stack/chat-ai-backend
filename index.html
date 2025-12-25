@@ -1387,63 +1387,67 @@
                         this.style.background = '#6B7280';
                         window.reportDataCache = {};
                         
-                        // Tenta API primeiro, depois fallback para Google Sheets
+                        // Tenta API primeiro (se for local), senão vai direto pro Google Sheets
                         const isLocal = window.location.hostname === 'localhost';
-                        const apiUrl = isLocal ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
+                        const apiUrl = 'http://localhost:3000';
                         
-                        console.log('🔄 Tentando carregar da API:', apiUrl);
+                        // Se for local, tenta API. Se for produção, usa Google direto (API Render instável)
+                        if (isLocal) {
+                            console.log('🔄 Tentando carregar da API local:', apiUrl);
+                            try {
+                                const controller = new AbortController();
+                                const timeout = setTimeout(() => controller.abort(), 5000);
+                                
+                                const res = await fetch(`${apiUrl}/reports`, { 
+                                    signal: controller.signal 
+                                }).then(r => {
+                                    clearTimeout(timeout);
+                                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                                    return r.json();
+                                });
+                                
+                                const reports = res.reports || res;
+                                console.log('📊 API OK! Carregando', reports.length, 'relatórios...');
+                                
+                                for(const r of reports) {
+                                    const d = await fetch(`${apiUrl}/reports/${r.id}/data`).then(x => x.json());
+                                    window.reportDataCache[r.id] = d;
+                                    console.log(`✅ ${r.id}:`, d.length, 'linhas');
+                                }
+                                
+                                this.innerHTML = '✅ CONCLUÍDO!';
+                                this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+                                setTimeout(() => this.remove(), 2000);
+                                alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados via API local!');
+                                return;
+                            } catch(apiErr) {
+                                console.warn('⚠️ API local falhou:', apiErr.message, '- usando Google Sheets');
+                            }
+                        }
+                        
+                        // Produção ou fallback: usa Google Sheets direto
+                        console.log('📡 Carregando via Google Sheets...');
+                        this.innerHTML = '📡 Google Sheets...';
                         
                         try {
-                            // Timeout de 10 segundos para a API
-                            const controller = new AbortController();
-                            const timeout = setTimeout(() => controller.abort(), 10000);
+                            // Carrega direto do Google Sheets
+                            console.log('📡 Carregando via Google Sheets...');
+                            await carregarViaGoogleSheets();
                             
-                            const res = await fetch(`${apiUrl}/reports`, { 
-                                signal: controller.signal 
-                            }).then(r => {
-                                clearTimeout(timeout);
-                                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                                return r.json();
-                            });
-                            
-                            const reports = res.reports || res;
-                            console.log('📊 API OK! Carregando', reports.length, 'relatórios...');
-                            
-                            for(const r of reports) {
-                                const d = await fetch(`${apiUrl}/reports/${r.id}/data`).then(x => x.json());
-                                window.reportDataCache[r.id] = d;
-                                console.log(`✅ ${r.id}:`, d.length, 'linhas');
+                            if (window.reportDataCache && Object.keys(window.reportDataCache).length > 0) {
+                                this.innerHTML = '✅ CONCLUÍDO!';
+                                this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
+                                setTimeout(() => this.remove(), 2000);
+                                alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados via Google Sheets! Agora você pode abrir os relatórios.');
+                            } else {
+                                throw new Error('Google Sheets retornou vazio');
                             }
-                            
-                            this.innerHTML = '✅ CONCLUÍDO!';
-                            this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
-                            setTimeout(() => this.remove(), 2000);
-                            alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados via API! Agora você pode abrir os relatórios.');
-                            
-                        } catch(apiErr) {
-                            console.warn('⚠️ API falhou:', apiErr.message);
-                            console.log('📡 Tentando Google Sheets como fallback...');
-                            this.innerHTML = '📡 Carregando do Google...';
-                            
-                            try {
-                                // Carrega direto do Google Sheets
-                                const sheetsData = await window.carregarDadosSheets();
-                                if (sheetsData && Object.keys(sheetsData).length > 0) {
-                                    window.reportDataCache = sheetsData;
-                                    this.innerHTML = '✅ CONCLUÍDO!';
-                                    this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
-                                    setTimeout(() => this.remove(), 2000);
-                                    alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados via Google Sheets! Agora você pode abrir os relatórios.');
-                                } else {
-                                    throw new Error('Google Sheets retornou vazio');
-                                }
-                            } catch(sheetsErr) {
-                                console.error('❌ Fallback também falhou:', sheetsErr);
-                                this.innerHTML = '❌ ERRO - Clique novamente';
-                                this.style.background = '#EF4444';
-                                this.disabled = false;
-                                alert('❌ Erro ao carregar dados:\n\nAPI: ' + apiErr.message + '\nGoogle: ' + sheetsErr.message + '\n\nTente novamente em alguns segundos.');
-                            }
+                        } catch(sheetsErr) {
+                            console.error('❌ Erro ao carregar Google Sheets:', sheetsErr);
+                            this.innerHTML = '❌ ERRO - Clique novamente';
+                            this.style.background = '#EF4444';
+                            this.disabled = false;
+                            alert('❌ Erro ao carregar dados do Google Sheets:\n\n' + sheetsErr.message + '\n\nTente novamente em alguns segundos.');
                         }
                     };
                     document.body.appendChild(loadBtn);
