@@ -1400,16 +1400,16 @@
                     
                     // Definir configuração dos relatórios
                     const reportsConfig = [
-                        { id: 'novos_clientes', label: 'Novos Clientes', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=766085959&single=true&output=csv' },
-                        { id: 'queijo_reino', label: 'Queijo do Reino', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1699572652&single=true&output=csv' },
+                        { id: 'novos_clientes', label: 'Novos Clientes', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv' },
+                        { id: 'queijo_reino', label: 'Queijo do Reino', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv' },
                         { id: 'vendas', label: 'Vendas', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=959742330&single=true&output=csv' },
                         { id: 'cobertura', label: 'Cobertura', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1824827366&single=true&output=csv' },
                         { id: 'nao_cobertos_clientes', label: 'Não Cobertos (Cliente)', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=953923858&single=true&output=csv' },
                         { id: 'nao_cobertos_fornecedor', label: 'Não Cobertos (Fornecedor)', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1981950621&single=true&output=csv' },
                         { id: 'msl_danone', label: 'MSL DANONE', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=402511992&single=true&output=csv' },
-                        { id: 'msl_coca', label: 'MSL COCA', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1869622916&single=true&output=csv' },
+                        { id: 'msl_coca', label: 'MSL COCA', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1600393956&single=true&output=csv' },
                         { id: 'msl_mondelez', label: 'MSL MONDELEZ', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2060595370&single=true&output=csv' },
-                        { id: 'msl_unilever', label: 'MSL UNILEVER', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=2057551418&single=true&output=csv' },
+                        { id: 'msl_unilever', label: 'MSL UNILEVER', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1505932340&single=true&output=csv' },
                         { id: 'msl_nestle', label: 'MSL NESTLE', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=1932094050&single=true&output=csv' },
                         { id: 'exp', label: 'EXP', url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR9lG9sbtgRqV0PLkyjT8R9znpC9ECGurgfelIhn_q5BwgThg6SpdfE2R30obAAaawk0FIGLlBowjt_/pub?gid=0&single=true&output=csv' }
                     ];
@@ -1450,19 +1450,33 @@
 
                             await Promise.all(promises);
                             
-                            // Salva no localStorage
-                            localStorage.setItem('googleSheetsCache', JSON.stringify(window.reportDataCache));
-                            localStorage.setItem('googleSheetsLastUpdate', new Date().toISOString());
+                            // Tentar salvar no localStorage (pode falhar se dados forem muito grandes)
+                            try {
+                                localStorage.setItem('googleSheetsCache', JSON.stringify(window.reportDataCache));
+                                localStorage.setItem('googleSheetsLastUpdate', new Date().toISOString());
+                                console.log('💾 Dados salvos no localStorage');
+                            } catch (storageErr) {
+                                console.warn('⚠️ Não foi possível salvar no localStorage (dados muito grandes):', storageErr.message);
+                            }
                             
                             const totalRelatorios = Object.keys(window.reportDataCache).length;
+                            const relatoriosComDados = Object.values(window.reportDataCache).filter(d => d && d.length > 0).length;
                             const totalLinhas = Object.values(window.reportDataCache).reduce((sum, data) => sum + (data?.length || 0), 0);
                             
-                            console.log(`✅ ${totalRelatorios} relatórios carregados, ${totalLinhas} linhas`);
+                            console.log(`✅ ${relatoriosComDados}/${totalRelatorios} relatórios carregados com sucesso, ${totalLinhas} linhas`);
                             
                             this.innerHTML = '✅ CONCLUÍDO!';
                             this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
                             setTimeout(() => this.remove(), 2000);
-                            alert(`✅ ${totalRelatorios} relatórios carregados com sucesso!\n\n${totalLinhas} linhas no total.\n\nAgora você pode abrir os relatórios.`);
+                            
+                            const relatoriosFalharam = totalRelatorios - relatoriosComDados;
+                            let mensagem = `✅ ${relatoriosComDados} relatórios carregados!\n\n${totalLinhas.toLocaleString('pt-BR')} linhas no total.`;
+                            
+                            if (relatoriosFalharam > 0) {
+                                mensagem += `\n\n⚠️ ${relatoriosFalharam} relatórios falharam (verifique o console para detalhes).`;
+                            }
+                            
+                            alert(mensagem + '\n\nAgora você pode abrir os relatórios disponíveis.');
                             
                         } catch(err) {
                             console.error('❌ Erro ao carregar:', err);
