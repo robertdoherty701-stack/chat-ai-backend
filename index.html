@@ -676,6 +676,32 @@
                 padding: 10px 8px;
                 white-space: nowrap;
             }
+            
+            /* Melhorias para tabelas em mobile */
+            @media (max-width: 768px) {
+                .stats-table {
+                    font-size: 11px;
+                }
+                
+                .stats-table th,
+                .stats-table td {
+                    padding: 6px 4px;
+                    font-size: 11px;
+                }
+                
+                /* Destacar primeira coluna (geralmente ID/CNPJ) */
+                .stats-table td:first-child {
+                    position: sticky;
+                    left: 0;
+                    background: white;
+                    font-weight: 600;
+                    z-index: 1;
+                }
+                
+                .stats-table tr:nth-child(even) td:first-child {
+                    background: #f9fafb;
+                }
+            }
 
             /* Botões maiores para mobile */
             .btn-primary {
@@ -4038,28 +4064,32 @@
             
             // Mostrar tabela com dados
             response += `<strong>Resultados:</strong>\n`;
-            response += `<div style="background: white; padding: 12px; border-radius: 8px; margin-top: 8px; overflow-x: auto; max-height: 400px; overflow-y: auto;">\n`;
-            response += `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">\n`;
+            response += `<div style="background: white; padding: 8px; border-radius: 8px; margin-top: 8px; overflow-x: auto; max-height: 400px; overflow-y: auto; -webkit-overflow-scrolling: touch;">\n`;
+            response += `<table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px;">\n`;
             
             // Cabeçalhos
             if (data[0]) {
                 const headers = Object.keys(data[0]);
-                response += `<tr style="background: #f3f4f6; font-weight: 600; position: sticky; top: 0;">\n`;
-                headers.forEach(header => {
-                    response += `<td style="padding: 8px; border: 1px solid #e5e7eb; white-space: nowrap;">${header}</td>\n`;
+                response += `<thead><tr style="background: #f3f4f6; font-weight: 600; position: sticky; top: 0; z-index: 2;">\n`;
+                headers.forEach((header, idx) => {
+                    const stickyStyle = idx === 0 ? 'position: sticky; left: 0; z-index: 3; background: #f3f4f6;' : '';
+                    response += `<th style="padding: 8px; border: 1px solid #e5e7eb; white-space: nowrap; text-align: left; ${stickyStyle}">${header}</th>\n`;
                 });
-                response += `</tr>\n`;
+                response += `</tr></thead>\n`;
                 
                 // Dados (limitar a 50 linhas para performance)
+                response += `<tbody>\n`;
                 const preview = data.slice(0, 50);
                 preview.forEach((row, idx) => {
                     const bgColor = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
                     response += `<tr style="background: ${bgColor};">\n`;
-                    headers.forEach(header => {
-                        response += `<td style="padding: 8px; border: 1px solid #e5e7eb;">${row[header] || '-'}</td>\n`;
+                    headers.forEach((header, colIdx) => {
+                        const stickyStyle = colIdx === 0 ? `position: sticky; left: 0; background: ${bgColor}; z-index: 1;` : '';
+                        response += `<td style="padding: 8px; border: 1px solid #e5e7eb; ${stickyStyle}">${row[header] || '-'}</td>\n`;
                     });
                     response += `</tr>\n`;
                 });
+                response += `</tbody>\n`;
             }
             
             response += `</table>\n`;
