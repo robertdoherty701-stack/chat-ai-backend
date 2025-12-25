@@ -1390,25 +1390,34 @@
                             const isLocal = window.location.hostname === 'localhost';
                             const apiUrl = isLocal ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
                             
+                            // Se não for local, acorda a API primeiro (Render dorme no plano gratuito)
+                            if (!isLocal) {
+                                console.log('☕ Acordando API do Render...');
+                                this.innerHTML = '☕ Acordando API (30-60s)...';
+                                try {
+                                    await fetch(`${apiUrl}/health`, { signal: AbortSignal.timeout(60000) });
+                                } catch(e) {
+                                    console.log('⚠️ Health check demorou, mas continuando...');
+                                }
+                            }
+                            
+                            this.innerHTML = '⏳ Carregando dados...';
                             console.log('🔄 Carregando de:', apiUrl);
                             
-                            // Timeout de 30 segundos
-                            const timeout = new Promise((_, reject) => 
-                                setTimeout(() => reject(new Error('Timeout - API demorou muito')), 30000)
-                            );
-                            
-                            const fetchData = fetch(`${apiUrl}/reports`).then(r => {
+                            const res = await fetch(`${apiUrl}/reports`, { 
+                                signal: AbortSignal.timeout(60000) 
+                            }).then(r => {
                                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                                 return r.json();
                             });
                             
-                            const res = await Promise.race([fetchData, timeout]);
                             const reports = res.reports || res;
-                            
                             console.log('📊 Carregando', reports.length, 'relatórios...');
                             
                             for(const r of reports) {
-                                const d = await fetch(`${apiUrl}/reports/${r.id}/data`).then(x => x.json());
+                                const d = await fetch(`${apiUrl}/reports/${r.id}/data`, {
+                                    signal: AbortSignal.timeout(60000)
+                                }).then(x => x.json());
                                 window.reportDataCache[r.id] = d;
                                 console.log(`✅ ${r.id}:`, d.length, 'linhas');
                             }
@@ -1424,7 +1433,7 @@
                             this.innerHTML = '❌ ERRO - Clique novamente';
                             this.style.background = '#EF4444';
                             this.disabled = false;
-                            alert('❌ Erro ao carregar: ' + err.message + '\n\nA API do Render pode estar dormindo. Clique no botão novamente para tentar.');
+                            alert('❌ Erro ao carregar: ' + err.message + '\n\nClique no botão novamente para tentar.');
                         }
                     };
                     document.body.appendChild(loadBtn);
