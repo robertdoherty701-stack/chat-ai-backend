@@ -1389,21 +1389,42 @@
                             window.reportDataCache = {};
                             const isLocal = window.location.hostname === 'localhost';
                             const apiUrl = isLocal ? 'http://localhost:3000' : 'https://chat-ai-backend-1.onrender.com';
-                            const res = await fetch(`${apiUrl}/reports`).then(r => r.json());
+                            
+                            console.log('🔄 Carregando de:', apiUrl);
+                            
+                            // Timeout de 30 segundos
+                            const timeout = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Timeout - API demorou muito')), 30000)
+                            );
+                            
+                            const fetchData = fetch(`${apiUrl}/reports`).then(r => {
+                                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                                return r.json();
+                            });
+                            
+                            const res = await Promise.race([fetchData, timeout]);
                             const reports = res.reports || res;
+                            
+                            console.log('📊 Carregando', reports.length, 'relatórios...');
+                            
                             for(const r of reports) {
                                 const d = await fetch(`${apiUrl}/reports/${r.id}/data`).then(x => x.json());
                                 window.reportDataCache[r.id] = d;
+                                console.log(`✅ ${r.id}:`, d.length, 'linhas');
                             }
+                            
+                            console.log('🎉 Cache final:', Object.keys(window.reportDataCache));
+                            
                             this.innerHTML = '✅ CONCLUÍDO!';
                             this.style.background = 'linear-gradient(135deg,#10B981,#059669)';
                             setTimeout(() => this.remove(), 2000);
                             alert('✅ ' + Object.keys(window.reportDataCache).length + ' relatórios carregados! Agora você pode abrir os relatórios.');
                         } catch(err) {
-                            this.innerHTML = '❌ ERRO - Clique para tentar novamente';
+                            console.error('❌ Erro detalhado:', err);
+                            this.innerHTML = '❌ ERRO - Clique novamente';
                             this.style.background = '#EF4444';
                             this.disabled = false;
-                            console.error('Erro:', err);
+                            alert('❌ Erro ao carregar: ' + err.message + '\n\nA API do Render pode estar dormindo. Clique no botão novamente para tentar.');
                         }
                     };
                     document.body.appendChild(loadBtn);
