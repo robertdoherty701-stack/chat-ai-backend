@@ -2721,6 +2721,9 @@
                 const email = document.getElementById('loginEmail').value.trim();
                 const password = document.getElementById('loginPassword').value;
                 const rememberMe = document.getElementById('rememberMe')?.checked || false;
+                // Usar Backend API por padrão se não houver configuração
+                const savedBackendApi = localStorage.getItem('useBackendApi');
+                const useBackend = savedBackendApi === null ? true : savedBackendApi === 'true';
                 const btn = document.getElementById('loginBtn');
                 
                 if (!email || !password) {
@@ -3270,9 +3273,11 @@
                         systemConfigCard.style.display = currentUser.role === 'admin' ? 'block' : 'none';
                     }
                     
-                    // Carregar preferência do Backend API
+                    // Carregar preferência do Backend API (padrão: habilitado)
                     if (useBackendApiConfig) {
-                        useBackendApiConfig.checked = localStorage.getItem('useBackendApi') === 'true';
+                        const savedValue = localStorage.getItem('useBackendApi');
+                        // Se não houver valor salvo, usar true como padrão
+                        useBackendApiConfig.checked = savedValue === null ? true : savedValue === 'true';
                     }
 
                     initializeUsageTracking();
@@ -5537,6 +5542,12 @@
         // Verificar sessão ao carregar
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 === DOMContentLoaded iniciado ===');
+            
+            // Inicializar Backend API como habilitado por padrão
+            if (localStorage.getItem('useBackendApi') === null) {
+                localStorage.setItem('useBackendApi', 'true');
+                console.log('✅ Backend API habilitado por padrão');
+            }
             
             // Inicializar admin dashboard
             if (window.adminDashboard) {
