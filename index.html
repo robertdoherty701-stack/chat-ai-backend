@@ -2680,8 +2680,10 @@
                     </div>
                 </div>
                 
-                <div class="card" style="margin-top: 24px;">
-                    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 24px;">Sistema</h3>
+                <div class="card" id="systemConfigCard" style="margin-top: 24px; display: none;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 24px;">
+                        🔐 Sistema (Apenas Administradores)
+                    </h3>
                     
                     <div class="form-group">
                         <label style="display: flex; align-items: center; cursor: pointer; user-select: none; color: var(--text-dark); background: rgba(37, 99, 235, 0.1); padding: 16px; border-radius: 12px; transition: all 0.3s; border: 2px solid rgba(37, 99, 235, 0.3);" onmouseover="this.style.background='rgba(37, 99, 235, 0.15)'; this.style.borderColor='rgba(37, 99, 235, 0.5)'" onmouseout="this.style.background='rgba(37, 99, 235, 0.1)'; this.style.borderColor='rgba(37, 99, 235, 0.3)'">
@@ -3257,10 +3259,16 @@
                     const configEmail = document.getElementById('configEmail');
                     const configRole = document.getElementById('configRole');
                     const useBackendApiConfig = document.getElementById('useBackendApiConfig');
+                    const systemConfigCard = document.getElementById('systemConfigCard');
                     
                     if (configName) configName.value = currentUser.name;
                     if (configEmail) configEmail.value = currentUser.email;
                     if (configRole) configRole.value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+                    
+                    // Mostrar configurações de sistema apenas para administradores
+                    if (systemConfigCard) {
+                        systemConfigCard.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+                    }
                     
                     // Carregar preferência do Backend API
                     if (useBackendApiConfig) {
