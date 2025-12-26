@@ -4064,36 +4064,60 @@
             
             // Mostrar tabela com dados
             response += `<strong>Resultados:</strong>\n`;
-            response += `<div style="background: white; padding: 8px; border-radius: 8px; margin-top: 8px; overflow-x: auto; max-height: 400px; overflow-y: auto; -webkit-overflow-scrolling: touch;">\n`;
-            response += `<table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px;">\n`;
             
-            // Cabeçalhos
+            // Detectar se é mobile
+            const isMobileView = window.innerWidth <= 768;
+            
             if (data[0]) {
                 const headers = Object.keys(data[0]);
-                response += `<thead><tr style="background: #f3f4f6; font-weight: 600; position: sticky; top: 0; z-index: 2;">\n`;
-                headers.forEach((header, idx) => {
-                    const stickyStyle = idx === 0 ? 'position: sticky; left: 0; z-index: 3; background: #f3f4f6;' : '';
-                    response += `<th style="padding: 8px; border: 1px solid #e5e7eb; white-space: nowrap; text-align: left; ${stickyStyle}">${header}</th>\n`;
-                });
-                response += `</tr></thead>\n`;
-                
-                // Dados (limitar a 50 linhas para performance)
-                response += `<tbody>\n`;
                 const preview = data.slice(0, 50);
-                preview.forEach((row, idx) => {
-                    const bgColor = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
-                    response += `<tr style="background: ${bgColor};">\n`;
-                    headers.forEach((header, colIdx) => {
-                        const stickyStyle = colIdx === 0 ? `position: sticky; left: 0; background: ${bgColor}; z-index: 1;` : '';
-                        response += `<td style="padding: 8px; border: 1px solid #e5e7eb; ${stickyStyle}">${row[header] || '-'}</td>\n`;
+                
+                if (isMobileView) {
+                    // Visualização em CARDS para mobile
+                    response += `<div style="margin-top: 12px;">\n`;
+                    preview.forEach((row, idx) => {
+                        response += `<div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">\n`;
+                        response += `<div style="font-weight: 600; color: #DC2626; margin-bottom: 8px; font-size: 11px;">#${idx + 1}</div>\n`;
+                        
+                        headers.forEach(header => {
+                            const value = row[header] || '-';
+                            response += `<div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f3f4f6;">\n`;
+                            response += `<span style="font-weight: 600; color: #6B7280; font-size: 11px; flex: 0 0 40%;">${header}:</span>\n`;
+                            response += `<span style="color: #111827; font-size: 12px; flex: 1; text-align: right; word-break: break-word;">${value}</span>\n`;
+                            response += `</div>\n`;
+                        });
+                        
+                        response += `</div>\n`;
                     });
-                    response += `</tr>\n`;
-                });
-                response += `</tbody>\n`;
+                    response += `</div>\n\n`;
+                } else {
+                    // Visualização em TABELA para desktop
+                    response += `<div style="background: white; padding: 8px; border-radius: 8px; margin-top: 8px; overflow-x: auto; max-height: 400px; overflow-y: auto; -webkit-overflow-scrolling: touch;">\n`;
+                    response += `<table class="stats-table" style="width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px;">\n`;
+                    response += `<thead><tr style="background: #f3f4f6; font-weight: 600; position: sticky; top: 0; z-index: 2;">\n`;
+                    
+                    headers.forEach((header, idx) => {
+                        const stickyStyle = idx === 0 ? 'position: sticky; left: 0; z-index: 3; background: #f3f4f6;' : '';
+                        response += `<th style="padding: 8px; border: 1px solid #e5e7eb; white-space: nowrap; text-align: left; ${stickyStyle}">${header}</th>\n`;
+                    });
+                    response += `</tr></thead>\n`;
+                    response += `<tbody>\n`;
+                    
+                    preview.forEach((row, idx) => {
+                        const bgColor = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                        response += `<tr style="background: ${bgColor};">\n`;
+                        headers.forEach((header, colIdx) => {
+                            const stickyStyle = colIdx === 0 ? `position: sticky; left: 0; background: ${bgColor}; z-index: 1;` : '';
+                            response += `<td style="padding: 8px; border: 1px solid #e5e7eb; ${stickyStyle}">${row[header] || '-'}</td>\n`;
+                        });
+                        response += `</tr>\n`;
+                    });
+                    
+                    response += `</tbody>\n`;
+                    response += `</table>\n`;
+                    response += `</div>\n\n`;
+                }
             }
-            
-            response += `</table>\n`;
-            response += `</div>\n\n`;
             
             if (data.length > 50) {
                 response += `<small>... mostrando 50 de ${data.length} registros</small>\n`;
