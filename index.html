@@ -1836,7 +1836,7 @@
                 contentHTML = `
                     <div style="padding: 16px; overflow-y: auto; flex: 1;">
                         ${displayData.map((row, idx) => `
-                            <div style="
+                            <div class="report-card" data-index="${idx}" style="
                                 background: ${idx % 2 === 0 ? 'white' : '#F9FAFB'};
                                 border: 1px solid #E5E7EB;
                                 border-radius: 12px;
@@ -1860,7 +1860,7 @@
                                             flex: 0 0 45%;
                                             padding-right: 8px;
                                         ">${header}:</div>
-                                        <div style="
+                                        <div class="card-value" style="
                                             color: #111827;
                                             font-size: 13px;
                                             flex: 1;
@@ -1897,10 +1897,10 @@
                             </thead>
                             <tbody>
                                 ${displayData.map((row, idx) => `
-                                    <tr style="background: ${idx % 2 === 0 ? 'white' : '#F9FAFB'}; transition: background 0.2s;" 
+                                    <tr class="report-row" data-index="${idx}" style="background: ${idx % 2 === 0 ? 'white' : '#F9FAFB'}; transition: background 0.2s;" 
                                         onmouseover="this.style.background='#FEE2E2'" 
                                         onmouseout="this.style.background='${idx % 2 === 0 ? 'white' : '#F9FAFB'}'">
-                                        ${headers.map(h => `<td style="
+                                        ${headers.map(h => `<td class="table-cell" style="
                                             padding: 12px;
                                             border-bottom: 1px solid #E5E7EB;
                                             color: #1F2937;
@@ -1928,60 +1928,16 @@
                     <div style="
                         padding: 24px;
                         border-bottom: 2px solid #E5E7EB;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
                     ">
-                        <div>
-                            <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #1F2937;">
-                                ${reportTitle}
-                            </h2>
-                            <p style="margin: 8px 0 0; color: #6B7280; font-size: 14px;">
-                                ${reportData.length} registros total${reportData.length > maxRows ? ` (mostrando ${maxRows})` : ''}
-                            </p>
-                        </div>
-                        <div style="display: flex; gap: 12px;">
-                            ${authToken ? `
-                            <button onclick="exportarRelatorio('${reportId}', '', '', 'excel')" style="
-                                padding: 10px 20px;
-                                background: #059669;
-                                color: white;
-                                border: none;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                font-size: 14px;
-                                transition: all 0.2s;
-                            " onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'" title="Exportar Excel via Backend (com formatação)">
-                                📊 Excel
-                            </button>
-                            <button onclick="exportarRelatorio('${reportId}', '', '', 'pdf')" style="
-                                padding: 10px 20px;
-                                background: #DC2626;
-                                color: white;
-                                border: none;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                font-size: 14px;
-                                transition: all 0.2s;
-                            " onmouseover="this.style.background='#B91C1C'" onmouseout="this.style.background='#DC2626'" title="Exportar PDF via Backend">
-                                📄 PDF
-                            </button>
-                            ` : ''}
-                            <button onclick="exportReportToCSV('${reportId}')" style="
-                                padding: 10px 20px;
-                                background: #10B981;
-                                color: white;
-                                border: none;
-                                border-radius: 8px;
-                                font-weight: 600;
-                                cursor: pointer;
-                                font-size: 14px;
-                                transition: all 0.2s;
-                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" title="Exportar CSV (local)">
-                                📥 CSV
-                            </button>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div>
+                                <h2 style="margin: 0; font-size: 24px; font-weight: 800; color: #1F2937;">
+                                    ${reportTitle}
+                                </h2>
+                                <p style="margin: 8px 0 0; color: #6B7280; font-size: 14px;">
+                                    <span id="filteredCount">${reportData.length}</span> registros <span id="totalCount" style="display:none;">de ${reportData.length} total</span>${reportData.length > maxRows ? ` (mostrando ${maxRows})` : ''}
+                                </p>
+                            </div>
                             <button onclick="closeReportModal()" style="
                                 padding: 10px 20px;
                                 background: #EF4444;
@@ -1996,6 +1952,72 @@
                                 ✕ Fechar
                             </button>
                         </div>
+                        
+                        <!-- Campo de Busca -->
+                        <div style="margin-bottom: 16px;">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="🔍 Digite para filtrar (Nome, CNPJ, Cidade, etc...)..." 
+                                style="
+                                    width: 100%;
+                                    padding: 12px 16px;
+                                    border: 2px solid #E5E7EB;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: all 0.2s;
+                                    box-sizing: border-box;
+                                "
+                                oninput="filterReportData(this.value)"
+                                onfocus="this.style.borderColor='#DC2626'; this.style.boxShadow='0 0 0 3px rgba(220,38,38,0.1)'"
+                                onblur="this.style.borderColor='#E5E7EB'; this.style.boxShadow='none'"
+                            >
+                        </div>
+                        
+                        <!-- Botões de Exportação -->
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            ${authToken ? `
+                            <button onclick="exportarRelatorio('${reportId}', '', '', 'excel')" style="
+                                padding: 10px 16px;
+                                background: #059669;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 13px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'" title="Exportar Excel via Backend">
+                                📊 Excel
+                            </button>
+                            <button onclick="exportarRelatorio('${reportId}', '', '', 'pdf')" style="
+                                padding: 10px 16px;
+                                background: #DC2626;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 13px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#B91C1C'" onmouseout="this.style.background='#DC2626'" title="Exportar PDF via Backend">
+                                📄 PDF
+                            </button>
+                            ` : ''}
+                            <button onclick="exportReportToCSV('${reportId}')" style="
+                                padding: 10px 16px;
+                                background: #10B981;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 13px;
+                                transition: all 0.2s;
+                            " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10B981'" title="Exportar CSV (local)">
+                                📥 CSV
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Table/Cards Container -->
@@ -2005,6 +2027,57 @@
             
             modal.innerHTML = tableHTML;
             document.body.appendChild(modal);
+            
+            // Adicionar função de filtro
+            window.filterReportData = function(searchTerm) {
+                const term = searchTerm.toLowerCase().trim();
+                const isMobile = window.innerWidth <= 768;
+                let visibleCount = 0;
+                
+                if (isMobile) {
+                    // Filtrar cards
+                    const cards = document.querySelectorAll('.report-card');
+                    cards.forEach(card => {
+                        const values = Array.from(card.querySelectorAll('.card-value'))
+                            .map(el => el.textContent.toLowerCase())
+                            .join(' ');
+                        
+                        if (term === '' || values.includes(term)) {
+                            card.style.display = 'block';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                } else {
+                    // Filtrar linhas da tabela
+                    const rows = document.querySelectorAll('.report-row');
+                    rows.forEach(row => {
+                        const cells = Array.from(row.querySelectorAll('.table-cell'))
+                            .map(cell => cell.textContent.toLowerCase())
+                            .join(' ');
+                        
+                        if (term === '' || cells.includes(term)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                }
+                
+                // Atualizar contador
+                const filteredCount = document.getElementById('filteredCount');
+                const totalCount = document.getElementById('totalCount');
+                if (filteredCount) {
+                    filteredCount.textContent = visibleCount;
+                    if (term && totalCount) {
+                        totalCount.style.display = 'inline';
+                    } else if (totalCount) {
+                        totalCount.style.display = 'none';
+                    }
+                }
+            };
             
             console.log(`✅ Modal de relatório "${reportId}" aberto com ${reportData.length} registros`);
         };
