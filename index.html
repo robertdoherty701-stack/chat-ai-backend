@@ -2175,14 +2175,6 @@
                     </label>
                 </div>
                 
-                <!-- Opção Backend API -->
-                <div class="form-group" style="margin-bottom: 20px !important; display: block !important; visibility: visible !important; opacity: 1 !important;">
-                    <label style="display: flex !important; visibility: visible !important; align-items: center; cursor: pointer; user-select: none; color: rgba(255,255,255,0.95); background: rgba(37, 99, 235, 0.2); padding: 14px; border-radius: 8px; transition: all 0.3s; border: 2px solid rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='rgba(37, 99, 235, 0.3)'; this.style.borderColor='rgba(37, 99, 235, 0.6)'" onmouseout="this.style.background='rgba(37, 99, 235, 0.2)'; this.style.borderColor='rgba(37, 99, 235, 0.4)'">
-                        <input type="checkbox" id="useBackendApi" style="margin-right: 12px; width: 22px; height: 22px; cursor: pointer; accent-color: #2563EB; flex-shrink: 0;">
-                        <span style="font-size: 15px; font-weight: 600; color: white;">🚀 Usar Backend API (Google Sheets + Relatórios)</span>
-                    </label>
-                </div>
-                
                 <button type="button" class="btn-primary" id="loginBtn" onclick="console.log('Botão clicado!'); doLogin(); return false;">
                     Entrar
                 </button>
@@ -2686,8 +2678,23 @@
                         <input type="password" class="form-input" id="configApiKey" placeholder="sk-...">
                         <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">Configure sua chave da OpenAI para usar o Chat IA</p>
                     </div>
+                </div>
+                
+                <div class="card" style="margin-top: 24px;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 24px;">Sistema</h3>
                     
-                    <button class="btn-primary" onclick="saveApiKey()" style="width: auto; padding: 14px 32px; margin-top: 16px;">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; cursor: pointer; user-select: none; color: var(--text-dark); background: rgba(37, 99, 235, 0.1); padding: 16px; border-radius: 12px; transition: all 0.3s; border: 2px solid rgba(37, 99, 235, 0.3);" onmouseover="this.style.background='rgba(37, 99, 235, 0.15)'; this.style.borderColor='rgba(37, 99, 235, 0.5)'" onmouseout="this.style.background='rgba(37, 99, 235, 0.1)'; this.style.borderColor='rgba(37, 99, 235, 0.3)'">
+                            <input type="checkbox" id="useBackendApiConfig" style="margin-right: 12px; width: 20px; height: 20px; cursor: pointer; accent-color: #2563EB; flex-shrink: 0;">
+                            <div>
+                                <span style="font-size: 15px; font-weight: 600; color: var(--text-dark); display: block;">🚀 Usar Backend API</span>
+                                <span style="font-size: 13px; color: var(--text-secondary); display: block; margin-top: 4px;">Habilita Google Sheets, Upload de Arquivos, Exportação Excel/PDF e Dashboard Admin</span>
+                            </div>
+                        </label>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; padding-left: 4px;">⚠️ Recarregue a página após alterar esta configuração</p>
+                    </div>
+                    
+                    <button class="btn-primary" onclick="saveSettings()" style="width: auto; padding: 14px 32px; margin-top: 16px;">
                         Salvar Configurações
                     </button>
                 </div>
@@ -3249,10 +3256,16 @@
                     const configName = document.getElementById('configName');
                     const configEmail = document.getElementById('configEmail');
                     const configRole = document.getElementById('configRole');
+                    const useBackendApiConfig = document.getElementById('useBackendApiConfig');
                     
                     if (configName) configName.value = currentUser.name;
                     if (configEmail) configEmail.value = currentUser.email;
                     if (configRole) configRole.value = currentUser.role === 'admin' ? 'Administrador' : 'Usuário';
+                    
+                    // Carregar preferência do Backend API
+                    if (useBackendApiConfig) {
+                        useBackendApiConfig.checked = localStorage.getItem('useBackendApi') === 'true';
+                    }
 
                     initializeUsageTracking();
                     updateDashboardStats();
@@ -5498,6 +5511,19 @@
             } else {
                 showNotification('Por favor, insira uma chave API válida', 'error');
             }
+        }
+        
+        function saveSettings() {
+            const apiKey = document.getElementById('configApiKey').value;
+            const useBackendApi = document.getElementById('useBackendApiConfig').checked;
+            
+            if (apiKey) {
+                localStorage.setItem('gpt_api_key', apiKey);
+            }
+            
+            localStorage.setItem('useBackendApi', useBackendApi.toString());
+            
+            showNotification('✅ Configurações salvas! Recarregue a página para aplicar as alterações.', 'success');
         }
 
         // Verificar sessão ao carregar
