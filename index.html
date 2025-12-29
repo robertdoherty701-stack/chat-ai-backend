@@ -5657,7 +5657,7 @@
         }
         
         // Filtrar usuários
-        function filterUsers() {
+        window.filterUsers = function filterUsers() {
             const searchTerm = document.getElementById('userSearchInput')?.value.toLowerCase() || '';
             const roleFilter = document.getElementById('userRoleFilter')?.value || 'all';
             const rows = document.querySelectorAll('.user-row');
@@ -5684,7 +5684,7 @@
         }
         
         // Modal para adicionar usuário
-        function showAddUserModal() {
+        window.showAddUserModal = function showAddUserModal() {
             const modal = document.createElement('div');
             modal.id = 'addUserModal';
             modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;';
@@ -5734,12 +5734,12 @@
             document.getElementById('newUserName')?.focus();
         }
         
-        function closeAddUserModal() {
+        window.closeAddUserModal = function closeAddUserModal() {
             const modal = document.getElementById('addUserModal');
             if (modal) modal.remove();
         }
         
-        function saveNewUser() {
+        window.saveNewUser = function saveNewUser() {
             const name = document.getElementById('newUserName')?.value.trim();
             const email = document.getElementById('newUserEmail')?.value.trim();
             const password = document.getElementById('newUserPassword')?.value;
@@ -5780,7 +5780,7 @@
         }
         
         // Editar usuário
-        function editUser(email) {
+        window.editUser = function editUser(email) {
             const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             const user = users.find(u => u.email === email);
             
@@ -5839,12 +5839,12 @@
             document.getElementById('editUserName')?.focus();
         }
         
-        function closeEditUserModal() {
+        window.closeEditUserModal = function closeEditUserModal() {
             const modal = document.getElementById('editUserModal');
             if (modal) modal.remove();
         }
         
-        function saveEditedUser(originalEmail) {
+        window.saveEditedUser = function saveEditedUser(originalEmail) {
             const name = document.getElementById('editUserName')?.value.trim();
             const newPassword = document.getElementById('editUserPassword')?.value;
             const role = document.getElementById('editUserRole')?.value;
@@ -5894,7 +5894,7 @@
         }
         
         // Excluir usuário
-        function deleteUser(email) {
+        window.deleteUser = function deleteUser(email) {
             const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             const user = users.find(u => u.email === email);
             
