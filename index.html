@@ -1589,7 +1589,7 @@
                 if (e) e.preventDefault();
 
                 // Verificar permissões
-                if ((section === 'dashboard' || section === 'arquivos') && 
+                if ((section === 'dashboard' || section === 'arquivos' || section === 'usuarios') && 
                     (!window.currentUser || window.currentUser.role !== 'admin')) {
                     alert('⛔ Acesso restrito aos administradores');
                     return;
@@ -1613,10 +1613,17 @@
                     targetSection.classList.remove('hidden');
                     console.log('✅ Navegou para:', section);
                     
-                    // NOVO: Reinicializar dashboard quando navegar para ele
+                    // Reinicializar dashboard quando navegar para ele
                     if (section === 'dashboard' && window.adminDashboard) {
                         setTimeout(() => {
                             window.adminDashboard.init();
+                        }, 100);
+                    }
+                    
+                    // Carregar lista de usuários quando navegar para usuários
+                    if (section === 'usuarios' && typeof loadUsersList === 'function') {
+                        setTimeout(() => {
+                            loadUsersList();
                         }, 100);
                     }
                 } else {
@@ -2264,6 +2271,11 @@
                     <a class="sidebar-link" onclick="navigateTo(event, 'dashboard')">
                         <span class="sidebar-link-icon">📊</span>
                         <span class="sidebar-link-text">Dashboard</span>
+                    </a>
+                    <a class="sidebar-link" onclick="navigateTo(event, 'usuarios')">
+                        <span class="sidebar-link-icon">👥</span>
+                        <span class="sidebar-link-text">Usuários</span>
+                        <span class="sidebar-link-badge" id="userCount">0</span>
                     </a>
                     <a class="sidebar-link" onclick="navigateTo(event, 'arquivos')">
                         <span class="sidebar-link-icon">📁</span>
