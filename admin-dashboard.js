@@ -308,8 +308,8 @@ class AdminDashboard {
                             </div>
                             <div style="flex: 1;">
                                 <p style="font-size: 14px; color: #64748B; margin-bottom: 8px;">Usuários</p>
-                                <button onclick="alert('Funcionalidade em desenvolvimento')" 
-                                    style="background: #059669; color: white; border: none; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                                <button onclick="if(window.navigateTo) window.navigateTo(null, 'usuarios'); else location.reload();" 
+                                    style="background: #059669; color: white; border: none; padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;" onmouseover="this.style.background='#047857'" onmouseout="this.style.background='#059669'">
                                     Gerenciar
                                 </button>
                             </div>
