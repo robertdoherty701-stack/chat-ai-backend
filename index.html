@@ -2,358 +2,543 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chat AI Pro - Sistema Premium de Gestão com IA</title>
-    <meta name="version" content="4.0.0-fixed">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="theme-color" content="#DC2626">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="admin-dashboard.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração de Usuários - Sistema Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         :root {
-            --bg-primary: #FFFFFF;
-            --bg-secondary: #F8FAFC;
-            --red-primary: #DC2626;
-            --red-hover: #B91C1C;
-            --red-light: #FEE2E2;
+            --primary: #DC2626;
+            --primary-dark: #B91C1C;
+            --secondary: #F8FAFC;
             --text-dark: #0F172A;
-            --text-secondary: #64748B;
-            --text-light: #94A3B8;
+            --text-light: #64748B;
             --border: #E2E8F0;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--border) 100%);
             color: var(--text-dark);
-            overflow-x: hidden;
+            margin: 0;
             min-height: 100vh;
         }
-
-        /* Animações */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            padding: 32px 24px;
         }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Auth Page */
-        .auth-page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .auth-page::before {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            top: -250px;
-            right: -250px;
-        }
-
-        .auth-page::after {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-            bottom: -200px;
-            left: -200px;
-        }
-
-        .auth-container {
-            background: var(--bg-primary);
-            padding: 48px;
-            border-radius: 24px;
-            box-shadow: var(--shadow-xl);
-            max-width: 440px;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .auth-logo img {
-            height: 60px;
-            width: auto;
-        }
-
-        .auth-title {
-            font-size: 32px;
+        h1 {
+            font-size: 2rem;
             font-weight: 800;
-            color: var(--text-dark);
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .auth-subtitle {
-            font-size: 16px;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .form-group {
             margin-bottom: 24px;
         }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .form-input {
+        .user-table {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 15px;
-            font-family: inherit;
-            transition: all 0.3s;
-            background: var(--bg-secondary);
+            border-collapse: collapse;
+            margin-bottom: 24px;
         }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--red-primary);
-            background: var(--bg-primary);
-            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--red-primary) 0%, var(--red-hover) 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: var(--shadow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Main App */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            background: var(--bg-secondary);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--bg-primary);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            box-shadow: var(--shadow);
-        }
-
-        .sidebar-header {
-            padding: 24px;
+        .user-table th, .user-table td {
+            padding: 12px 8px;
             border-bottom: 1px solid var(--border);
+            text-align: left;
         }
-
-        .sidebar-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .sidebar-logo img {
-            height: 40px;
-            width: auto;
-        }
-
-        .sidebar-logo-text {
-            font-size: 20px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--red-primary) 0%, var(--red-hover) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-        }
-
-        .nav-section {
-            margin-bottom: 28px;
-        }
-
-        .nav-section-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-light);
-            padding: 0 16px 12px;
-            margin-top: 8px;
-        }
-
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            margin-bottom: 4px;
-            border-radius: 12px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .sidebar-link-icon {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            transition: transform 0.2s ease;
-        }
-
-        .sidebar-link-text {
-            flex: 1;
-        }
-
-        .sidebar-link-badge {
-            background: var(--red-primary);
-            color: white;
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 6px;
-            border-radius: 6px;
-            min-width: 18px;
-            text-align: center;
-        }
-
-        .sidebar-link:hover {
-            background: var(--bg-secondary);
-            color: var(--text-dark);
-            transform: translateX(2px);
-        }
-
-        .sidebar-link:hover .sidebar-link-icon {
-            transform: scale(1.1);
-        }
-
-        .sidebar-link.active {
-            background: linear-gradient(135deg, var(--red-light) 0%, #FEE2E2 100%);
-            color: var(--red-primary);
+        .user-table th {
+            background: var(--secondary);
             font-weight: 600;
-            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
         }
-
-        .sidebar-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 24px;
-            background: var(--red-primary);
-            border-radius: 0 4px 4px 0;
+        .user-table tr:last-child td {
+            border-bottom: none;
         }
-
-        .nav-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 20px 16px;
+        .actions button {
+            margin-right: 8px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--primary);
+            color: #fff;
+            transition: background 0.2s;
         }
-
-        .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid var(--border);
+        .actions button:last-child {
+            margin-right: 0;
+            background: var(--primary-dark);
         }
-
-        .user-profile {
+        .actions button:hover {
+            opacity: 0.85;
+        }
+        .add-user-form {
             display: flex;
-            align-items: center;
             gap: 12px;
+            margin-bottom: 24px;
+        }
+        .add-user-form input, .add-user-form select {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .add-user-form button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            padding: 8px 18px;
+            cursor: pointer;
+        }
+        .add-user-form button:hover {
+            background: var(--primary-dark);
+        }
+        .msg {
+            margin-bottom: 18px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciamento de Usuários</h1>
+        <form class="add-user-form" id="addUserForm">
+            <input type="text" id="name" placeholder="Nome completo" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Senha" minlength="6" required>
+            <select id="role">
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+            </select>
+            <button type="submit">Adicionar</button>
+        </form>
+        <div class="msg" id="msg"></div>
+        <table class="user-table" id="userTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+        // Utiliza localStorage para persistência
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        }
+        function setUsers(users) {
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+        function renderUsers() {
+            const users = getUsers();
+            const tbody = document.querySelector('#userTable tbody');
+            tbody.innerHTML = '';
+            users.forEach((user, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role === 'admin' ? 'Administrador' : 'Usuário'}</td>
+                    <td class="actions">
+                        <button onclick="editUser(${idx})">Editar</button>
+                        <button onclick="deleteUser(${idx})">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function showMsg(msg, time=2000) {
+            const el = document.getElementById('msg');
+            el.textContent = msg;
+            if (time) setTimeout(() => el.textContent = '', time);
+        }
+        document.getElementById('addUserForm').onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            if (!name || !email || !password) {
+                showMsg('Preencha todos os campos!');
+                return;
+            }
+            let users = getUsers();
+            if (users.some(u => u.email === email)) {
+                showMsg('Email já cadastrado!');
+                return;
+            }
+            users.push({ name, email, password, role });
+            setUsers(users);
+            renderUsers();
+            showMsg('Usuário adicionado!');
+            this.reset();
+        };
+        window.deleteUser = function(idx) {
+            let users = getUsers();
+            if (confirm('Deseja excluir este usuário?')) {
+                users.splice(idx, 1);
+                setUsers(users);
+                renderUsers();
+                showMsg('Usuário removido!');
+            }
+        };
+        window.editUser = function(idx) {
+            let users = getUsers();
+            const user = users[idx];
+            const name = prompt('Novo nome:', user.name);
+            if (name === null) return;
+            const email = prompt('Novo email:', user.email);
+            if (email === null) return;
+            const role = prompt('Tipo (user/admin):', user.role);
+            if (role === null) return;
+            user.name = name.trim();
+            user.email = email.trim().toLowerCase();
+            user.role = (role === 'admin' ? 'admin' : 'user');
+            setUsers(users);
+            renderUsers();
+            showMsg('Usuário atualizado!');
+        };
+        renderUsers();
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração de Usuários - Sistema Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #DC2626;
+            --primary-dark: #B91C1C;
+            --secondary: #F8FAFC;
+            --text-dark: #0F172A;
+            --text-light: #64748B;
+            --border: #E2E8F0;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--border) 100%);
+            color: var(--text-dark);
+            margin: 0;
+            min-height: 100vh;
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+        }
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        .user-table th, .user-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+        .user-table th {
+            background: var(--secondary);
+            font-weight: 600;
+        }
+        .user-table tr:last-child td {
+            border-bottom: none;
+        }
+        .actions button {
+            margin-right: 8px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--primary);
+            color: #fff;
+            transition: background 0.2s;
+        }
+        .actions button:last-child {
+            margin-right: 0;
+            background: var(--primary-dark);
+        }
+        .actions button:hover {
+            opacity: 0.85;
+        }
+        .add-user-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .add-user-form input, .add-user-form select {
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .add-user-form button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            padding: 8px 18px;
+            cursor: pointer;
+        }
+        .add-user-form button:hover {
+            background: var(--primary-dark);
+        }
+        .msg {
+            margin-bottom: 18px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciamento de Usuários</h1>
+        <form class="add-user-form" id="addUserForm">
+            <input type="text" id="name" placeholder="Nome completo" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Senha" minlength="6" required>
+            <select id="role">
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+            </select>
+            <button type="submit">Adicionar</button>
+        </form>
+        <div class="msg" id="msg"></div>
+        <table class="user-table" id="userTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+        // Utiliza localStorage para persistência
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        }
+        function setUsers(users) {
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
+        }
+        function renderUsers() {
+            const users = getUsers();
+            const tbody = document.querySelector('#userTable tbody');
+            tbody.innerHTML = '';
+            users.forEach((user, idx) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role === 'admin' ? 'Administrador' : 'Usuário'}</td>
+                    <td class="actions">
+                        <button onclick="editUser(${idx})">Editar</button>
+                        <button onclick="deleteUser(${idx})">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function showMsg(msg, time=2000) {
+            const el = document.getElementById('msg');
+            el.textContent = msg;
+            if (time) setTimeout(() => el.textContent = '', time);
+        }
+        document.getElementById('addUserForm').onsubmit = function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            if (!name || !email || !password) {
+                showMsg('Preencha todos os campos!');
+                return;
+            }
+            let users = getUsers();
+            if (users.some(u => u.email === email)) {
+                showMsg('Email já cadastrado!');
+                return;
+            }
+            users.push({ name, email, password, role });
+            setUsers(users);
+            renderUsers();
+            showMsg('Usuário adicionado!');
+            this.reset();
+        };
+        window.deleteUser = function(idx) {
+            let users = getUsers();
+            if (confirm('Deseja excluir este usuário?')) {
+                users.splice(idx, 1);
+                setUsers(users);
+                renderUsers();
+                showMsg('Usuário removido!');
+            }
+        };
+        window.editUser = function(idx) {
+            let users = getUsers();
+            const user = users[idx];
+            const name = prompt('Novo nome:', user.name);
+            if (name === null) return;
+            const email = prompt('Novo email:', user.email);
+            if (email === null) return;
+            const role = prompt('Tipo (user/admin):', user.role);
+            if (role === null) return;
+            user.name = name.trim();
+            user.email = email.trim().toLowerCase();
+            user.role = (role === 'admin' ? 'admin' : 'user');
+            setUsers(users);
+            renderUsers();
+            showMsg('Usuário atualizado!');
+        };
+        renderUsers();
+    </script>
+</body>
+</html>
+        const name = row.getAttribute('data-name') || '';
+        const email = row.getAttribute('data-email') || '';
+        const role = row.getAttribute('data-role') || '';
+        const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+        const matchesRole = roleFilter === 'all' || role === roleFilter;
+        if (matchesSearch && matchesRole) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+
+    });
+    console.log(`Filtro aplicado: ${visibleCount} usuários visíveis`);
+};
+window.showAddUserModal = function showAddUserModal() {
+    const modal = document.createElement('div');
+    modal.id = 'addUserModal';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;';
+    modal.innerHTML = `<div style="background: white; border-radius: 16px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"><div style="padding: 24px; border-bottom: 1px solid #E5E7EB;"><h3 style="font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 0;">➕ Adicionar Novo Usuário</h3></div><div style="padding: 24px;"><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Nome Completo *</label><input type="text" id="newUserName" class="form-input" placeholder="Digite o nome completo"></div><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Email *</label><input type="email" id="newUserEmail" class="form-input" placeholder="email@exemplo.com"></div><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Senha *</label><input type="password" id="newUserPassword" class="form-input" placeholder="Mínimo 6 caracteres"></div><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Tipo de Usuário *</label><select id="newUserRole" class="form-input"><option value="user">👤 Usuário Normal</option><option value="admin">👑 Administrador</option></select></div><div style="display: flex; gap: 12px; margin-top: 24px;"><button onclick="saveNewUser()" class="btn-primary" style="flex: 1;">✓ Salvar Usuário</button><button onclick="closeAddUserModal()" class="btn-primary" style="flex: 1; background: #6B7280;">✕ Cancelar</button></div></div></div>`;
+    document.body.appendChild(modal);
+    document.getElementById('newUserName')?.focus();
+};
+window.closeAddUserModal = function closeAddUserModal() {
+    const modal = document.getElementById('addUserModal');
+    if (modal) modal.remove();
+};
+window.saveNewUser = function saveNewUser() {
+    const name = document.getElementById('newUserName')?.value.trim();
+    const email = document.getElementById('newUserEmail')?.value.trim();
+    const password = document.getElementById('newUserPassword')?.value;
+    const role = document.getElementById('newUserRole')?.value;
+    if (!name || !email || !password) {
+        alert('⚠️ Por favor, preencha todos os campos obrigatórios!');
+        return;
+    }
+    if (password.length < 6) {
+        alert('⚠️ A senha deve ter pelo menos 6 caracteres!');
+        return;
+    }
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    if (users.find(u => u.email === email)) {
+        alert('⚠️ Já existe um usuário cadastrado com este email!');
+        return;
+    }
+    const newUser = { name, email, password, role, createdAt: new Date().toISOString() };
+    users.push(newUser);
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    closeAddUserModal();
+    loadUsersList();
+    showNotification(`✅ Usuário "${name}" cadastrado com sucesso!`, 'success');
+};
+window.editUser = function editUser(email) {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const user = users.find(u => u.email === email);
+    if (!user) {
+        alert('❌ Usuário não encontrado!');
+        return;
+    }
+    const modal = document.createElement('div');
+    modal.id = 'editUserModal';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;';
+    modal.innerHTML = `<div style="background: white; border-radius: 16px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);"><div style="padding: 24px; border-bottom: 1px solid #E5E7EB;"><h3 style="font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 0;">✏️ Editar Usuário</h3></div><div style="padding: 24px;"><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Nome Completo *</label><input type="text" id="editUserName" class="form-input" value="${user.name}"></div><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Email *</label><input type="email" id="editUserEmail" class="form-input" value="${user.email}" readonly style="background: #F3F4F6; cursor: not-allowed;"><p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">💡 O email não pode ser alterado</p></div><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Nova Senha (deixe em branco para manter)</label><input type="password" id="editUserPassword" class="form-input" placeholder="Digite apenas se quiser alterar"></div><div class="form-group" style="margin-bottom: 20px;"><label class="form-label">Tipo de Usuário *</label><select id="editUserRole" class="form-input"><option value="user" ${user.role === 'user' ? 'selected' : ''}>👤 Usuário Normal</option><option value="admin" ${user.role === 'admin' ? 'selected' : ''}>👑 Administrador</option></select></div><div style="display: flex; gap: 12px; margin-top: 24px;"><button onclick="saveEditedUser('${email}')" class="btn-primary" style="flex: 1;">✓ Salvar Alterações</button><button onclick="closeEditUserModal()" class="btn-primary" style="flex: 1; background: #6B7280;">✕ Cancelar</button></div></div></div>`;
+    document.body.appendChild(modal);
+    document.getElementById('editUserName')?.focus();
+};
+window.closeEditUserModal = function closeEditUserModal() {
+    const modal = document.getElementById('editUserModal');
+    if (modal) modal.remove();
+};
+window.saveEditedUser = function saveEditedUser(originalEmail) {
+    const name = document.getElementById('editUserName')?.value.trim();
+    const newPassword = document.getElementById('editUserPassword')?.value;
+    const role = document.getElementById('editUserRole')?.value;
+    if (!name) {
+        alert('⚠️ O nome não pode estar vazio!');
+        return;
+    }
+    if (newPassword && newPassword.length < 6) {
+        alert('⚠️ A senha deve ter pelo menos 6 caracteres!');
+        return;
+    }
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const userIndex = users.findIndex(u => u.email === originalEmail);
+    if (userIndex === -1) {
+        alert('❌ Usuário não encontrado!');
+        return;
+    }
+    users[userIndex].name = name;
+    users[userIndex].role = role;
+    if (newPassword) {
+        users[userIndex].password = newPassword;
+    }
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+    if (window.currentUser && window.currentUser.email === originalEmail) {
+        window.currentUser.name = name;
+        window.currentUser.role = role;
+        const storage = localStorage.getItem('token') ? localStorage : sessionStorage;
+        storage.setItem('user', JSON.stringify(window.currentUser));
+        const userName = document.getElementById('userName');
+        if (userName) userName.textContent = name;
+    }
+    closeEditUserModal();
+    loadUsersList();
+    showNotification(`✅ Usuário "${name}" atualizado com sucesso!`, 'success');
+};
+window.deleteUser = function deleteUser(email) {
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    const user = users.find(u => u.email === email);
+    if (!user) {
+        alert('❌ Usuário não encontrado!');
+        return;
+    }
+    if (!confirm(`⚠️ Tem certeza que deseja excluir o usuário "${user.name}"?\n\nEsta ação não pode ser desfeita!`)) {
+        return;
+    }
+    const updatedUsers = users.filter(u => u.email !== email);
+    localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+    loadUsersList();
+    showNotification(`✅ Usuário "${user.name}" excluído com sucesso!`, 'success');
+};
+</script>
             padding: 12px;
             border-radius: 12px;
             background: var(--bg-secondary);
-        }
+
 
         .user-avatar {
             width: 40px;
@@ -366,34 +551,34 @@
             color: white;
             font-weight: 700;
             font-size: 16px;
-        }
+
 
         .user-info {
             flex: 1;
-        }
+
 
         .user-name {
             font-weight: 600;
             color: var(--text-dark);
             font-size: 14px;
-        }
+
 
         .user-role {
             font-size: 12px;
             color: var(--text-secondary);
-        }
+
 
         /* Main Content */
         .main-content {
             flex: 1;
             overflow-y: auto;
             padding: 32px;
-        }
+
 
         .content-section {
             max-width: 1400px;
             margin: 0 auto;
-        }
+
 
         /* Cards Grid */
         .cards-grid {
@@ -401,7 +586,7 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
             margin-bottom: 32px;
-        }
+
 
         .card {
             background: var(--bg-primary);
@@ -410,7 +595,7 @@
             box-shadow: var(--shadow);
             transition: all 0.3s;
             border: 1px solid var(--border);
-        }
+
 
         .card:hover {
             transform: translateY(-4px);
@@ -937,7 +1122,7 @@
             ? 'http://localhost:3000' 
             : 'https://chat-ai-backend-1.onrender.com';
         
-        let authToken = localStorage.getItem('api_token');
+        authToken = localStorage.getItem('api_token');
         let useBackend = localStorage.getItem('use_backend') === 'true';
         
         // Função helper para requisições à API
@@ -3117,7 +3302,6 @@
         // VARIÁVEIS GLOBAIS
         // =================================================================================
         let currentUser = null;
-        let authToken = null;
         
         // FUNÇÃO DE TESTE DE EMERGÊNCIA (deve estar no topo para o botão funcionar)
         function forceShowApp() {
