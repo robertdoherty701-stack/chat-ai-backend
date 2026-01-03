@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API de Categorias - Sistema de Relatórios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .category-badge {
+            transition: all 0.3s ease;
+        }
+        .category-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .report-card {
+            transition: all 0.3s ease;
+        }
+        .report-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .json-viewer {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .json-key { color: #9cdcfe; }
+        .json-string { color: #ce9178; }
+        .json-number { color: #b5cea8; }
+        .json-boolean { color: #569cd6; }
+        .json-null { color: #569cd6; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-purple-800 mb-2">🧪 Teste API de Categorias</h1>
+            <p class="text-gray-600">Sistema de Relatórios com 12 Relatórios em 6 Categorias</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">✅ 12 Relatórios</span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">📂 6 Categorias</span>
+                <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">📊 94,060 Linhas</span>
+            </div>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Test 1: List All Reports -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📋 Listar Todos</h2>
+                <p class="text-gray-600 text-sm mb-4">GET /api/reports</p>
+                <button onclick="testListAllReports()" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                    Testar Endpoint
+                </button>
+            </div>
+
+            <!-- Test 2: Filter by Category -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">🔍 Filtrar Categoria</h2>
+                <select id="categoryFilter" class="w-full mb-4 p-2 border border-gray-300 rounded-lg">
+                    <option value="">Selecione categoria...</option>
+                    <option value="clientes">clientes</option>
+                    <option value="produtos">produtos</option>
+                    <option value="cobertura">cobertura</option>
+                    <option value="msl">msl</option>
+                    <option value="vendas">vendas</option>
+                    <option value="financeiro">financeiro</option>
+                </select>
+                <button onclick="testFilterByCategory()" 
+                        class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                    Filtrar
+                </button>
+            </div>
+
+            <!-- Test 3: Grouped by Categories -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">📦 Agrupar</h2>
+                <p class="text-gray-600 text-sm mb-4">GET /api/reports/categories</p>
+                <button onclick="testGroupedByCategories()" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                    Testar Endpoint
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Display -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Visual Display -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 Visualização</h2>
+                <div id="visualDisplay" class="space-y-4">
+                    <p class="text-gray-500 text-center py-8">Execute um teste para ver os resultados...</p>
+                </div>
+            </div>
+
+            <!-- JSON Response -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">💻 Resposta JSON</h2>
+                    <button onclick="copyJSON()" 
+                            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-sm transition duration-300">
+                        📋 Copiar
+                    </button>
+                </div>
+                <div id="jsonDisplay" class="json-viewer">
+                    <span class="text-gray-500">Aguardando requisição...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">📈 Estatísticas dos Testes</h2>
+            <div id="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
+                    <p class="text-3xl font-bold text-blue-600" id="totalTests">0</p>
+                    <p class="text-sm text-gray-600">Testes Realizados</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded-lg">
+                    <p class="text-3xl font-bold text-green-600" id="successTests">0</p>
+                    <p class="text-sm text-gray-600">Sucessos</p>
+                </div>
+                <div class="text-center p-4 bg-red-50 rounded-lg">
+                    <p class="text-3xl font-bold text-red-600" id="failedTests">0</p>
+                    <p class="text-sm text-gray-600">Falhas</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded-lg">
+                    <p class="text-3xl font-bold text-purple-600" id="avgTime">0ms</p>
+                    <p class="text-sm text-gray-600">Tempo Médio</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        let lastResponse = null;
+        let stats = {
+            total: 0,
+            success: 0,
+            failed: 0,
+            times: []
+        };
+
+        const categoryColors = {
+            clientes: 'bg-blue-100 text-blue-800',
+            produtos: 'bg-green-100 text-green-800',
+            cobertura: 'bg-yellow-100 text-yellow-800',
+            msl: 'bg-purple-100 text-purple-800',
+            vendas: 'bg-pink-100 text-pink-800',
+            financeiro: 'bg-red-100 text-red-800'
+        };
+
+        const categoryIcons = {
+            clientes: '👥',
+            produtos: '📦',
+            cobertura: '🗺️',
+            msl: '📊',
+            vendas: '💰',
+            financeiro: '💳'
+        };
+
+        async function makeRequest(url, label) {
+            const startTime = performance.now();
+            try {
+                const response = await fetch(url);
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                lastResponse = data;
+                
+                stats.total++;
+                stats.success++;
+                stats.times.push(duration);
+                updateStats();
+                
+                displayJSON(data, duration, label);
+                return data;
+            } catch (error) {
+                const endTime = performance.now();
+                const duration = Math.round(endTime - startTime);
+                
+                stats.total++;
+                stats.failed++;
+                updateStats();
+                
+                displayError(error, duration, label);
+                throw error;
+            }
+        }
+
+        async function testListAllReports() {
+            const url = `${API_BASE}/api/reports`;
+            const data = await makeRequest(url, 'Listar Todos os Relatórios');
+            displayAllReports(data);
+        }
+
+        async function testFilterByCategory() {
+            const category = document.getElementById('categoryFilter').value;
+            if (!category) {
+                alert('Por favor, selecione uma categoria!');
+                return;
+            }
+            
+            const url = `${API_BASE}/api/reports?category=${category}`;
+            const data = await makeRequest(url, `Filtrar por ${category}`);
+            displayFilteredReports(data, category);
+        }
+
+        async function testGroupedByCategories() {
+            const url = `${API_BASE}/api/reports/categories`;
+            const data = await makeRequest(url, 'Relatórios Agrupados');
+            displayGroupedReports(data);
+        }
+
+        function displayAllReports(data) {
+            const display = document.getElementById('visualDisplay');
+            
+            let html = `
+                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                    <h3 class="font-bold text-blue-800 mb-2">📊 Resumo</h3>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div><span class="font-semibold">Total:</span> ${data.total} relatórios</div>
+                        <div><span class="font-semibold">Categorias:</span> ${data.categories.length}</div>
+                    </div>
+                </div>
+                <div class="space-y-2">
+            `;
+            
+            data.reports.forEach(report => {
+                const color = categoryColors[report.category] || 'bg-gray-100 text-gray-800';
+                const icon = categoryIcons[report.category] || '📄';
+                const cachedBadge = report.cached 
+                    ? '<span class="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">✓ Cached</span>'
+                    : '<span class="ml-2 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">○ Not Cached</span>';
+                
+                html += `
+                    <div class="report-card p-3 border border-gray-200 rounded-lg">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-xl">${icon}</span>
+                                    <span class="font-semibold text-gray-800">${report.label}</span>
+                                    ${cachedBadge}
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2">${report.description || 'Sem descrição'}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 ${color} text-xs rounded-full">${report.category}</span>
+                                    <span class="text-xs text-gray-500">${report.rows.toLocaleString()} linhas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            display.innerHTML = html;
+        }
+
+        function displayFilteredReports(data, category) {
+            const display = document.getElementById('visualDisplay');
+            const color = categoryColors[category] || 'bg-gray-100 text-gray-800';
+            const icon = categoryIcons[category] || '📄';
+            
+            let html = `
+                <div class="mb-4 p-4 ${color} rounded-lg">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-2xl">${icon}</span>
+                        <h3 class="font-bold text-lg">Categoria: ${category}</h3>
+                    </div>
+                    <p class="text-sm opacity-80">${data.total} relatórios encontrados</p>
+                </div>
+                <div class="space-y-2">
+            `;
+            
+            data.reports.forEach(report => {
+                const cachedBadge = report.cached 
+                    ? '<span class="ml-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">✓ Cached</span>'
+                    : '<span class="ml-2 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">○ Not Cached</span>';
+                
+                html += `
+                    <div class="report-card p-3 border border-gray-200 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-800">${report.label}</span>
+                            ${cachedBadge}
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${report.description || 'Sem descrição'}</p>
+                        <div class="text-xs text-gray-500">
+                            ID: ${report.id} | ${report.rows.toLocaleString()} linhas
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            display.innerHTML = html;
+        }
+
+        function displayGroupedReports(data) {
+            const display = document.getElementById('visualDisplay');
+            
+            let html = `
+                <div class="mb-4 p-4 bg-purple-50 rounded-lg">
+                    <h3 class="font-bold text-purple-800 mb-2">📦 Categorias</h3>
+                    <p class="text-sm text-purple-700">${data.total} categorias disponíveis</p>
+                </div>
+            `;
+            
+            data.categories.forEach(category => {
+                const color = categoryColors[category.name] || 'bg-gray-100 text-gray-800';
+                const icon = categoryIcons[category.name] || '📄';
+                const totalRows = category.reports.reduce((sum, r) => sum + r.rows, 0);
+                
+                html += `
+                    <div class="mb-4 p-4 border-2 border-gray-200 rounded-lg">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-2xl">${icon}</span>
+                                <h4 class="font-bold text-gray-800">${category.name}</h4>
+                                <span class="px-2 py-1 ${color} text-xs rounded-full">${category.reports.length} relatórios</span>
+                            </div>
+                            <span class="text-sm text-gray-600">${totalRows.toLocaleString()} linhas</span>
+                        </div>
+                        <div class="space-y-1 pl-4">
+                `;
+                
+                category.reports.forEach(report => {
+                    const cachedIcon = report.cached ? '✓' : '○';
+                    const cachedColor = report.cached ? 'text-green-600' : 'text-gray-400';
+                    
+                    html += `
+                        <div class="flex items-center justify-between text-sm p-2 hover:bg-gray-50 rounded">
+                            <div class="flex items-center gap-2">
+                                <span class="${cachedColor}">${cachedIcon}</span>
+                                <span class="text-gray-700">${report.label}</span>
+                            </div>
+                            <span class="text-gray-500 text-xs">${report.rows.toLocaleString()} linhas</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            display.innerHTML = html;
+        }
+
+        function displayJSON(data, duration, label) {
+            const display = document.getElementById('jsonDisplay');
+            const formatted = JSON.stringify(data, null, 2);
+            const highlighted = syntaxHighlight(formatted);
+            
+            display.innerHTML = `
+                <div class="mb-2 text-green-400 text-sm">
+                    ✓ ${label} - ${duration}ms
+                </div>
+                ${highlighted}
+            `;
+        }
+
+        function displayError(error, duration, label) {
+            const display = document.getElementById('jsonDisplay');
+            display.innerHTML = `
+                <div class="text-red-400">
+                    <div class="mb-2 text-sm">✗ ${label} - ${duration}ms</div>
+                    <div class="text-red-300">${error.message}</div>
+                </div>
+            `;
+            
+            document.getElementById('visualDisplay').innerHTML = `
+                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-800 font-semibold">❌ Erro na Requisição</p>
+                    <p class="text-red-700 text-sm mt-2">${error.message}</p>
+                </div>
+            `;
+        }
+
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'json-key';
+                    } else {
+                        cls = 'json-string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'json-null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalTests').textContent = stats.total;
+            document.getElementById('successTests').textContent = stats.success;
+            document.getElementById('failedTests').textContent = stats.failed;
+            
+            if (stats.times.length > 0) {
+                const avg = Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length);
+                document.getElementById('avgTime').textContent = avg + 'ms';
+            }
+        }
+
+        function copyJSON() {
+            if (!lastResponse) {
+                alert('Nenhuma resposta para copiar!');
+                return;
+            }
+            
+            const text = JSON.stringify(lastResponse, null, 2);
+            navigator.clipboard.writeText(text).then(() => {
+                alert('JSON copiado para a área de transferência!');
+            });
+        }
+
+        // Auto-test on load (optional)
+        // window.addEventListener('load', () => {
+        //     setTimeout(() => testListAllReports(), 500);
+        // });
+    </script>
+</body>
+</html>

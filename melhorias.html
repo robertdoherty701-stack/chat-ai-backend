@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Próximas Melhorias - Chat AI Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .improvements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .improvement-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .improvement-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .improvement-card.selected {
+            border: 3px solid #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .improvement-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .improvement-card h3 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .improvement-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .difficulty.easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .difficulty.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .difficulty.hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .priority {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .priority.high {
+            background: #ff4757;
+            color: white;
+        }
+
+        .priority.medium {
+            background: #ffa502;
+            color: white;
+        }
+
+        .priority.low {
+            background: #747d8c;
+            color: white;
+        }
+
+        .category {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .selection-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .selection-bar.show {
+            display: flex;
+        }
+
+        .selected-count {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            margin-right: 15px;
+        }
+
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid white;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .improvement-card {
+            animation: slideIn 0.5s ease-out backwards;
+        }
+
+        .improvement-card:nth-child(1) { animation-delay: 0.1s; }
+        .improvement-card:nth-child(2) { animation-delay: 0.2s; }
+        .improvement-card:nth-child(3) { animation-delay: 0.3s; }
+        .improvement-card:nth-child(4) { animation-delay: 0.4s; }
+        .improvement-card:nth-child(5) { animation-delay: 0.5s; }
+        .improvement-card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Próximas Melhorias</h1>
+            <p>Escolha as funcionalidades que deseja adicionar ao Chat AI Pro</p>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterBy('all')">Todas</button>
+            <button class="filter-btn" onclick="filterBy('UX')">UX/UI</button>
+            <button class="filter-btn" onclick="filterBy('Funcionalidade')">Funcionalidades</button>
+            <button class="filter-btn" onclick="filterBy('IA')">IA</button>
+            <button class="filter-btn" onclick="filterBy('Integração')">Integrações</button>
+        </div>
+
+        <div class="improvements-grid" id="improvementsGrid">
+            <!-- Cards serão inseridos aqui -->
+        </div>
+    </div>
+
+    <div class="selection-bar" id="selectionBar">
+        <div>
+            <span class="selected-count" id="selectedCount">0 selecionadas</span>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="clearSelection()">Limpar</button>
+            <button class="btn btn-primary" onclick="implement()">
+                <i class="fas fa-rocket"></i> Implementar Selecionadas
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const improvements = [
+            {
+                id: 1,
+                icon: '🔍',
+                title: 'Busca no Histórico',
+                description: 'Pesquise em todas as suas conversas anteriores com filtros avançados',
+                category: 'UX',
+                difficulty: 'easy',
+                priority: 'high'
+            },
+            {
+                id: 2,
+                icon: '📥',
+                title: 'Exportar Conversas',
+                description: 'Baixe suas conversas em PDF, TXT ou JSON com formatação profissional',
+                category: 'Funcionalidade',
+                difficulty: 'medium',
+                priority: 'high'
+            },
+            {
+                id: 3,
+                icon: '🎤',
+                title: 'Entrada por Voz',
+                description: 'Fale ao invés de digitar com reconhecimento de voz em tempo real',
+                category: 'IA',
+                difficulty: 'medium',
+                priority: 'medium'
+            },
+            {
+                id: 4,
+                icon: '🔊',
+                title: 'Respostas em Áudio',
+                description: 'Ouça as respostas da IA com Text-to-Speech natural',
+                category: 'IA',
+                difficulty: 'medium',
+                priority: 'medium'
+            },
+            {
+                id: 5,
+                icon: '📊',
+                title: 'Markdown & Code',
+                description: 'Renderização de Markdown e syntax highlighting para código',
+                category: 'UX',
+                difficulty: 'medium',
+                priority: 'high'
+            },
+            {
+                id: 6,
+                icon: '⌨️',
+                title: 'Atalhos de Teclado',
+                description: 'Navegação rápida com shortcuts: Ctrl+N, Ctrl+K, etc.',
+                category: 'UX',
+                difficulty: 'easy',
+                priority: 'medium'
+            },
+            {
+                id: 7,
+                icon: '⭐',
+                title: 'Favoritar Conversas',
+                description: 'Marque conversas importantes e acesse rapidamente',
+                category: 'Funcionalidade',
+                difficulty: 'easy',
+                priority: 'medium'
+            },
+            {
+                id: 8,
+                icon: '🏷️',
+                title: 'Tags & Categorias',
+                description: 'Organize conversas com tags e categorias personalizadas',
+                category: 'Funcionalidade',
+                difficulty: 'medium',
+                priority: 'low'
+            },
+            {
+                id: 9,
+                icon: '🔗',
+                title: 'Compartilhar Conversas',
+                description: 'Gere links compartilháveis para suas conversas',
+                category: 'Funcionalidade',
+                difficulty: 'hard',
+                priority: 'low'
+            },
+            {
+                id: 10,
+                icon: '📈',
+                title: 'Estatísticas de Uso',
+                description: 'Veja gráficos de uso: mensagens/dia, tópicos mais discutidos',
+                category: 'UX',
+                difficulty: 'medium',
+                priority: 'low'
+            },
+            {
+                id: 11,
+                icon: '🔌',
+                title: 'Integração GPT-4',
+                description: 'Conecte com OpenAI GPT-4, Claude ou outros modelos',
+                category: 'Integração',
+                difficulty: 'hard',
+                priority: 'high'
+            },
+            {
+                id: 12,
+                icon: '📱',
+                title: 'App Mobile (PWA)',
+                description: 'Transforme em Progressive Web App instalável',
+                category: 'UX',
+                difficulty: 'medium',
+                priority: 'medium'
+            },
+            {
+                id: 13,
+                icon: '🌐',
+                title: 'Múltiplos Idiomas',
+                description: 'Interface em Português, Inglês, Espanhol, etc.',
+                category: 'UX',
+                difficulty: 'easy',
+                priority: 'low'
+            },
+            {
+                id: 14,
+                icon: '📸',
+                title: 'Upload de Imagens',
+                description: 'Envie e analise imagens nas conversas',
+                category: 'Funcionalidade',
+                difficulty: 'hard',
+                priority: 'high'
+            },
+            {
+                id: 15,
+                icon: '💾',
+                title: 'Modo Offline',
+                description: 'Acesso a conversas anteriores sem internet',
+                category: 'Funcionalidade',
+                difficulty: 'medium',
+                priority: 'low'
+            },
+            {
+                id: 16,
+                icon: '🎨',
+                title: 'Temas Personalizados',
+                description: 'Crie e customize seus próprios temas de cores',
+                category: 'UX',
+                difficulty: 'easy',
+                priority: 'low'
+            },
+            {
+                id: 17,
+                icon: '🔐',
+                title: 'Criptografia E2E',
+                description: 'Mensagens criptografadas ponta a ponta',
+                category: 'Funcionalidade',
+                difficulty: 'hard',
+                priority: 'medium'
+            },
+            {
+                id: 18,
+                icon: '⚡',
+                title: 'Comandos Rápidos',
+                description: 'Digite / para comandos: /summarize, /translate, etc.',
+                category: 'Funcionalidade',
+                difficulty: 'medium',
+                priority: 'high'
+            }
+        ];
+
+        let selectedImprovements = new Set();
+        let currentFilter = 'all';
+
+        function renderImprovements() {
+            const grid = document.getElementById('improvementsGrid');
+            const filtered = currentFilter === 'all' 
+                ? improvements 
+                : improvements.filter(imp => imp.category === currentFilter);
+
+            grid.innerHTML = filtered.map(imp => `
+                <div class="improvement-card ${selectedImprovements.has(imp.id) ? 'selected' : ''}" 
+                     onclick="toggleSelection(${imp.id})">
+                    <div class="category">${imp.category}</div>
+                    <div class="improvement-icon">${imp.icon}</div>
+                    <h3>${imp.title}</h3>
+                    <p>${imp.description}</p>
+                    <div>
+                        <span class="difficulty ${imp.difficulty}">${
+                            imp.difficulty === 'easy' ? 'Fácil' : 
+                            imp.difficulty === 'medium' ? 'Médio' : 'Difícil'
+                        }</span>
+                        <span class="priority ${imp.priority}">${
+                            imp.priority === 'high' ? 'Alta' : 
+                            imp.priority === 'medium' ? 'Média' : 'Baixa'
+                        }</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSelection(id) {
+            if (selectedImprovements.has(id)) {
+                selectedImprovements.delete(id);
+            } else {
+                selectedImprovements.add(id);
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            renderImprovements();
+            const count = selectedImprovements.size;
+            document.getElementById('selectedCount').textContent = 
+                `${count} ${count === 1 ? 'selecionada' : 'selecionadas'}`;
+            document.getElementById('selectionBar').classList.toggle('show', count > 0);
+        }
+
+        function clearSelection() {
+            selectedImprovements.clear();
+            updateUI();
+        }
+
+        function filterBy(category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            renderImprovements();
+        }
+
+        function implement() {
+            const selected = Array.from(selectedImprovements)
+                .map(id => improvements.find(imp => imp.id === id));
+            
+            if (selected.length === 0) return;
+
+            const titles = selected.map(imp => `• ${imp.title}`).join('\n');
+            
+            alert(`🚀 Você selecionou:\n\n${titles}\n\nVou começar a implementar essas melhorias!`);
+            
+            // Aqui você pode adicionar lógica para implementar
+            console.log('Melhorias selecionadas:', selected);
+        }
+
+        // Initialize
+        renderImprovements();
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+# Configuração completa para deploy de todos os serviços no Render
+# Para usar: faça push deste arquivo para o GitHub e conecte no Render
+
+services:
+  # Backend Principal - FastAPI
+  - type: web
+    name: chat-ai-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SECRET_KEY
+        value: SECRET_EMPRESA_CHAT_AI_2025_PRODUCAO
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    plan: free
+
+  # Chat IA Backend - FastAPI
+  - type: web
+    name: chat-ia-backend
+    runtime: python
+    rootDir: chat-ia-backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: AI_API_URL
+        value: https://api.openai.com/v1/chat/completions
+    plan: free
+
+  # Python Backend API - FastAPI
+  - type: web
+    name: python-backend-api
+    runtime: python
+    rootDir: python-backend-api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+    plan: free
+
+  # Meu Servidor - Node.js/Express
+  - type: web
+    name: meu-servidor
+    runtime: node
+    rootDir: meu-servidor/servidor
+    buildCommand: npm install
+    startCommand: node index.js
+    plan: free

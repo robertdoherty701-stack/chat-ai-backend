@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat AI Pro - Apresentação do Sistema</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --red-primary: #DC2626;
+            --red-hover: #B91C1C;
+            --text-dark: #1F2937;
+            --text-secondary: #6B7280;
+            --border: #E5E7EB;
+            --bg-light: #F9FAFB;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: var(--red-primary);
+            padding: 48px 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 48px 40px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .feature {
+            padding: 24px;
+            background: var(--bg-light);
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .feature:hover {
+            border-color: var(--red-primary);
+            box-shadow: 0 8px 16px rgba(220, 38, 38, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .credentials {
+            background: #FEF2F2;
+            border: 2px solid #FCA5A5;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .credentials h3 {
+            color: var(--red-primary);
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cred-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .cred-item {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #FCA5A5;
+        }
+
+        .cred-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .cred-detail {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--red-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--red-hover);
+            box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--red-primary);
+            border: 2px solid var(--red-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--red-primary);
+            color: white;
+        }
+
+        .info-box {
+            background: #EFF6FF;
+            border: 2px solid #BFDBFE;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .info-box h4 {
+            color: #1E40AF;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .info-box li::before {
+            content: "✓";
+            color: #10B981;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 32px 24px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .content {
+                padding: 32px 24px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🤖</div>
+            <h1>Chat AI Pro</h1>
+            <p>Sistema Premium de Gestão com Inteligência Artificial</p>
+        </div>
+
+        <div class="content">
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">GPT-4 Integrado</div>
+                    <div class="feature-desc">Assistente inteligente com 5 modos especializados e comando de gráficos</div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📁</div>
+                    <div class="feature-title">Gestão de Arquivos</div>
+                    <div class="feature-desc">Upload, leitura e análise automática com IA de múltiplos formatos</div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Relatórios e Dashboards</div>
+                    <div class="feature-desc">Métricas em tempo real, gráficos e análise de tempo de uso</div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Gestão de Usuários</div>
+                    <div class="feature-desc">3 níveis de acesso: Admin, Vendedor e Usuário</div>
+                </div>
+            </div>
+
+            <div class="credentials">
+                <h3>🔑 Credenciais de Acesso</h3>
+                <div class="cred-list">
+                    <div class="cred-item">
+                        <div class="cred-name">👑 Nathiely</div>
+                        <div class="cred-detail">nathiely@empresa.com</div>
+                        <div class="cred-detail">Nathiely@2025</div>
+                    </div>
+                    <div class="cred-item">
+                        <div class="cred-name">👑 Roberto Felix</div>
+                        <div class="cred-detail">roberto.felix@empresa.com</div>
+                        <div class="cred-detail">Roberto@2025</div>
+                    </div>
+                    <div class="cred-item">
+                        <div class="cred-name">👑 Jefferson</div>
+                        <div class="cred-detail">jefferson@empresa.com</div>
+                        <div class="cred-detail">Jefferson@2025</div>
+                    </div>
+                    <div class="cred-item">
+                        <div class="cred-name">👑 Admin Geral</div>
+                        <div class="cred-detail">admin@example.com</div>
+                        <div class="cred-detail">Admin123!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>📋 Instruções Rápidas</h4>
+                <ul>
+                    <li>Faça login com qualquer credencial admin acima</li>
+                    <li>Configure sua chave GPT-4 clicando no ícone 🔑 no topo</li>
+                    <li>Explore as abas: Dashboard, IA, Arquivos, Relatórios</li>
+                    <li>Use o comando /graficos no chat para visualizações</li>
+                    <li>Admins têm acesso exclusivo à gestão de usuários</li>
+                </ul>
+            </div>
+
+            <div class="action-buttons">
+                <a href="index.html" class="btn btn-primary">
+                    🚀 Acessar Sistema
+                </a>
+                <a href="README-PRODUCAO.md" class="btn btn-secondary" target="_blank">
+                    📚 Documentação
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

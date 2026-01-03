@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Chat AI - Teste de Upload</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section.hidden {
+            display: none;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(56, 239, 125, 0.4);
+        }
+
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 16px;
+            padding: 50px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(102, 126, 234, 0.05);
+            margin: 20px 0;
+        }
+
+        .upload-zone:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .upload-zone.dragover {
+            background: rgba(56, 239, 125, 0.2);
+            border-color: #38ef7d;
+            transform: scale(1.05);
+        }
+
+        .upload-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 500;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+
+        .file-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            display: none;
+        }
+
+        .file-preview.show {
+            display: block;
+        }
+
+        .file-preview h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .file-preview p {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .formats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .format-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-badge.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .result-value {
+            color: #333;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Chat AI Backend</h1>
+            <p>Sistema de Upload Inteligente</p>
+        </div>
+
+        <div class="content">
+            <!-- Login Section -->
+            <div id="loginSection" class="section">
+                <div class="status-badge online">🟢 Servidor Online</div>
+                
+                <h2 style="margin-bottom: 20px; color: #333;">🔐 Autenticação</h2>
+                
+                <label for="email">Email</label>
+                <input type="email" id="email" value="admin@example.com" placeholder="seu@email.com">
+                
+                <label for="password">Senha</label>
+                <input type="password" id="password" value="Admin123!" placeholder="••••••••">
+                
+                <button class="btn btn-primary" id="loginBtn" onclick="fazerLogin()">
+                    Entrar no Sistema
+                </button>
+
+                <div id="loginAlert" class="alert"></div>
+            </div>
+
+            <!-- Upload Section -->
+            <div id="uploadSection" class="section hidden">
+                <div class="alert alert-success show">
+                    ✅ Autenticado com sucesso! Você pode fazer upload agora.
+                </div>
+
+                <h2 style="margin-bottom: 20px; color: #333;">📤 Upload de Arquivo</h2>
+
+                <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <h3>Arraste seu arquivo aqui</h3>
+                    <p style="color: #666; margin-top: 10px;">ou clique para selecionar</p>
+                </div>
+
+                <input type="file" id="fileInput" class="file-input" onchange="selecionarArquivo(event)">
+
+                <div id="filePreview" class="file-preview"></div>
+
+                <button class="btn btn-success hidden" id="uploadBtn" onclick="enviarArquivo()">
+                    Enviar Arquivo
+                </button>
+
+                <div id="uploadAlert" class="alert"></div>
+                <div id="resultBox" class="result-box"></div>
+
+                <h3 style="margin-top: 30px; color: #333;">📋 Formatos Suportados</h3>
+                <div class="formats">
+                    <span class="format-tag">📄 TXT</span>
+                    <span class="format-tag">📝 MD</span>
+                    <span class="format-tag">📕 PDF</span>
+                    <span class="format-tag">📘 DOC/DOCX</span>
+                    <span class="format-tag">📊 XLSX/CSV</span>
+                    <span class="format-tag">🔧 JSON</span>
+                    <span class="format-tag">📋 XML</span>
+                    <span class="format-tag">⚙️ YAML</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://chat-ai-backend-lox5.onrender.com';
+        let token = null;
+        let arquivo = null;
+
+        // Carregar token salvo
+        window.onload = () => {
+            const tokenSalvo = localStorage.getItem('auth_token');
+            if (tokenSalvo) {
+                token = tokenSalvo;
+                mostrarUpload();
+            }
+        };
+
+        // Login
+        async function fazerLogin() {
+            const email = document.getElementById('email').value.trim();
+            const senha = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            const alert = document.getElementById('loginAlert');
+
+            if (!email || !senha) {
+                mostrarAlerta(alert, 'Por favor, preencha email e senha', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Conectando...';
+            mostrarAlerta(alert, '⏳ Aguarde... O servidor Render pode demorar até 60 segundos para acordar na primeira vez. Seja paciente!', 'warning');
+
+            try {
+                // Timeout de 60 segundos
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+                const resp = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password: senha }),
+                    signal: controller.signal,
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                clearTimeout(timeoutId);
+                const data = await resp.json();
+
+                if (resp.ok && data.access_token) {
+                    token = data.access_token;
+                    localStorage.setItem('auth_token', token);
+                    mostrarAlerta(alert, '✅ Login realizado com sucesso!', 'success');
+                    setTimeout(mostrarUpload, 1000);
+                } else {
+                    mostrarAlerta(alert, `❌ ${data.detail || 'Credenciais inválidas'}`, 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Entrar no Sistema';
+                }
+            } catch (erro) {
+                let mensagem = '';
+                if (erro.name === 'AbortError') {
+                    mensagem = '⏰ Timeout! O servidor demorou mais de 60 segundos. Clique no botão abaixo para tentar novamente:';
+                } else {
+                    mensagem = `❌ Erro de conexão: ${erro.message}<br><br><strong>O servidor pode estar acordando (Render plano gratuito).</strong><br>Aguarde 1 minuto e clique no botão abaixo:`;
+                }
+                mostrarAlerta(alert, mensagem, 'error');
+                btn.disabled = false;
+                btn.textContent = '🔄 Tentar Novamente';
+            }
+        }
+
+        // Mostrar seção de upload
+        function mostrarUpload() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('uploadSection').classList.remove('hidden');
+        }
+
+        // Drag & Drop
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.ondragover = (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        };
+
+        dropZone.ondragleave = () => {
+            dropZone.classList.remove('dragover');
+        };
+
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                arquivo = e.dataTransfer.files[0];
+                mostrarPreview();
+            }
+        };
+
+        // Selecionar arquivo
+        function selecionarArquivo(event) {
+            arquivo = event.target.files[0];
+            if (arquivo) mostrarPreview();
+        }
+
+        // Preview do arquivo
+        function mostrarPreview() {
+            const preview = document.getElementById('filePreview');
+            const btn = document.getElementById('uploadBtn');
+            const ext = arquivo.name.split('.').pop().toLowerCase();
+            const tamanho = (arquivo.size / 1024).toFixed(2);
+
+            preview.innerHTML = `
+                <h3>📄 Arquivo Selecionado</h3>
+                <p><span class="result-label">Nome:</span> <span class="result-value">${arquivo.name}</span></p>
+                <p><span class="result-label">Tipo:</span> <span class="result-value">${arquivo.type || 'N/A'}</span></p>
+                <p><span class="result-label">Extensão:</span> <span class="result-value">.${ext}</span></p>
+                <p><span class="result-label">Tamanho:</span> <span class="result-value">${tamanho} KB</span></p>
+            `;
+            
+            preview.classList.add('show');
+            btn.classList.remove('hidden');
+        }
+
+        // Enviar arquivo
+        async function enviarArquivo() {
+            if (!arquivo) return;
+
+            const btn = document.getElementById('uploadBtn');
+            const alert = document.getElementById('uploadAlert');
+            const resultBox = document.getElementById('resultBox');
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Enviando...';
+            mostrarAlerta(alert, '⏳ Processando arquivo...', 'info');
+            resultBox.classList.remove('show');
+
+            const formData = new FormData();
+            formData.append('file', arquivo);
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+                const resp = await fetch(`${API}/files/process`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData,
+                    signal: controller.signal,
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                clearTimeout(timeoutId);
+                const data = await resp.json();
+
+                if (resp.ok) {
+                    mostrarAlerta(alert, '✅ Upload concluído com sucesso!', 'success');
+                    mostrarResultado(data);
+                } else {
+                    mostrarAlerta(alert, `❌ Erro: ${data.detail || 'Falha no upload'}`, 'error');
+                }
+            } catch (erro) {
+                if (erro.name === 'AbortError') {
+                    mostrarAlerta(alert, '⏰ Timeout! Upload demorou muito (>45s)', 'error');
+                } else {
+                    mostrarAlerta(alert, `❌ Erro: ${erro.message}`, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Enviar Arquivo';
+            }
+        }
+
+        // Mostrar resultado
+        function mostrarResultado(data) {
+            const box = document.getElementById('resultBox');
+            
+            let html = '<h4>📊 Resultado do Processamento</h4>';
+            
+            if (data.file_name) html += `<div class="result-item"><span class="result-label">Arquivo:</span><span class="result-value">${data.file_name}</span></div>`;
+            if (data.size) html += `<div class="result-item"><span class="result-label">Tamanho:</span><span class="result-value">${(data.size/1024).toFixed(2)} KB</span></div>`;
+            if (data.checksum) html += `<div class="result-item"><span class="result-label">Checksum:</span><span class="result-value">${data.checksum.substring(0,20)}...</span></div>`;
+            if (data.row_count) html += `<div class="result-item"><span class="result-label">Linhas:</span><span class="result-value">${data.row_count}</span></div>`;
+            if (data.column_count) html += `<div class="result-item"><span class="result-label">Colunas:</span><span class="result-value">${data.column_count}</span></div>`;
+            if (data.preview) html += `<div class="result-item"><span class="result-label">Preview:</span><span class="result-value">${data.preview.substring(0,150)}...</span></div>`;
+            
+            box.innerHTML = html;
+            box.classList.add('show');
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(elemento, mensagem, tipo) {
+            elemento.className = `alert alert-${tipo} show`;
+            elemento.innerHTML = mensagem;
+        }
+
+        // Enter para login
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fazerLogin();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat com IA - Sistema</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f5f7fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-container {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .chat-sidebar {
+      width: 300px;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .sidebar-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+    }
+
+    .chat-type-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all 0.3s ease;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .chat-type-btn:hover {
+      background: #f5f7fa;
+      border-color: #667eea;
+    }
+
+    .chat-type-btn.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: #667eea;
+    }
+
+    .chat-type-btn i {
+      font-size: 16px;
+    }
+
+    /* Main Chat Area */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .chat-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+      color: #333;
+    }
+
+    .chat-header p {
+      font-size: 13px;
+      color: #999;
+      margin-top: 5px;
+    }
+
+    /* Messages */
+    #messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message-user {
+      justify-content: flex-end;
+    }
+
+    .message-ai {
+      justify-content: flex-start;
+    }
+
+    .message-content {
+      max-width: 70%;
+      padding: 12px 15px;
+      border-radius: 12px;
+      word-wrap: break-word;
+    }
+
+    .message-user .message-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px 12px 0 12px;
+    }
+
+    .message-ai .message-content {
+      background: #f0f0f0;
+      color: #333;
+      border-radius: 12px 12px 12px 0;
+    }
+
+    .user-message p,
+    .ai-message p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .file-name {
+      display: block;
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .message-data {
+      background: rgba(0, 0, 0, 0.05);
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+    }
+
+    .message-chart {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    .message-timestamp {
+      font-size: 11px;
+      color: #999;
+      margin-top: 5px;
+      padding: 0 5px;
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 10px;
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #999;
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-indicator span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%,
+      60%,
+      100% {
+        opacity: 0.5;
+        transform: translateY(0);
+      }
+      30% {
+        opacity: 1;
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Input Area */
+    .chat-input-area {
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      padding: 20px;
+      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    #message-form {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      resize: none;
+      max-height: 100px;
+      transition: all 0.3s ease;
+    }
+
+    #message-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 10px rgba(102, 126, 234, 0.1);
+    }
+
+    .input-button {
+      padding: 10px 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+
+    .input-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    /* Uploaded Files */
+    .uploaded-files-section {
+      background: #f9f9f9;
+      border-top: 1px solid #e0e0e0;
+      padding: 15px 20px;
+    }
+
+    .uploaded-files-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    #uploaded-files-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .uploaded-file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: white;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .btn-remove-file {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-remove-file:hover {
+      background: #ff5252;
+    }
+
+    /* Tools */
+    .chat-tools {
+      display: flex;
+      gap: 10px;
+      padding: 15px 20px;
+      background: #f5f7fa;
+      border-bottom: 1px solid #e0e0e0;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      padding: 8px 12px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .tool-btn:hover {
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    /* Alert */
+    .alert {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    @media (max-width: 768px) {
+      .chat-sidebar {
+        display: none;
+      }
+
+      .message-content {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+      <div class="sidebar-header">
+        <h3>💬 Tipos de Chat</h3>
+      </div>
+      <div class="sidebar-content">
+        <div id="chat-type-selector"></div>
+      </div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <h2>🤖 Chat com IA</h2>
+        <p>Selecione um tipo de chat para começar</p>
+      </div>
+
+      <!-- Tools -->
+      <div class="chat-tools">
+        <button class="tool-btn" onclick="document.getElementById('file-input').click()">
+          <i class="fas fa-file-upload"></i> Enviar Arquivo
+        </button>
+        <div id="chart-options"></div>
+        <button class="tool-btn" id="send-whatsapp-btn">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </button>
+        <button class="tool-btn" id="clear-cache-btn">
+          <i class="fas fa-trash"></i> Limpar Cache
+        </button>
+      </div>
+
+      <!-- Messages -->
+      <div id="messages-container"></div>
+
+      <!-- Uploaded Files -->
+      <div class="uploaded-files-section" style="display: none;">
+        <div class="uploaded-files-title">📁 Arquivos Enviados</div>
+        <div id="uploaded-files-list"></div>
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-area">
+        <form id="message-form">
+          <input
+            type="text"
+            id="message-input"
+            class="form-control"
+            placeholder="Digite sua mensagem..."
+            required
+          />
+          <button type="submit" class="input-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="file-input" accept=".xlsx,.xls,.csv" />
+
+  <script type="module">
+    import { ChatService, ChatUIManager } from './chat.js';
+    window.ChatService = ChatService;
+    window.ChatUIManager = ChatUIManager;
+  </script>
+</body>
+</html>
