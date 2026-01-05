@@ -2,6 +2,20 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
 
+
+async def handle_message(message: str):
+    # Simple echo handler; replace with real business logic as needed
+    if not message:
+        raise HTTPException(status_code=400, detail="Message is required")
+    return {"reply": message}
+
+
+async def handle_file_upload(file: bytes):
+    # Stub handler; in production save/process the uploaded content
+    if not file:
+        raise HTTPException(status_code=400, detail="File content is empty")
+    return {"status": "received", "size": len(file)}
+
 router = APIRouter()
 
 class Message(BaseModel):
