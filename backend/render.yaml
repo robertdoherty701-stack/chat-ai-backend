@@ -1,0 +1,18 @@
+# Backend Principal - render.yaml
+services:
+  - type: web
+    name: chat-backend-main
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: DATABASE_URL
+        value: sqlite:///./database.db
+      - key: PYTHON_VERSION
+        value: 3.11.9

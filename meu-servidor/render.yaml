@@ -1,0 +1,14 @@
+# Meu Servidor Node - render.yaml
+services:
+  - type: web
+    name: meu-servidor-node
+    runtime: node
+    plan: free
+    rootDir: meu-servidor
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: $PORT

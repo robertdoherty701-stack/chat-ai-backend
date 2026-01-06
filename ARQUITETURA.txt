@@ -1,0 +1,241 @@
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    🏗️  ARQUITETURA DOS 5 SERVIÇOS                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                         ┌──────────────────────┐
+                         │   🌐 FRONTEND        │
+                         │  app-premium.html    │
+                         │  Live Server         │
+                         │  :5500               │
+                         └──────────┬───────────┘
+                                    │
+                ┌───────────────────┼───────────────────┐
+                │                   │                   │
+                ▼                   ▼                   ▼
+    ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+    │ 🔐 SERVIÇO 1     │  │ 💬 SERVIÇO 2     │  │ 📊 SERVIÇO 3     │
+    │ Backend Main     │  │ Chat IA Backend  │  │ Python API       │
+    │                  │  │                  │  │                  │
+    │ FastAPI          │  │ Flask            │  │ FastAPI          │
+    │ JWT Auth         │  │ Chat System      │  │ API v1           │
+    │ Upload           │  │ 8 Chat Types     │  │ Health Check     │
+    │ Relatórios       │  │ File Upload      │  │                  │
+    │ WhatsApp         │  │ Graph Gen        │  │                  │
+    │ Google Sheets    │  │ Cache            │  │                  │
+    │                  │  │                  │  │                  │
+    │ Port: $PORT      │  │ Port: $PORT      │  │ Port: $PORT      │
+    │ /backend         │  │ /chat-ia-backend │  │ /python-backend  │
+    └──────────────────┘  └──────────────────┘  └──────────────────┘
+
+                ┌──────────────────┐  ┌──────────────────┐
+                │ 🟢 SERVIÇO 4     │  │ 🎨 SERVIÇO 5     │
+                │ Node Server      │  │ Admin Dashboard  │
+                │                  │  │                  │
+                │ Express.js       │  │ Vue.js           │
+                │ Node APIs        │  │ Vite Build       │
+                │ Status           │  │ Static Site      │
+                │                  │  │                  │
+                │ Port: $PORT      │  │ Publish: dist/   │
+                │ /meu-servidor    │  │ /admin-dashboard │
+                └──────────────────┘  └──────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+📋 MAPEAMENTO DE ENDPOINTS
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SERVIÇO 1: Backend Main (auth)                                         │
+│ URL: https://chat-backend-main.onrender.com                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│ POST   /api/auth/login        → Login                                  │
+│ POST   /api/auth/register     → Registro                               │
+│ GET    /api/auth/verify       → Verificar Token                        │
+│ POST   /api/upload/image      → Upload de Imagens                      │
+│ POST   /api/upload/file       → Upload de Arquivos                     │
+│ GET    /api/relatorios/*      → Relatórios                             │
+│ GET    /api/historico/*       → Histórico                              │
+│ POST   /api/whatsapp/*        → WhatsApp Integration                   │
+│ GET    /health                → Health Check                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SERVIÇO 2: Chat IA Backend (chat)                                      │
+│ URL: https://chat-ia-backend.onrender.com                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│ POST   /api/chat/message      → Enviar Mensagem ao Chat                │
+│ GET    /api/chat/history      → Histórico de Conversas                 │
+│ DELETE /api/chat/clear        → Limpar Cache                           │
+│ POST   /api/chat/upload       → Upload para Chat                       │
+│ POST   /api/chat/graph        → Gerar Gráfico                          │
+│ GET    /health                → Health Check                           │
+│                                                                         │
+│ 📊 Chat Types:                                                          │
+│    - novos_clientes          - nao_cobertos_clientes                   │
+│    - queijo_reino            - nao_cobertos_fornecedor                 │
+│    - msl_danone              - msl_otg                                 │
+│    - msl_mini                - msl_super                               │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SERVIÇO 3: Python Backend API (api)                                    │
+│ URL: https://python-backend-api.onrender.com                           │
+├─────────────────────────────────────────────────────────────────────────┤
+│ GET    /api/v1/*              → Endpoints API v1                       │
+│ GET    /health                → Health Check                           │
+│ GET    /docs                  → Documentação Swagger                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SERVIÇO 4: Servidor Node (node)                                        │
+│ URL: https://meu-servidor-node.onrender.com                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│ GET    /api/*                 → Node APIs                              │
+│ GET    /status                → Status do Servidor                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│ SERVIÇO 5: Admin Dashboard (admin)                                     │
+│ URL: https://admin-dashboard.onrender.com                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│ GET    /                      → Dashboard Administrativo (Vue.js)      │
+│                               → Interface de Gestão                    │
+└─────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔄 FLUXO DE AUTENTICAÇÃO
+
+1. Frontend (app-premium.html)
+   ↓
+2. POST /api/auth/login → Serviço 1 (Backend Main)
+   ↓
+3. Recebe JWT Token
+   ↓
+4. Armazena no localStorage
+   ↓
+5. Envia token no header Authorization: Bearer {token}
+   ↓
+6. Serviço valida token antes de processar requisições
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔄 FLUXO DE CHAT
+
+1. Usuário seleciona tipo de chat (ex: "novos_clientes")
+   ↓
+2. Usuário envia mensagem
+   ↓
+3. Frontend → POST /api/chat/message → Serviço 2 (Chat IA)
+   ↓
+4. Chat IA processa com contexto do tipo selecionado
+   ↓
+5. Retorna resposta
+   ↓
+6. Frontend renderiza mensagem
+
+═══════════════════════════════════════════════════════════════════════════
+
+📦 ESTRUTURA DE ARQUIVOS
+
+chat-ai-backend-main/
+│
+├── backend/                      ← 🔐 SERVIÇO 1
+│   ├── app.py                    (FastAPI)
+│   ├── requirements.txt
+│   ├── render.yaml              ✅
+│   └── data/
+│
+├── chat-ia-backend/              ← 💬 SERVIÇO 2
+│   ├── app/
+│   │   ├── __init__.py           (Flask)
+│   │   └── api/routes.py
+│   ├── requirements.txt
+│   └── render.yaml              ✅
+│
+├── python-backend-api/           ← 📊 SERVIÇO 3
+│   ├── src/main.py               (FastAPI)
+│   ├── requirements.txt
+│   └── render.yaml              ✅
+│
+├── meu-servidor/                 ← 🟢 SERVIÇO 4
+│   ├── servidor/index.js         (Express)
+│   ├── package.json
+│   └── render.yaml              ✅
+│
+├── admin-dashboard/              ← 🎨 SERVIÇO 5
+│   ├── src/
+│   ├── package.json
+│   ├── vite.config.js
+│   └── render.yaml              ✅
+│
+├── app-premium.html              ← Frontend Principal
+├── chat-integration.js           ← Lógica do Chat
+├── DEPLOY_RAPIDO.md              ← Guia de Deploy ✅
+├── DEPLOY_5_SERVICES.md          ← Documentação Completa ✅
+├── URLS_CONFIG.md                ← Config de URLs ✅
+└── update-frontend-urls.js       ← Script de Atualização ✅
+
+═══════════════════════════════════════════════════════════════════════════
+
+💰 CUSTOS NO RENDER
+
+┌──────────────┬──────────────┬─────────────────────────────────────┐
+│ Plano        │ Custo/Serviço│ Características                     │
+├──────────────┼──────────────┼─────────────────────────────────────┤
+│ FREE         │ $0           │ - Hiberna após 15min                │
+│              │              │ - 750h/mês grátis                   │
+│              │              │ - Wake-up: 30-50s                   │
+│              │              │ - 5 serviços = $0 (com limitações)  │
+├──────────────┼──────────────┼─────────────────────────────────────┤
+│ STARTER      │ $7/mês       │ - Sem hibernação                    │
+│              │              │ - 400h incluídas                    │
+│              │              │ - 5 serviços = $35/mês              │
+└──────────────┴──────────────┴─────────────────────────────────────┘
+
+Recomendação: Comece com FREE para testar, depois upgrade para STARTER
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ PRÓXIMOS PASSOS
+
+1. [ ] Commit e Push para GitHub
+   ├── git add .
+   ├── git commit -m "Add: Deploy 5 serviços Render"
+   └── git push origin main
+
+2. [ ] Deploy dos 5 serviços no Render
+   ├── Serviço 1: Backend Main
+   ├── Serviço 2: Chat IA
+   ├── Serviço 3: Python API
+   ├── Serviço 4: Node Server
+   └── Serviço 5: Admin Dashboard
+
+3. [ ] Anotar URLs em URLS_CONFIG.md
+
+4. [ ] Atualizar Frontend
+   ├── Editar update-frontend-urls.js com URLs reais
+   └── Executar: node update-frontend-urls.js
+
+5. [ ] Adicionar CORS nos backends
+   ├── chat-ia-backend (Flask)
+   └── meu-servidor (Node)
+
+6. [ ] Commit e Push novamente (para CORS)
+
+7. [ ] Testar Sistema Completo
+   ├── Login
+   ├── Chat
+   ├── Upload
+   └── Gráficos
+
+═══════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTAÇÃO
+
+- DEPLOY_RAPIDO.md        → Guia passo a passo (você está aqui)
+- DEPLOY_5_SERVICES.md    → Documentação completa
+- URLS_CONFIG.md          → Configuração de URLs
+- ARQUITETURA.txt         → Este diagrama
+
+═══════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Backend Render</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #45a049; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        .loading { color: #666; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste do Backend no Render</h1>
+        <p><strong>URL:</strong> <a href="https://chat-ai-backend-1.onrender.com" target="_blank">https://chat-ai-backend-1.onrender.com</a></p>
+        
+        <hr>
+        
+        <h2>1. Teste de Conexão</h2>
+        <button onclick="testRoot()">Testar Endpoint Raiz (GET /)</button>
+        
+        <h2>2. Teste de Login</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@teste.com">
+        <input type="password" id="password" placeholder="Senha" value="123456">
+        <button onclick="testLogin()">Fazer Login (POST /api/auth/login)</button>
+        
+        <h2>3. Teste com Token</h2>
+        <input type="text" id="token" placeholder="Cole o token JWT aqui">
+        <button onclick="testProtected()">Testar Endpoint Protegido</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chat-ai-backend-1.onrender.com';
+        
+        function showResult(data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result' + (isError ? ' error' : '');
+            resultDiv.innerHTML = JSON.stringify(data, null, 2);
+        }
+        
+        function showLoading() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '⏳ Carregando... (primeiro acesso pode demorar 30-50 segundos)';
+        }
+        
+        async function testRoot() {
+            showLoading();
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                showResult({
+                    status: response.status,
+                    ok: response.ok,
+                    data: data
+                });
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+        
+        async function testLogin() {
+            showLoading();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.token) {
+                    document.getElementById('token').value = data.token;
+                }
+                
+                showResult({
+                    status: response.status,
+                    ok: response.ok,
+                    data: data
+                });
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+        
+        async function testProtected() {
+            showLoading();
+            const token = document.getElementById('token').value;
+            
+            if (!token) {
+                showResult({ error: 'Token não fornecido. Faça login primeiro.' }, true);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/historico`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                showResult({
+                    status: response.status,
+                    ok: response.ok,
+                    data: data
+                });
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>

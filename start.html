@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Servidor Local - Chat AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { font-size: 1.2em; opacity: 0.9; margin-bottom: 30px; }
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        .link-btn {
+            background: white;
+            color: #667eea;
+            padding: 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .link-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .emoji { font-size: 1.5em; }
+        .info {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        .command {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+        .step { margin: 15px 0; padding-left: 20px; }
+        .api-url {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Chat AI - Servidor Local</h1>
+        <p class="subtitle">Escolha como você quer acessar o sistema</p>
+        
+        <div class="links">
+            <a href="app-premium.html" class="link-btn">
+                <span>💎 App Premium</span>
+                <span class="emoji">→</span>
+            </a>
+            <a href="app.html" class="link-btn">
+                <span>🤖 App Básico</span>
+                <span class="emoji">→</span>
+            </a>
+            <a href="app-v2.html" class="link-btn">
+                <span>✨ App v2.0</span>
+                <span class="emoji">→</span>
+            </a>
+            <a href="app-v3-pro.html" class="link-btn">
+                <span>🎯 App v3 Pro</span>
+                <span class="emoji">→</span>
+            </a>
+            <a href="index.html" class="link-btn">
+                <span>📊 Dashboard Completo</span>
+                <span class="emoji">→</span>
+            </a>
+        </div>
+
+        <div class="info">
+            <h3>📡 Backend API:</h3>
+            <div class="api-url">https://chat-ai-backend-1.onrender.com</div>
+            
+            <h3 style="margin-top: 20px;">🔑 Credenciais de Teste:</h3>
+            <div class="step">
+                <strong>Admin:</strong><br>
+                Email: <code>admin@teste.com</code><br>
+                Senha: <code>123456</code>
+            </div>
+            <div class="step">
+                <strong>Nathiely:</strong><br>
+                Email: <code>nathiely@empresa.com</code><br>
+                Senha: <code>Nathiely@2025</code>
+            </div>
+
+            <h3 style="margin-top: 20px;">🖥️ Como iniciar o servidor:</h3>
+            <div class="command">
+                # Com Python<br>
+                python -m http.server 8000
+            </div>
+            <div class="command">
+                # Com Node.js (npm)<br>
+                npx http-server -p 8000
+            </div>
+            <p style="margin-top: 15px;">
+                Depois acesse: <strong>http://localhost:8000</strong>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
