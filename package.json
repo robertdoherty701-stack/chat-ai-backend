@@ -1,0 +1,42 @@
+{
+  "name": "chat-ai-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Chat AI Sistema Enterprise com Backend FastAPI",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8080",
+    "build": "tailwindcss -i ./src/index.css -o ./dist/output.css --minify",
+    "watch": "tailwindcss -i ./src/index.css -o ./dist/output.css --watch"
+  },
+  "keywords": [
+    "chat",
+    "ai",
+    "fastapi",
+    "backend"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "lucide-react": "^0.294.0",
+    "nodemailer": "^7.0.11",
+    "recharts": "^2.10.3",
+    "sqlite3": "^5.1.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robertdoherty701-stack/chat-ai-backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/robertdoherty701-stack/chat-ai-backend/issues"
+  },
+  "homepage": "https://github.com/robertdoherty701-stack/chat-ai-backend#readme"
+}

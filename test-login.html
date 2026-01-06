@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #DC2626;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #B91C1C;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #333;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔐 Teste de Login</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@teste.com">
+        <input type="password" id="password" placeholder="Senha" value="123456">
+        <button onclick="testarLogin()">Testar Login</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // Inicializar usuários
+        const users = [
+            { email: 'admin@teste.com', password: '123456', role: 'admin', name: 'Admin' },
+            { email: 'teste@teste.com', password: '123456', role: 'user', name: 'Teste' }
+        ];
+        localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+        function testarLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const result = document.getElementById('result');
+            
+            console.log('🔐 Iniciando teste de login...');
+            console.log('Email:', email);
+            console.log('Password:', password);
+            
+            const storedUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            console.log('Usuários no sistema:', storedUsers);
+            
+            const user = storedUsers.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                result.style.display = 'block';
+                result.style.background = '#10B981';
+                result.innerHTML = `
+                    <h3>✅ LOGIN SUCESSO!</h3>
+                    <p>Nome: ${user.name}</p>
+                    <p>Email: ${user.email}</p>
+                    <p>Role: ${user.role}</p>
+                `;
+                console.log('✅ Login bem sucedido!', user);
+            } else {
+                result.style.display = 'block';
+                result.style.background = '#DC2626';
+                result.innerHTML = `
+                    <h3>❌ LOGIN FALHOU!</h3>
+                    <p>Email ou senha incorretos</p>
+                `;
+                console.error('❌ Login falhou');
+            }
+        }
+        
+        console.log('✅ Script carregado e pronto!');
+        console.log('Função testarLogin está disponível?', typeof testarLogin === 'function');
+    </script>
+</body>
+</html>

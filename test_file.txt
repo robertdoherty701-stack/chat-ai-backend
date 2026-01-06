@@ -1,0 +1,3 @@
+Este é um arquivo de teste para verificar o processamento.
+Linha 2: Teste de leitura de arquivo TXT.
+Linha 3: Funcionalidade de upload funcionando.
