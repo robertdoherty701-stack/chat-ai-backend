@@ -22,20 +22,22 @@ import os
 import requests
 import io
 
-# Serviço de cache SQLite
-from cache_service import cache_service
+# Serviço de cache SQLite (opcional)
+try:
+    from cache_service import cache_service
+except ImportError:
+    cache_service = None
+    print("⚠️  cache_service não encontrado, continuando sem cache...")
 
 # =========================
 # CONFIG
 # =========================
 
-# Validação de SECRET_KEY em produção
+# Validação de SECRET_KEY em produção (com fallback para desenvolvimento)
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
-    raise ValueError(
-        "❌ ERRO CRÍTICO: SECRET_KEY não definida! "
-        "Defina a variável de ambiente SECRET_KEY para rodar em produção."
-    )
+    SECRET_KEY = "dev-secret-key-CHANGE-IN-PRODUCTION-" + str(uuid.uuid4())
+    print("⚠️  AVISO: Usando SECRET_KEY temporária! Defina SECRET_KEY em produção.")
 
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_MIN = 60
