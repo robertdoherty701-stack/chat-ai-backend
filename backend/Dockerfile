@@ -1,16 +1,11 @@
-FROM python:3.11-slim
-
-# Instalar dependências do sistema para compilação
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+FROM python:3.11
 
 WORKDIR /app
 
-# Instalar dependências Python
+# Copiar requirements
 COPY requirements.txt .
+
+# Instalar dependências Python (imagem completa já tem gcc/g++)
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
 
