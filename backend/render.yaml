@@ -7,8 +7,8 @@ services:
     rootDir: backend
     buildCommand: |
       pip install --upgrade pip setuptools wheel
-      pip install numpy==1.24.3
-      pip install -r requirements.txt
+      pip install --only-binary=:all: numpy pandas matplotlib
+      pip install -r requirements.txt --only-binary=:all:
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: SECRET_KEY
