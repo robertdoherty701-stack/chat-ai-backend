@@ -1,15 +1,21 @@
-# Backend Principal - render.yaml
+# Backend Principal - render.yaml (usando Docker)
 services:
   - type: web
     name: chat-backend-main
-    runtime: python
+    runtime: docker
     plan: free
     rootDir: backend
-    buildCommand: |
-      pip install --upgrade pip setuptools wheel
-      pip install --only-binary=:all: numpy pandas matplotlib
-      pip install -r requirements.txt --only-binary=:all:
-    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: DATABASE_URL
+        value: sqlite:///./database.db
+      - key: PORT
+        value: "8000"
     envVars:
       - key: SECRET_KEY
         generateValue: true
