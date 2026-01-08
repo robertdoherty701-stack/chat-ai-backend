@@ -5,10 +5,8 @@ WORKDIR /app
 # Copiar requirements
 COPY requirements.txt .
 
-# Instalar numpy e pandas com versões compatíveis primeiro
+# Instalar dependências Python
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir numpy==1.26.4 && \
-    pip install --no-cache-dir pandas==2.2.0 && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copiar código

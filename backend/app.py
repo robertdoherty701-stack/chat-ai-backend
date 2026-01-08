@@ -10,13 +10,13 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from pathlib import Path
 import shutil
-import pandas as pd
+import csv
+import json
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 import uuid
-import csv
 from typing import Optional, Dict, Any, List
 import os
 import requests
