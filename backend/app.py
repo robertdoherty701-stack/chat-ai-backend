@@ -10,7 +10,6 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from pathlib import Path
 import shutil
-import pandas as pd
 import csv
 import json
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
@@ -22,6 +21,7 @@ from typing import Optional, Dict, Any, List
 import os
 import requests
 import io
+from openpyxl import load_workbook, Workbook
 
 # Serviço de cache SQLite (opcional)
 try:
@@ -200,18 +200,19 @@ def obter_historico(user_data = Depends(get_user)):
     if not LOGS_FILE.exists():
         return {"historico": []}
     
-    df = pd.read_csv(LOGS_FILE)
-    
-    # Se não for admin, mostrar apenas do próprio usuário
-    if user_data["role"] != "admin":
-        df = df[df["usuario"] == user_data["email"]]
+    # Ler CSV com csv module nativo
+    historico = []
+    with open(LOGS_FILE, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            # Filtrar por usuário se não for admin
+            if user_data["role"] == "admin" or row.get("usuario") == user_data["email"]:
+                historico.append(row)
     
     # Últimos 100 registros
-    df = df.tail(100)
+    historico = historico[-100:]
     
-    return {
-        "historico": df.to_dict(orient="records")
-    }
+    return {"historico": historico}
 
 # =========================
 # UPLOAD DE PLANILHAS
@@ -238,52 +239,83 @@ def upload_excel(file: UploadFile = File(...), user_data = Depends(get_user)):
     # Tentar ler para validar
     try:
         if ext == '.csv':
-            df = pd.read_csv(file_path)
+            # Ler CSV com csv module
+            with open(file_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                columns = reader.fieldnames if reader.fieldnames else []
         else:
-            df = pd.read_excel(file_path)
+            # Ler Excel com openpyxl
+            from openpyxl import load_workbook
+            wb = load_workbook(file_path)
+            ws = wb.active
+            rows = list(ws.values)
+            columns = rows[0] if rows else []
+            rows = len(rows) - 1 if rows else 0
         
         return {
             "file_id": file_id,
             "filename": file.filename,
-            "rows": len(df),
-            "columns": list(df.columns),
+            "rows": len(rows) if isinstance(rows, list) else rows,
+            "columns": list(columns) if columns else [],
             "path": str(file_path)
         }
     except Exception as e:
-        file_path.unlink()  # Deletar arquivo inválido
+        if file_path.exists():
+            file_path.unlink()  # Deletar arquivo inválido
         raise HTTPException(400, f"Erro ao ler arquivo: {str(e)}")
 
 # =========================
 # EXPORTAÇÃO
 # =========================
 
-def exportar_excel(df: pd.DataFrame, filename: str):
+def exportar_excel(data: List[Dict], filename: str):
+    """Exportar dados para Excel usando openpyxl diretamente"""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
+    
     path = EXPORTS_DIR / f"{filename}_{uuid.uuid4().hex[:8]}.xlsx"
     
-    # Criar Excel com formatação
-    with pd.ExcelWriter(path, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Relatório')
-        
-        # Obter worksheet
-        worksheet = writer.sheets['Relatório']
-        
-        # Ajustar largura das colunas
-        for column in worksheet.columns:
-            max_length = 0
-            column_letter = column[0].column_letter
-            for cell in column:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except:
-                    pass
-            adjusted_width = min(max_length + 2, 50)
-            worksheet.column_dimensions[column_letter].width = adjusted_width
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Relatório'
     
+    if not data:
+        wb.save(path)
+        return path
+    
+    # Cabeçalho
+    headers = list(data[0].keys())
+    ws.append(headers)
+    
+    # Estilizar cabeçalho
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    
+    # Dados
+    for row in data:
+        ws.append([row.get(h, '') for h in headers])
+    
+    # Ajustar largura das colunas
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+    
+    wb.save(path)
     return path
 
 
-def exportar_pdf(df: pd.DataFrame, titulo: str, filename: str):
+def exportar_pdf(data: List[Dict], titulo: str, filename: str):
+    """Exportar dados para PDF"""
     path = EXPORTS_DIR / f"{filename}_{uuid.uuid4().hex[:8]}.pdf"
     
     doc = SimpleDocTemplate(str(path), pagesize=A4)
@@ -293,29 +325,36 @@ def exportar_pdf(df: pd.DataFrame, titulo: str, filename: str):
     # Título
     elementos.append(Paragraph(titulo, styles['Title']))
     elementos.append(Paragraph(f"Gerado em: {datetime.now().strftime('%d/%m/%Y %H:%M')}", styles['Normal']))
-    elementos.append(Paragraph(f"Total de registros: {len(df)}", styles['Normal']))
+    elementos.append(Paragraph(f"Total de registros: {len(data)}", styles['Normal']))
     elementos.append(Paragraph("<br/><br/>", styles['Normal']))
     
-    # Tabela
-    if len(df) > 0:
-        # Limitar colunas para caber na página
-        max_cols = 6
-        df_export = df.iloc[:, :max_cols] if len(df.columns) > max_cols else df
-        
-        # Preparar dados
-        data = [list(df_export.columns)] + df_export.head(50).values.tolist()
-        
-        # Criar tabela
-        table = Table(data)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    if not data:
+        doc.build(elementos)
+        return path
+    
+    # Tabela - limitar a 50 registros e 6 colunas para PDF
+    max_cols = 6
+    max_rows = 50
+    
+    # Limitar colunas
+    headers_limited = headers[:max_cols]
+    data_limited = data[:max_rows]
+    
+    table_data = [headers_limited]
+    for row in data_limited:
+        table_data.append([str(row.get(h, ''))[:30] for h in headers_limited])  # Limitar texto
+    
+    # Criar tabela
+    table = Table(table_data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
         ]))
         
         elementos.append(table)
@@ -363,38 +402,64 @@ def gerar_relatorio(payload: Dict[str, Any] = Body(...), user_data = Depends(get
     if not arquivo_path.exists():
         raise HTTPException(404, f"Arquivo de dados não encontrado: {arquivo_nome}. Faça upload primeiro.")
     
-    # Ler dados
+    # Ler dados usando openpyxl
     try:
-        df = pd.read_excel(arquivo_path)
+        from openpyxl import load_workbook
+        wb = load_workbook(arquivo_path)
+        ws = wb.active
+        
+        # Converter para lista de dicts
+        headers = [cell.value for cell in ws[1]]
+        data_list = []
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            data_list.append(dict(zip(headers, row)))
     except Exception as e:
         raise HTTPException(500, f"Erro ao ler arquivo: {str(e)}")
     
     # Aplicar filtros
-    if tipo.startswith("nao_cobertos"):
-        df = df[df["STATUS"].str.upper().str.strip() == "FALTA"]
-    elif tipo.startswith("msl") or tipo == "exp":
-        df = df[df["STATUS"].str.upper().str.strip().isin(["OK", "FALTA"])]
+    filtered_data = []
+    for row in data_list:
+        status = str(row.get("STATUS", "")).upper().strip()
+        codvd_val = str(row.get("CODVD", "")).strip()
+        vendedor_val = str(row.get("VENDEDOR", "")).upper()
+        
+        # Filtro de status por tipo
+        if tipo.startswith("nao_cobertos"):
+            if status != "FALTA":
+                continue
+        elif tipo.startswith("msl") or tipo == "exp":
+            if status not in ["OK", "FALTA"]:
+                continue
+        
+        # Filtrar por CODVD
+        if codvd_val != str(codvd).strip():
+            continue
+        
+        # Filtrar por vendedor se fornecido
+        if vendedor and vendedor.upper() not in vendedor_val:
+            continue
+        
+        filtered_data.append(row)
     
-    # Filtrar por CODVD
-    df = df[df["CODVD"].astype(str).str.strip() == str(codvd).strip()]
-    
-    # Filtrar por vendedor se fornecido
-    if vendedor:
-        df = df[df["VENDEDOR"].str.upper().str.contains(vendedor.upper())]
-    
-    # Remover duplicatas
-    df = df.drop_duplicates()
+    # Remover duplicatas (simples - converte para tuplas e usa set)
+    seen = set()
+    unique_data = []
+    for row in filtered_data:
+        row_tuple = tuple(sorted(row.items()))
+        if row_tuple not in seen:
+            seen.add(row_tuple)
+            unique_data.append(row)
     
     # Salvar log
-    salvar_log(user_data["email"], tipo, codvd, vendedor, len(df))
+    salvar_log(user_data["email"], tipo, codvd, vendedor, len(unique_data))
     
     # Exportar
     if exportar == "excel":
-        path = exportar_excel(df, tipo)
+        path = exportar_excel(unique_data, tipo)
         return FileResponse(path, filename=f"{tipo}.xlsx", media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     
     elif exportar == "pdf":
-        path = exportar_pdf(df, f"Relatório {tipo.upper()}", tipo)
+        path = exportar_pdf(unique_data, f"Relatório {tipo.upper()}", tipo)
         return FileResponse(path, filename=f"{tipo}.pdf", media_type="application/pdf")
     
     else:
@@ -403,8 +468,8 @@ def gerar_relatorio(payload: Dict[str, Any] = Body(...), user_data = Depends(get
             "tipo": tipo,
             "codvd": codvd,
             "vendedor": vendedor,
-            "total_registros": len(df),
-            "dados": df.to_dict(orient="records")
+            "total_registros": len(unique_data),
+            "dados": unique_data
         }
 
 # =========================
