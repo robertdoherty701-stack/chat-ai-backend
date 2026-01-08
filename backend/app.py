@@ -10,6 +10,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from pathlib import Path
 import shutil
+import pandas as pd
 import csv
 import json
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
