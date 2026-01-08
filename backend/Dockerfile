@@ -1,13 +1,16 @@
-FROM python:3.11
+# Usar imagem com pandas já incluído
+FROM continuumio/miniconda3:latest
 
 WORKDIR /app
 
-# Copiar requirements
+# Instalar pandas via conda (pré-compilado)
+RUN conda install -y pandas=2.1.4 openpyxl
+
+# Copiar requirements (sem pandas)
 COPY requirements.txt .
 
-# Instalar dependências Python
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
+# Instalar resto das dependências
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar código
 COPY . .
