@@ -2,14 +2,17 @@ from typing import Optional, List, Dict
 import os
 from pathlib import Path
 import logging
-import pandas as pd
+try:
+    import pandas as pd
+except Exception:
+    pd = None
 
 from fastapi import APIRouter, Body, HTTPException, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from dotenv import load_dotenv
-from chart_service import generate_chart_from_file, generate_chart_from_dataframe
+from chart_service import generate_chart_from_file, generate_chart_from_dataframe, generate_chart_from_rows
 # para leitura de arquivos armazenados (se necessário)
 from file_service import read_table_from_file
 
@@ -52,17 +55,31 @@ def generate_chart(req: ChartRequest = Body(...), _user=Depends(verify_token)):
     try:
         # Se vier rows -> gera direto
         if req.rows:
-            try:
-                df = pd.DataFrame(req.rows)
-            except Exception as e:
-                raise HTTPException(status_code=400, detail=f"Erro ao interpretar rows: {str(e)}")
-            saved = generate_chart_from_dataframe(
-                df,
-                req.graph_type,
-                req.title or "",
-                req.data_column,
-                req.category_column,
-            )
+            # Se pandas não estiver disponível, use a função que aceita rows diretamente
+            if pd is None:
+                try:
+                    saved = generate_chart_from_rows(
+                        req.rows,
+                        req.graph_type,
+                        req.title or "",
+                        req.data_column,
+                        req.category_column,
+                        top_n=20,
+                    )
+                except ValueError as e:
+                    raise HTTPException(status_code=400, detail=str(e))
+            else:
+                try:
+                    df = pd.DataFrame(req.rows)
+                except Exception as e:
+                    raise HTTPException(status_code=400, detail=f"Erro ao interpretar rows: {str(e)}")
+                saved = generate_chart_from_dataframe(
+                    df,
+                    req.graph_type,
+                    req.title or "",
+                    req.data_column,
+                    req.category_column,
+                )
 
         elif req.stored_file:
             # tenta localizar em uploads/excel

@@ -7,7 +7,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 import aiofiles
-import pandas as pd
+try:
+    import pandas as pd
+except Exception:
+    pd = None
 from fastapi import UploadFile, HTTPException
 
 load_dotenv()

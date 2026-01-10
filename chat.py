@@ -9,7 +9,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from collections import defaultdict
 
-import pandas as pd
+try:
+    import pandas as pd
+except Exception:
+    pd = None
 import matplotlib
 matplotlib.use("Agg")  # headless-friendly
 import matplotlib.pyplot as plt

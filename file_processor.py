@@ -3,7 +3,10 @@ from typing import Dict, Any, Optional
 import os
 import json
 import yaml
-import pandas as pd
+try:
+    import pandas as pd
+except Exception:
+    pd = None
 import PyPDF2
 from docx import Document
 import aiofiles
@@ -63,6 +66,8 @@ async def process_word_file(file_path: str) -> Dict[str, Any]:
 async def process_csv_file(file_path: str) -> Dict[str, Any]:
     """Processa arquivo CSV"""
     try:
+        if pd is None:
+            raise HTTPException(status_code=501, detail="Pandas não está disponível no ambiente; instale pandas ou use o endpoint apropriado.")
         df = pd.read_csv(file_path)
         return {
             "type": "csv",
@@ -76,6 +81,8 @@ async def process_csv_file(file_path: str) -> Dict[str, Any]:
 async def process_excel_file(file_path: str) -> Dict[str, Any]:
     """Processa arquivo Excel"""
     try:
+        if pd is None:
+            raise HTTPException(status_code=501, detail="Pandas não está disponível no ambiente; instale pandas ou use o endpoint apropriado.")
         df = pd.read_excel(file_path)
         return {
             "type": "excel",
