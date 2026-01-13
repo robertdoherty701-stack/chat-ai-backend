@@ -11,9 +11,7 @@ services:
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: SECRET_KEY
-        generateValue: true  # Gera automaticamente uma chave segura
-      - key: ALLOWED_ORIGINS
-        value: https://admin-dashboard.onrender.com
+        value: SECRET_EMPRESA_CHAT_AI_2025_PRODUCAO
       - key: PYTHON_VERSION
         value: 3.11.0
     plan: free
@@ -30,12 +28,8 @@ services:
         value: False
       - key: SECRET_KEY
         generateValue: true
-      - key: ALLOWED_ORIGINS
-        value: https://admin-dashboard.onrender.com
       - key: AI_API_URL
         value: https://api.openai.com/v1/chat/completions
-      - key: AI_API_KEY
-        sync: false  # Adicione manualmente no dashboard
     plan: free
 
   # Python Backend API - FastAPI
@@ -50,8 +44,6 @@ services:
         value: false
       - key: SECRET_KEY
         generateValue: true
-      - key: ALLOWED_ORIGINS
-        value: https://admin-dashboard.onrender.com
     plan: free
 
   # Meu Servidor - Node.js/Express

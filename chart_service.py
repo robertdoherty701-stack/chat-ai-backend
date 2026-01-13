@@ -2,10 +2,7 @@
 import os
 from pathlib import Path
 import logging
-try:
-    import pandas as pd
-except Exception:
-    pd = None
+import pandas as pd
 
 from fastapi import APIRouter, Body, HTTPException, Depends, Request
 from fastapi.responses import FileResponse

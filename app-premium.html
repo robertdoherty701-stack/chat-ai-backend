@@ -521,92 +521,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Typing Indicator */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 12px 16px;
-        }
-
-        .typing-indicator .dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-secondary);
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-            opacity: 0.6;
-        }
-
-        .typing-indicator .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-                opacity: 0.6;
-            }
-            30% {
-                transform: translateY(-10px);
-                opacity: 1;
-            }
-        }
-
-        /* File Preview */
-        .file-preview {
-            margin-bottom: 16px;
-            animation: slideDown 0.3s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Chart Container */
-        .chart-container {
-            margin-top: 16px;
-            padding: 16px;
-            background: var(--bg-light);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .chart-container img {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        /* Message File Info */
-        .message .file-info {
-            margin-top: 10px;
-            padding: 10px 12px;
-            background: rgba(0,0,0,0.05);
-            border-radius: 6px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .message.ai .file-info {
-            background: rgba(220, 38, 38, 0.08);
-        }
-
         /* Auth Page */
         .auth-page {
             display: flex;
@@ -1310,7 +1224,7 @@
         // ========================================
         // CONFIGURAÇÕES
         // ========================================
-        const API_URL = 'https://chat-ai-backend-1.onrender.com';
+        const API_URL = 'https://chat-ai-backend-lox5.onrender.com';
         
         // Função para obter a chave GPT-4 de forma segura
         function getGPTKey() {
@@ -1330,489 +1244,10 @@
         let sessionStartTime = Date.now();
 
         // ========================================
-        // SISTEMA DE CHAT COMPLETO
-        // ========================================
-        
-        class ChatStateManager {
-            constructor() {
-                this.state = {
-                    currentChatType: '',
-                    uploadedFile: null,
-                    conversationHistory: [],
-                    isTyping: false,
-                    currentFileData: null
-                };
-                this.listeners = [];
-            }
-
-            setState(updates) {
-                this.state = { ...this.state, ...updates };
-                this.notifyListeners();
-            }
-
-            getState() {
-                return { ...this.state };
-            }
-
-            subscribe(listener) {
-                this.listeners.push(listener);
-                return () => {
-                    this.listeners = this.listeners.filter(l => l !== listener);
-                };
-            }
-
-            notifyListeners() {
-                this.listeners.forEach(listener => listener(this.state));
-            }
-
-            reset() {
-                this.setState({
-                    currentChatType: '',
-                    uploadedFile: null,
-                    conversationHistory: [],
-                    isTyping: false,
-                    currentFileData: null
-                });
-            }
-        }
-
-        class ChatUIManager {
-            constructor(stateManager) {
-                this.stateManager = stateManager;
-                this.messageContainer = document.getElementById('chatMessages');
-                this.inputField = document.getElementById('userInput');
-                this.sendButton = document.getElementById('sendButton');
-                this.fileInput = document.getElementById('fileInput');
-                this.uploadButton = document.getElementById('uploadButton');
-                this.typingIndicator = this.createTypingIndicator();
-            }
-
-            createTypingIndicator() {
-                const indicator = document.createElement('div');
-                indicator.className = 'message ai typing-indicator';
-                indicator.style.display = 'none';
-                indicator.innerHTML = `
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-sender">Assistente IA</span>
-                        </div>
-                        <div class="message-text">
-                            <span class="dot"></span>
-                            <span class="dot"></span>
-                            <span class="dot"></span>
-                        </div>
-                    </div>
-                `;
-                return indicator;
-            }
-
-            showTyping() {
-                if (!this.messageContainer.contains(this.typingIndicator)) {
-                    this.messageContainer.appendChild(this.typingIndicator);
-                }
-                this.typingIndicator.style.display = 'flex';
-                this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
-            }
-
-            hideTyping() {
-                this.typingIndicator.style.display = 'none';
-            }
-
-            addMessage(content, sender = 'user', metadata = {}) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender}`;
-                
-                const time = new Date().toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                let messageHTML = `
-                    <div class="message-content">
-                        <div class="message-header">
-                            <span class="message-sender">${sender === 'user' ? 'Você' : 'Assistente IA'}</span>
-                            <span class="message-time">${time}</span>
-                        </div>
-                        <div class="message-text">${this.formatMessage(content)}</div>
-                `;
-
-                if (metadata.chart) {
-                    messageHTML += `
-                        <div class="chart-container" style="margin-top: 15px;">
-                            <img src="${metadata.chart}" alt="Gráfico" style="max-width: 100%; border-radius: 8px;">
-                        </div>
-                    `;
-                }
-
-                if (metadata.file) {
-                    messageHTML += `
-                        <div class="file-info" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 6px;">
-                            <span>📎 ${metadata.file.name}</span>
-                        </div>
-                    `;
-                }
-
-                messageHTML += `</div>`;
-                messageDiv.innerHTML = messageHTML;
-                
-                this.messageContainer.insertBefore(messageDiv, this.typingIndicator);
-                this.messageContainer.scrollTop = this.messageContainer.scrollHeight;
-
-                return messageDiv;
-            }
-
-            formatMessage(text) {
-                return text
-                    .replace(/\n/g, '<br>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>');
-            }
-
-            clearInput() {
-                if (this.inputField) this.inputField.value = '';
-            }
-
-            setInputEnabled(enabled) {
-                if (this.inputField) this.inputField.disabled = !enabled;
-                if (this.sendButton) this.sendButton.disabled = !enabled;
-            }
-
-            showFilePreview(file) {
-                const preview = document.createElement('div');
-                preview.className = 'file-preview';
-                preview.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #e8f5e9; border-radius: 6px; margin-bottom: 10px;">
-                        <span>📎</span>
-                        <span>${file.name}</span>
-                        <button onclick="chatService.clearFile()" style="margin-left: auto; padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                            Remover
-                        </button>
-                    </div>
-                `;
-                
-                const existingPreview = document.querySelector('.file-preview');
-                if (existingPreview) existingPreview.remove();
-                
-                this.messageContainer.parentElement.insertBefore(preview, this.messageContainer);
-            }
-
-            removeFilePreview() {
-                const preview = document.querySelector('.file-preview');
-                if (preview) preview.remove();
-            }
-        }
-
-        class ChatService {
-            constructor(apiUrl, stateManager, uiManager) {
-                this.apiUrl = apiUrl;
-                this.stateManager = stateManager;
-                this.uiManager = uiManager;
-                this.initialized = false;
-            }
-
-            async initialize() {
-                if (this.initialized) return;
-                
-                this.setupEventListeners();
-                this.initialized = true;
-                
-                console.log('Chat Service inicializado');
-            }
-
-            setupEventListeners() {
-                // Botão enviar
-                if (this.uiManager.sendButton) {
-                    this.uiManager.sendButton.addEventListener('click', () => this.handleSendMessage());
-                }
-
-                // Enter para enviar
-                if (this.uiManager.inputField) {
-                    this.uiManager.inputField.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            this.handleSendMessage();
-                        }
-                    });
-                }
-
-                // Upload de arquivo
-                if (this.uiManager.fileInput) {
-                    this.uiManager.fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
-                }
-
-                if (this.uiManager.uploadButton) {
-                    this.uiManager.uploadButton.addEventListener('click', () => {
-                        this.uiManager.fileInput.click();
-                    });
-                }
-
-                // Seletor de tipo de chat
-                const optionSelect = document.getElementById('optionSelect');
-                if (optionSelect) {
-                    optionSelect.addEventListener('change', (e) => this.handleChatTypeChange(e.target.value));
-                }
-            }
-
-            handleChatTypeChange(chatType) {
-                this.stateManager.setState({ currentChatType: chatType });
-                currentOption = chatType;
-                
-                const chatTypeMessages = {
-                    'novos_clientes': 'Modo Novos Clientes ativado. Posso ajudar com análise de novos clientes, padrões de compra e recomendações.',
-                    'queijo_reino': 'Modo Queijo Reino ativado. Pronto para análises específicas do produto Queijo Reino.',
-                    'nao_cobertos': 'Modo Não Cobertos ativado. Vou ajudar a identificar áreas não atendidas e oportunidades.',
-                    'analise_dados': 'Modo Análise de Dados ativado. Pronto para análises detalhadas e geração de gráficos.',
-                    'relatorio': 'Modo Relatórios ativado. Posso gerar relatórios detalhados dos seus dados.',
-                    'suporte': 'Modo Suporte ativado. Como posso ajudar?'
-                };
-
-                if (chatTypeMessages[chatType]) {
-                    this.uiManager.addMessage(chatTypeMessages[chatType], 'ai');
-                    showNotification('Tipo de chat alterado', 'success');
-                }
-            }
-
-            async handleFileUpload(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const validTypes = [
-                    'application/vnd.ms-excel',
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'text/csv'
-                ];
-
-                if (!validTypes.includes(file.type)) {
-                    showNotification('Por favor, envie apenas arquivos Excel (.xlsx, .xls) ou CSV', 'error');
-                    return;
-                }
-
-                try {
-                    this.uiManager.showFilePreview(file);
-                    
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('chat_type', this.stateManager.getState().currentChatType || 'analise_dados');
-
-                    const response = await fetch(`${this.apiUrl}/api/chat/upload-excel`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${authToken}`
-                        },
-                        body: formData
-                    });
-
-                    if (!response.ok) throw new Error('Erro ao fazer upload do arquivo');
-
-                    const data = await response.json();
-                    
-                    this.stateManager.setState({
-                        uploadedFile: file,
-                        currentFileData: data
-                    });
-
-                    this.uiManager.addMessage(`Arquivo "${file.name}" carregado com sucesso! ${data.rows_count || 0} linhas processadas.`, 'ai');
-                    showNotification('Arquivo processado com sucesso!', 'success');
-
-                } catch (error) {
-                    console.error('Erro no upload:', error);
-                    showNotification('Erro ao processar arquivo: ' + error.message, 'error');
-                    this.clearFile();
-                }
-            }
-
-            clearFile() {
-                this.stateManager.setState({
-                    uploadedFile: null,
-                    currentFileData: null
-                });
-                this.uiManager.removeFilePreview();
-                if (this.uiManager.fileInput) {
-                    this.uiManager.fileInput.value = '';
-                }
-                showNotification('Arquivo removido', 'info');
-            }
-
-            async handleSendMessage() {
-                const message = this.uiManager.inputField?.value.trim();
-                if (!message) return;
-
-                const state = this.stateManager.getState();
-                
-                // Adiciona mensagem do usuário
-                this.uiManager.addMessage(message, 'user', {
-                    file: state.uploadedFile
-                });
-                this.uiManager.clearInput();
-                this.uiManager.setInputEnabled(false);
-                this.uiManager.showTyping();
-
-                try {
-                    // Monta o payload
-                    const payload = {
-                        message: message,
-                        chat_type: state.currentChatType || currentOption || 'suporte',
-                        file_data: state.currentFileData,
-                        history: state.conversationHistory.slice(-10)
-                    };
-
-                    const response = await fetch(`${this.apiUrl}/api/chat/message`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`Erro: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    this.uiManager.hideTyping();
-
-                    // Adiciona resposta da IA
-                    const metadata = {};
-                    if (data.chart_data) {
-                        metadata.chart = data.chart_data;
-                    }
-
-                    this.uiManager.addMessage(data.response || data.message, 'ai', metadata);
-
-                    // Atualiza histórico
-                    const newHistory = [
-                        ...state.conversationHistory,
-                        { role: 'user', content: message },
-                        { role: 'assistant', content: data.response || data.message }
-                    ];
-                    
-                    this.stateManager.setState({
-                        conversationHistory: newHistory.slice(-20)
-                    });
-
-                    // Atualiza histórico global
-                    conversationHistory = newHistory;
-
-                } catch (error) {
-                    this.uiManager.hideTyping();
-                    console.error('Erro ao enviar mensagem:', error);
-                    this.uiManager.addMessage(
-                        'Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.',
-                        'ai'
-                    );
-                    showNotification('Erro ao enviar mensagem: ' + error.message, 'error');
-                } finally {
-                    this.uiManager.setInputEnabled(true);
-                    this.uiManager.inputField?.focus();
-                }
-            }
-
-            async generateChart(chartType, columns) {
-                const state = this.stateManager.getState();
-                
-                if (!state.currentFileData) {
-                    showNotification('Por favor, faça upload de um arquivo Excel primeiro', 'error');
-                    return;
-                }
-
-                try {
-                    this.uiManager.showTyping();
-
-                    const response = await fetch(`${this.apiUrl}/api/chat/generate-chart`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify({
-                            chart_type: chartType,
-                            columns: columns,
-                            file_data: state.currentFileData
-                        })
-                    });
-
-                    if (!response.ok) throw new Error('Erro ao gerar gráfico');
-
-                    const data = await response.json();
-                    
-                    this.uiManager.hideTyping();
-                    this.uiManager.addMessage('Gráfico gerado com sucesso!', 'ai', {
-                        chart: data.chart_data
-                    });
-
-                    showNotification('Gráfico gerado!', 'success');
-
-                } catch (error) {
-                    this.uiManager.hideTyping();
-                    console.error('Erro ao gerar gráfico:', error);
-                    showNotification('Erro ao gerar gráfico: ' + error.message, 'error');
-                }
-            }
-
-            async loadChatHistory() {
-                try {
-                    const response = await fetch(`${this.apiUrl}/api/chat/history`, {
-                        headers: {
-                            'Authorization': `Bearer ${authToken}`
-                        }
-                    });
-
-                    if (!response.ok) throw new Error('Erro ao carregar histórico');
-
-                    const data = await response.json();
-                    
-                    if (data.messages && Array.isArray(data.messages)) {
-                        data.messages.forEach(msg => {
-                            this.uiManager.addMessage(
-                                msg.content,
-                                msg.role === 'user' ? 'user' : 'ai',
-                                msg.metadata || {}
-                            );
-                        });
-
-                        this.stateManager.setState({
-                            conversationHistory: data.messages
-                        });
-                    }
-
-                } catch (error) {
-                    console.error('Erro ao carregar histórico:', error);
-                }
-            }
-
-            clearChat() {
-                this.stateManager.reset();
-                this.uiManager.messageContainer.innerHTML = '';
-                this.uiManager.messageContainer.appendChild(this.uiManager.typingIndicator);
-                conversationHistory = [];
-                showNotification('Chat limpo', 'info');
-            }
-        }
-
-        // Instância global do chat service
-        let chatService;
-        let chatStateManager;
-        let chatUIManager;
-
-        // ========================================
         // INICIALIZAÇÃO
         // ========================================
         document.addEventListener('DOMContentLoaded', () => {
             initializeDefaultUsers();
-            
-            // Inicializa o sistema de chat completo
-            chatStateManager = new ChatStateManager();
-            chatUIManager = new ChatUIManager(chatStateManager);
-            chatService = new ChatService(API_URL, chatStateManager, chatUIManager);
-            chatService.initialize();
-            
-            // Carrega histórico se usuário estiver logado
-            if (authToken && currentUser) {
-                chatService.loadChatHistory();
-            }
             if (authToken) {
                 showMainApp();
                 initializeUsageTracking();
@@ -1923,32 +1358,120 @@
                 
                 userStats[session.user].sessions++;
                 if (session.startTime > userStats[session.user].lastAccess) {
-                    userStats[session.user].lastAccess = session.startTime;
-                }
+               Verifica comando de gráficos
+            if (message.toLowerCase().includes('/graficos') || message.toLowerCase().includes('/gráficos')) {
+                addMessage(message, 'user');
+                input.value = '';
+                generateCharts();
+                return;
+            }
+
+            // Adiciona mensagem do usuário
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Desabilita botão
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+
+            // Envia para GPT-4
+            await sendToGPT4(message);
+
+            // Reabilita botão
+            btn.disabled = false;
+            btn.innerHTML = 'Enviar';
+        }
+
+        function generateCharts() {
+            const chartHTML = `
+                <div class="chart-container">
+                    <h4 style="color: var(--text-dark); margin-bottom: 16px;">📊 Gráficos de Desempenho</h4>
+                    
+                    <div class="chart-bar">
+                        <div class="chart-label">Vendas</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 85%"></div>
+                        </div>
+                        <div class="chart-value">85%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Novos Clientes</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 72%"></div>
+                        </div>
+                        <div class="chart-value">72%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Satisfação</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 98%"></div>
+                        </div>
+                        <div class="chart-value">98%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Conversões</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 64%"></div>
+                        </div>
+                        <div class="chart-value">64%</div>
+                    </div>
+
+                    <div class="chart-bar">
+                        <div class="chart-label">Retenção</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 91%"></div>
+                        </div>
+                        <div class="chart-value">91%</div>
+                    </div>
+                </div>
+            `;
+
+            const container = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-sender">GPT-4 Assistant</span>
+                        <span class="message-time">${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div class="message-text">
+                        Aqui estão os gráficos de desempenho atualizados:
+                        ${chartHTML}
+                        <br>
+                        Os dados mostram um excelente desempenho geral, com destaque para a taxa de satisfação de 98% e retenção de 91%.
+                    </div>
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+
+            showNotification('Gráficos gerados com sucesso!', 'success')>';
+            html += '<th>Último Acesso</th>';
+            html += '</tr></thead>';
+            html += '<tbody>';
+
+            Object.keys(userStats).forEach(user => {
+                const stats = userStats[user];
+                const hours = Math.floor(stats.totalTime / 3600000);
+                const minutes = Math.floor((stats.totalTime % 3600000) / 60000);
+                const lastAccess = new Date(stats.lastAccess).toLocaleString('pt-BR');
+
+                html += '<tr>';
+                html += `<td><strong>${user}</strong></td>`;
+                html += `<td>${hours}h ${minutes}min</td>`;
+                html += `<td>${stats.sessions}</td>`;
+                html += `<td>${lastAccess}</td>`;
+                html += '</tr>';
             });
 
-            const statsContainer = document.getElementById('usageStats');
-            if (statsContainer) {
-                let html = '<div class="usage-stats">';
-                
-                Object.entries(userStats).forEach(([username, stats]) => {
-                    const hours = Math.floor(stats.totalTime / (1000 * 60 * 60));
-                    const minutes = Math.floor((stats.totalTime % (1000 * 60 * 60)) / (1000 * 60));
-                    const lastAccessDate = new Date(stats.lastAccess).toLocaleString('pt-BR');
-                    
-                    html += `
-                        <div style="padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 10px;">
-                            <h4 style="color: var(--text-dark); margin-bottom: 10px;">👤 ${username}</h4>
-                            <p><strong>Tempo total:</strong> ${hours}h ${minutes}m</p>
-                            <p><strong>Sessões:</strong> ${stats.sessions}</p>
-                            <p><strong>Último acesso:</strong> ${lastAccessDate}</p>
-                        </div>
-                    `;
-                });
-                
-                html += '</div>';
-                statsContainer.innerHTML = html;
-            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
         }
 
         // ========================================
@@ -1960,7 +1483,7 @@
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const response = await fetch(`${API_URL}/api/auth/login`, {
+                const response = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -1979,11 +1502,7 @@
                     showNotification(data.detail || 'Erro ao fazer login', 'error');
                 }
             } catch (error) {
-                showNotification('Erro ao conectar com o servidor: ' + error.message, 'error');
-            }
-        }
-
-        function navigateTo(e, section) {
+                cnavigateTo(e, section) {
             e.preventDefault();
             
             // Atualiza menu ativo
@@ -2332,20 +1851,183 @@
         }
 
         // ========================================
-        // OPÇÕES DO CHAT (Mantido para compatibilidade)
+        // CHAT COM GPT-4
+        // ========================================
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Adiciona mensagem do usuário
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Desabilita botão
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+
+            // Envia para GPT-4
+            await sendToGPT4(message);
+
+            // Reabilita botão
+            btn.disabled = false;
+            btn.innerHTML = 'Enviar';
+        }
+
+        async function sendToGPT4(message) {
+            const apiKey = getGPTKey();
+            
+            if (!apiKey) {
+                addMessage('⚠️ Configure sua chave API do GPT-4 para usar o assistente inteligente.', 'ai');
+                showNotification('Chave GPT-4 não configurada', 'error');
+                setTimeout(() => {
+                    document.getElementById('gptKeyModal').style.display = 'flex';
+                }, 500);
+                return;
+            }
+
+            try {
+                // Adiciona contexto da opção selecionada
+                let systemMessage = 'Você é um assistente inteligente para um sistema de gestão.';
+                
+                if (currentOption === 'novos_clientes') {
+                    systemMessage += ' Foque em análise e gestão de novos clientes.';
+                } else if (currentOption === 'nao_cobertos') {
+                    systemMessage += ' Foque em identificar e resolver casos não cobertos.';
+                } else if (currentOption === 'analise_dados') {
+                    systemMessage += ' Foque em análise detalhada de dados e métricas.';
+                } else if (currentOption === 'relatorio') {
+                    systemMessage += ' Foque em gerar relatórios profissionais e detalhados.';
+                } else if (currentOption === 'suporte') {
+                    systemMessage += ' Foque em fornecer suporte técnico claro e eficiente.';
+                }
+
+                conversationHistory.push({
+                    role: 'user',
+                    content: message
+                });
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [
+                            { role: 'system', content: systemMessage },
+                            ...conversationHistory
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const aiResponse = data.choices[0].message.content;
+                    conversationHistory.push({
+                        role: 'assistant',
+                        content: aiResponse
+                    });
+                    addMessage(aiResponse, 'ai');
+                } else if (response.status === 401) {
+                    throw new Error('Chave API inválida. Verifique sua configuração.');
+                } else {
+                    throw new Error(data.error?.message || 'Erro ao conectar com GPT-4');
+                }
+            } catch (error) {
+                console.error('Erro GPT-4:', error);
+                addMessage('Desculpe, houve um erro ao processar sua mensagem. ' + error.message, 'ai');
+                showNotification(error.message || 'Erro ao conectar com GPT-4', 'error');
+            }
+        }
+
+        function openGPTKeyModal() {
+            const currentKey = getGPTKey();
+            document.getElementById('gptKeyInput').value = currentKey;
+            document.getElementById('gptKeyModal').style.display = 'flex';
+        }
+
+        function closeGPTKeyModal() {
+            document.getElementById('gptKeyModal').style.display = 'none';
+        }
+
+        function saveGPTKey() {
+            const key = document.getElementById('gptKeyInput').value.trim();
+            if (!key) {
+                showNotification('Digite uma chave válida', 'error');
+                return;
+            }
+            if (!key.startsWith('sk-')) {
+                showNotification('Chave inválida. Deve começar com "sk-"', 'error');
+                return;
+            }
+            setGPTKey(key);
+            closeGPTKeyModal();
+        }
+
+        function addMessage(text, sender) {
+            const container = document.getElementById('messagesArea');
+            const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            // Sanitiza HTML para prevenir XSS, mas permite alguns elementos seguros
+            const sanitizedText = sender === 'ai' ? text : escapeHtml(text);
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${sender === 'user' ? '👤' : '🤖'}</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="message-sender">${sender === 'user' ? 'Você' : 'GPT-4 Assistant'}</span>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="message-text">${sanitizedText.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // ========================================
+        // OPÇÕES
         // ========================================
         function handleOptionChange() {
             const select = document.getElementById('optionSelect');
-            const optionValue = select.value;
+            currentOption = select.value;
             
-            if (!optionValue) return;
-            
-            // Usa o sistema de chat completo
-            if (chatService) {
-                chatService.handleChatTypeChange(optionValue);
-            } else {
-                currentOption = optionValue;
-            }
+            if (!currentOption) return;
+
+            const optionMessages = {
+                'novos_clientes': 'Você selecionou: Novos Clientes. Como posso ajudar com a análise ou gestão de novos clientes?',
+                'nao_cobertos': 'Você selecionou: Não Cobertos. Posso ajudar a identificar padrões e sugerir soluções.',
+                'analise_dados': 'Você selecionou: Análise de Dados. Pronto para analisar métricas e gerar insights.',
+                'relatorio': 'Você selecionou: Gerar Relatório. Que tipo de relatório você precisa?',
+                'suporte': 'Você selecionou: Suporte Técnico. Qual problema você está enfrentando?'
+            };
+
+            addMessage(optionMessages[currentOption], 'ai');
+            showNotification(`Opção selecionada: ${select.options[select.selectedIndex].text}`, 'success');
         }
 
         // ========================================
