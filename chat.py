@@ -13,6 +13,11 @@ try:
     import pandas as pd
 except Exception:
     pd = None
+from fastapi import HTTPException
+
+def _require_pandas():
+    if pd is None:
+        raise HTTPException(status_code=501, detail="Pandas não está disponível no ambiente. Recursos de processamento de dados foram desabilitados.")
 import matplotlib
 matplotlib.use("Agg")  # headless-friendly
 import matplotlib.pyplot as plt
@@ -108,7 +113,8 @@ async def _save_bytes_to_file(path: Path, data: bytes):
 
 def _read_excel_safe(path: Path) -> pd.DataFrame:
     try:
-        df = pd.read_excel(path)  # type: ignore
+            _require_pandas()
+            df = pd.read_excel(path)  # type: ignore
         return df
     except Exception as e:
         logger.exception("Erro lendo excel %s: %s", path, e)
@@ -116,6 +122,7 @@ def _read_excel_safe(path: Path) -> pd.DataFrame:
 
 def _validate_dataframe(df: pd.DataFrame) -> bool:
     return not df.empty and len(df.columns) > 0
+        _require_pandas()
 
 # ========== AI engine (lightweight, extensible) ==========
 class AILearningEngine:
@@ -170,6 +177,7 @@ class AdvancedExcelReader:
     @staticmethod
     def process_data(df: pd.DataFrame, chat_type: str) -> Dict[str, Any]:
         processed: Dict[str, Any] = {"total_rows": len(df), "columns": list(df.columns), "summary": {}}
+            _require_pandas()
         if chat_type == "novos_clientes":
             processed["summary"]["clientes"] = df.to_dict("records")  # type: ignore
         elif chat_type == "queijo_reino":

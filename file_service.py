@@ -13,6 +13,10 @@ except Exception:
     pd = None
 from fastapi import UploadFile, HTTPException
 
+def _require_pandas():
+    if pd is None:
+        raise HTTPException(status_code=501, detail="Pandas não está disponível no ambiente. Recursos de leitura de tabelas foram desabilitados.")
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -76,6 +80,7 @@ def compute_checksum_from_path(path: str, chunk_size: int = 8192) -> str:
 def read_table_from_file(path: str, sheet_name: Optional[str] = None, usecols: Optional[List[str]] = None) -> pd.DataFrame:
     """Lê CSV ou Excel e retorna um DataFrame. Lança exceção em erro."""
     ext = Path(path).suffix.lower()
+    _require_pandas()
     try:
         if ext in [".xls", ".xlsx"]:
             df = pd.read_excel(path, sheet_name=sheet_name, usecols=usecols)  # type: ignore
@@ -94,6 +99,7 @@ def read_table_from_file(path: str, sheet_name: Optional[str] = None, usecols: O
 
 def dataframe_to_records(df: pd.DataFrame) -> List[Dict[str, Any]]:
     """Converte DataFrame para lista de dicionários (próprio para JSON/DB)."""
+    _require_pandas()
     records: List[Dict[str, Any]] = df.fillna("").to_dict(orient="records")  # type: ignore
     return [{str(k): v for k, v in record.items()} for record in records]
 
